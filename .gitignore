@@ -7,7 +7,8 @@
 .buildlog/
 .history
 
-
+# For more add here
+/lib/Model/apikey.dart
 
 # Flutter repo-specific
 /bin/cache/
