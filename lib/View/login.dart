@@ -115,7 +115,7 @@ class LogIn extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Boa()),
+                          MaterialPageRoute(builder: (context) => BOA()),
                         );
                       },
                       color: CustomColors.blue,
