@@ -7,7 +7,7 @@ import 'package:seekhere_proj/View/progress_meter.dart';
 
 // Program start here
 void main() {
-  // runApp(const App());
+  // runApp(MyApp());
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: ProgressMeter(),
@@ -55,3 +55,4 @@ class App extends StatelessWidget {
     return Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withAlpha(255);
   }
 }
+
