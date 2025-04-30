@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:seekhere_proj/View/recap_report1.dart';
 import 'dart:math';
 
-int points = 125;
 const int totalPoints = 500;
 
 // List of motivational prompts
@@ -16,7 +15,17 @@ final List<String> motivationalPrompts = [
   'You\'re stronger than you think!',
   'Progress over perfection!',
   'Today is a new opportunity!',
-  'One day at a time, you got this!'
+  'One day at a time, you got this!',
+  'Stay positive, stay motivated!',
+  'You are capable of amazing things!',
+  'Keep pushing, you\'re almost there!',
+  'Success is a journey, not a destination!',
+  'Every effort counts, keep it up!',
+  'You are on the right track!',
+  'Your hard work will pay off!',
+  'Stay committed to your goals!',
+  'You are making a difference!',
+  'Keep striving for greatness!'
 ];
 
 class ProgressMeter extends StatefulWidget {
@@ -27,8 +36,10 @@ class ProgressMeter extends StatefulWidget {
 }
 
 class _ProgressMeterState extends State<ProgressMeter> {
-  // Current motivational prompt
-  late String currentPrompt;
+  int points = 200;
+  
+  // Initialize with empty string instead of using late
+  String currentPrompt = '';
   final Random _random = Random();
   
   @override
@@ -40,7 +51,13 @@ class _ProgressMeterState extends State<ProgressMeter> {
   
   // Get a random prompt from the list
   String _getRandomPrompt() {
-    return motivationalPrompts[_random.nextInt(motivationalPrompts.length)];
+    do {
+      int index = _random.nextInt(motivationalPrompts.length);
+      // Check if the prompt is not already selected
+      if (motivationalPrompts[index] != currentPrompt) {
+        return motivationalPrompts[index];
+      }
+    } while (true);
   }
   
   // Change the prompt
@@ -58,35 +75,42 @@ class _ProgressMeterState extends State<ProgressMeter> {
     final double screenHeight = size.height;
     
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.05, // 5% of screen width
-              vertical: screenHeight * 0.01, // 1% of screen height
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
-                
-                SizedBox(height: screenHeight * 0.02), // 2% of screen height
-                
-                _buildMotivationalCard(context),
-                
-                SizedBox(height: screenHeight * 0.03), // 3% of screen height
-                
-                _buildProgressCircle(context),
-                
-                SizedBox(height: screenHeight * 0.03), // 3% of screen height
-                
-                _buildActivitiesSection(context),
-                
-                SizedBox(height: screenHeight * 0.02), // 2% of screen height
-                
-                _buildViewRecapButton(context),
-              ],
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/bg/ProgressMeterBg.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05,
+                vertical: screenHeight * 0.01,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  
+                  SizedBox(height: screenHeight * 0.02), // 2% of screen height
+                  
+                  _buildMotivationalCard(context),
+                  
+                  SizedBox(height: screenHeight * 0.03), // 3% of screen height
+                  
+                  _buildProgressCircle(context),
+                  
+                  SizedBox(height: screenHeight * 0.03), // 3% of screen height
+                  
+                  _buildActivitiesSection(context),
+                  
+                  SizedBox(height: screenHeight * 0.02), // 2% of screen height
+                  
+                  _buildViewRecapButton(context),
+                ],
+              ),
             ),
           ),
         ),
@@ -138,7 +162,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
   Widget _buildAppTitle(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     final double outerCircleSize = size.width * 0.075; // 7.5% of screen width
-    final double innerCircleSize = outerCircleSize * 0.4; // 40% of outer circle
+    // final double innerCircleSize = outerCircleSize * 0.4; // 40% of outer circle
     
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -154,26 +178,11 @@ class _ProgressMeterState extends State<ProgressMeter> {
           ),
         ),
         SizedBox(width: size.width * 0.015),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: outerCircleSize,
-              height: outerCircleSize,
-              decoration: const BoxDecoration(
-                color: Color(0x229B97FD),
-                shape: BoxShape.circle,
-              ),
-            ),
-            Container(
-              width: innerCircleSize,
-              height: innerCircleSize,
-              decoration: const BoxDecoration(
-                color: Color(0xFF8E97FD),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
+        Image.asset(
+          'assets/icon/logo.png', // Make sure to add this image to your assets
+          width: outerCircleSize,
+          height: outerCircleSize,
+          fit: BoxFit.contain,
         ),
         SizedBox(width: size.width * 0.015),
         const Text(
@@ -295,7 +304,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
                 ),
                 SizedBox(height: size.height * 0.005),
                 Text(
-                  '125 of 500',
+                    '$points of $totalPoints',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFF262626),

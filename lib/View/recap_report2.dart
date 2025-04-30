@@ -1,26 +1,90 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+// Add Interaction data model
+class InteractionData {
+  final String name;
+  final int points;
+  final Color color;
+  final double percentage;
+
+  InteractionData({
+    required this.name,
+    required this.points,
+    required this.color,
+    double? percentage,
+  }) : percentage = percentage ?? 0.0;
+  
+  // Factory method to create InteractionData list with auto-calculated percentages
+  static List<InteractionData> createWithPercentages(List<InteractionData> interactions) {
+    // Calculate total points
+    int total = interactions.fold(0, (sum, interaction) => sum + interaction.points);
+    
+    // Create new list with calculated percentages
+    return interactions.map((interaction) => InteractionData(
+      name: interaction.name,
+      points: interaction.points,
+      color: interaction.color,
+      percentage: total > 0 ? interaction.points / total : 0.0,
+    )).toList();
+  }
+}
+
 class RecapReport2 extends StatelessWidget {
   const RecapReport2({super.key});
+  
+  // Predefined colors for interaction types
+  static const List<Color> interactionColors = [
+    Color(0xFFE9E9E9), // Light gray
+    Color(0xFF4361EE), // Blue
+    Color(0xFF7209B7), // Purple
+    Color(0xFFF72585), // Pink
+  ];
+  
+  // Generate interaction data with auto-calculated percentages
+  List<InteractionData> _generateInteractionData() {
+    // Create initial data
+    final initialInteractions = [
+      InteractionData(name: 'Record Mood', points: 133, color: Colors.transparent),
+      InteractionData(name: 'Write Diary', points: 144, color: Colors.transparent),
+      InteractionData(name: 'Request Recommender', points: 125, color: Colors.transparent),
+      InteractionData(name: 'Write Diary', points: 150, color: Colors.transparent),
+    ];
+    
+    // Assign colors from the predefined list
+    for (int i = 0; i < initialInteractions.length; i++) {
+      final colorIndex = i % interactionColors.length;
+      initialInteractions[i] = InteractionData(
+        name: initialInteractions[i].name,
+        points: initialInteractions[i].points,
+        color: interactionColors[colorIndex],
+      );
+    }
+    
+    // Calculate and assign percentages
+    var result = InteractionData.createWithPercentages(initialInteractions);
+
+    // Sort by points in descending order
+    result.sort((a, b) => b.points.compareTo(a.points));
+
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
     // Get screen size for relative calculations
     final Size screenSize = MediaQuery.of(context).size;
+    final List<InteractionData> interactionData = _generateInteractionData();
+    final int totalPoints = interactionData.fold(0, (sum, interaction) => sum + interaction.points);
     
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFF159), // Yellow
-              Color(0xFFF8B830), // Orange
-            ],
+          image: DecorationImage(
+            image: AssetImage("assets/bg/RecapReport2Bg.png"),
+            fit: BoxFit.cover,
           ),
         ),
         child: SafeArea(
@@ -46,13 +110,13 @@ class RecapReport2 extends StatelessWidget {
                 
                 SizedBox(height: screenSize.height * 0.012),
                 
-                // Description - centered like RecapReport1
+                // Description with dynamic total points
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.015),
-                  child: const Text(
-                    'For the last 20 days, you have gathered 500 progress meter points:',
+                  child: Text(
+                    'For the last 20 days, you have gathered $totalPoints progress meter points:',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF525252),
                       fontSize: 16,
                       fontFamily: 'Lato',
@@ -65,70 +129,12 @@ class RecapReport2 extends StatelessWidget {
                 
                 SizedBox(height: screenSize.height * 0.02),
                 
-                // Pie Chart with responsive size
+                // Pie Chart - removed percentage labels
                 SizedBox(
                   width: screenSize.width * 0.5,
                   height: screenSize.width * 0.5, // Using width to maintain aspect ratio
                   child: CustomPaint(
-                    painter: QuadrantPieChartPainter(),
-                    child: Center(
-                      child: Stack(
-                        children: [
-                          // Top-left percentage (pink)
-                          Positioned(
-                            left: screenSize.width * 0.13,
-                            top: screenSize.width * 0.13,
-                            child: const Text(
-                              '25%',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          // Top-right percentage (white/gray)
-                          Positioned(
-                            right: screenSize.width * 0.13,
-                            top: screenSize.width * 0.13,
-                            child: const Text(
-                              '25%',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          // Bottom-left percentage (purple)
-                          Positioned(
-                            left: screenSize.width * 0.13,
-                            bottom: screenSize.width * 0.13,
-                            child: const Text(
-                              '25%',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          // Bottom-right percentage (blue)
-                          Positioned(
-                            right: screenSize.width * 0.13,
-                            bottom: screenSize.width * 0.13,
-                            child: const Text(
-                              '25%',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    painter: InteractionPieChartPainter(interactionData),
                   ),
                 ),
                 
@@ -148,19 +154,19 @@ class RecapReport2 extends StatelessWidget {
                 
                 SizedBox(height: screenSize.height * 0.01),
                 
-                // Interaction items with flexible height
+                // Interaction items - dynamically generated with percentages
                 Center(
                   child: SizedBox(
                     height: screenSize.height * 0.15,
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          buildInteractionItem('Record Mood (40 times) - 125 points', const Color(0xFFE9E9E9)),
-                          buildInteractionItem('Write Diary (40 times) - 125 points', const Color(0xFF4361EE)),
-                          buildInteractionItem('Request Recommender (40 times) - 125 points', const Color(0xFF7209B7)),
-                          buildInteractionItem('Write Diary (40 times) - 125 points', const Color(0xFFF72585)),
-                        ],
+                        children: interactionData.map((interaction) => 
+                          _buildInteractionItem(
+                            '${interaction.name} (${interaction.points} points) - ${(interaction.percentage * 100).toStringAsFixed(2)}%', 
+                            interaction.color
+                          )
+                        ).toList(),
                       ),
                     ),
                   ),
@@ -266,7 +272,7 @@ class RecapReport2 extends StatelessWidget {
     );
   }
 
-  Widget buildInteractionItem(String text, Color color) {
+  Widget _buildInteractionItem(String text, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -295,44 +301,41 @@ class RecapReport2 extends StatelessWidget {
   }
 }
 
-// QuadrantPieChartPainter remains unchanged
-class QuadrantPieChartPainter extends CustomPainter {
+// Updated QuadrantPieChartPainter to use actual percentages
+class InteractionPieChartPainter extends CustomPainter {
+  final List<InteractionData> interactionData;
+
+  InteractionPieChartPainter(this.interactionData);
+  
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(size.width, size.height) / 2;
     
-    // Define colors for each quadrant - matching the screenshot exactly
-    final colors = [
-      const Color(0xFFF72585), // Top-left - Pink
-      const Color(0xFFEAEAEA), // Top-right - Light gray
-      const Color(0xFF7209B7), // Bottom-left - Purple
-      const Color(0xFF4361EE), // Bottom-right - Blue
-    ];
-    
-    // Each quadrant is exactly 25% of the circle (90 degrees or π/2 radians)
-    const angle = math.pi / 2;
-    
-    // Starting position for the first quadrant (top-left)
+    // Starting position for the first segment (top of the circle)
     var startAngle = -math.pi / 2;
     
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < interactionData.length; i++) {
       final paint = Paint()
-        ..color = colors[i]
+        ..color = interactionData[i].color
         ..style = PaintingStyle.fill;
+      
+      // Calculate the angle based on the percentage
+      final sweepAngle = interactionData[i].percentage * 2 * math.pi;
       
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startAngle,
-        angle,
+        sweepAngle,
         true,
         paint,
       );
       
-      startAngle += angle;
+      // Update the start angle for the next segment
+      startAngle += sweepAngle;
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
