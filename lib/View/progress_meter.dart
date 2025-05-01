@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:seekhere_proj/View/recap_report1.dart';
+import 'package:seek_here/View/recap_report1.dart';
 import 'dart:math';
 
+int points = 500;
 const int totalPoints = 500;
 
 // List of motivational prompts
@@ -36,8 +37,6 @@ class ProgressMeter extends StatefulWidget {
 }
 
 class _ProgressMeterState extends State<ProgressMeter> {
-  int points = 200;
-  
   // Initialize with empty string instead of using late
   String currentPrompt = '';
   final Random _random = Random();
@@ -179,7 +178,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
         ),
         SizedBox(width: size.width * 0.015),
         Image.asset(
-          'assets/icon/logo.png', // Make sure to add this image to your assets
+          'assets/logo.png',
           width: outerCircleSize,
           height: outerCircleSize,
           fit: BoxFit.contain,
@@ -291,6 +290,14 @@ class _ProgressMeterState extends State<ProgressMeter> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Goal icon added above the text
+                Image.asset(
+                  'assets/icon/Icon-Goal.png',
+                  width: size.width * 0.06,
+                  height: size.width * 0.06,
+                  color: const Color(0xFF8E97FD),
+                ),
+                SizedBox(height: size.height * 0.008),
                 Text(
                   'Progress Meter Points',
                   style: TextStyle(
@@ -480,17 +487,31 @@ class _ProgressMeterState extends State<ProgressMeter> {
 
   Widget _buildViewRecapButton(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+    final bool hasEnoughPoints = points >= totalPoints;
     
     return Center(
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RecapReport1()),
-          );
-        },
+        onPressed: hasEnoughPoints 
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RecapReport1()),
+                );
+              } 
+            : () {
+                // Show toast message for insufficient points
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Insufficient progress meter!'),
+                    duration: Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFBBB5F5),
+          backgroundColor: hasEnoughPoints 
+              ? const Color(0xFFBBB5F5)  // Original purple color
+              : Colors.grey,             // Grey for disabled state
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(38),
           ),

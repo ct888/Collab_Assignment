@@ -1,77 +1,50 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:seekhere_proj/View/recap_report2.dart'; // Import RecapReport2
+import 'package:seek_here/View/recap_report2.dart'; // Import RecapReport2
+import 'package:seek_here/View/utils/pie_chart_painter.dart'; // Import shared painter
 
 // Mood data model
 class MoodData {
   final String name;
   final int count;
-  final Color color;
-  final double percentage;
+  double percentage = 0.0; // Default percentage
 
   MoodData({
     required this.name,
-    required this.count,
-    required this.color,
-    double? percentage,
-  }) : percentage = percentage ?? 0.0;
-  
-  // Factory method to create MoodData list with auto-calculated percentages
+    required this.count
+  });
+
+  // Factory method to create MoodData with calculated percentages
   static List<MoodData> createWithPercentages(List<MoodData> moods) {
-    // Calculate total count
-    int total = moods.fold(0, (sum, mood) => sum + mood.count);
-    
-    // Create new list with calculated percentages
-    return moods.map((mood) => MoodData(
-      name: mood.name,
-      count: mood.count,
-      color: mood.color,
-      percentage: total > 0 ? mood.count / total : 0.0,
-    )).toList();
+    // Calculate total count of all moods
+    int totalCount = moods.fold(0, (sum, mood) => sum + mood.count);
+
+    // Calculate percentage for each mood
+    return moods.map((mood) {
+      double percentage = totalCount > 0 ? mood.count / totalCount : 0.0;
+      return MoodData(
+        name: mood.name,
+        count: mood.count
+        )..percentage = percentage;
+    }).toList();
   }
 }
 
 class RecapReport1 extends StatelessWidget {
   const RecapReport1({super.key});
-  
-  // Predefined colors for mood types
-  static const List<Color> moodColors = [
-    Color(0xFFF5F5F5), // Happy - light grey/white
-    Color(0xFF22B7BF), // Sleepy - teal
-    Color(0xFF2969B0), // Sad - blue
-    Color(0xFF6900B9), // Angry - purple
-    Color(0xFFC01E9F), // Relax - magenta
-    Color(0xFFFF3E90), // Boring - pink
-    Color(0xFF3F51B5), // Indigo
-    Color(0xFF4CAF50), // Green
-    Color(0xFFFF9800), // Orange
-    Color(0xFF795548), // Brown
-    Color(0xFF607D8B), // Blue Grey
-    Color(0xFFE91E63), // Pink
-  ];
 
   // Generate sample mood data with auto-calculated percentages
   List<MoodData> _generateMoodData() {
     // Create initial data (counts only)
     final initialMoods = [
-      MoodData(name: 'Happy', count: 22, color: Colors.transparent),
-      MoodData(name: 'Sleepy', count: 13, color: Colors.transparent),
-      MoodData(name: 'Sad', count: 25, color: Colors.transparent),
-      MoodData(name: 'Angry', count: 5, color: Colors.transparent),
-      MoodData(name: 'Relax', count: 5, color: Colors.transparent),
-      MoodData(name: 'Boring', count: 5, color: Colors.transparent),
+      MoodData(name: 'Happy', count: 22),
+      MoodData(name: 'Sleepy', count: 13),
+      MoodData(name: 'Sad', count: 25),
+      MoodData(name: 'Angry', count: 15),
+      MoodData(name: 'Relax', count: 5),
+      MoodData(name: 'Boring', count: 5),
       // You can add or remove mood types as needed
     ];
-    
-    // Assign colors from the predefined list
-    for (int i = 0; i < initialMoods.length; i++) {
-      final colorIndex = i % moodColors.length; // Cycle through colors if more moods than colors
-      initialMoods[i] = MoodData(
-        name: initialMoods[i].name,
-        count: initialMoods[i].count,
-        color: moodColors[colorIndex],
-      );
-    }
     
     // Calculate and assign percentages
     var result = MoodData.createWithPercentages(initialMoods);
@@ -156,9 +129,12 @@ class RecapReport1 extends StatelessWidget {
                 // Pie Chart with responsive sizing
                 SizedBox(
                   width: screenSize.width * 0.5,
-                  height: screenSize.width * 0.5, // Using width for aspect ratio
+                  height: screenSize.width * 0.5,
                   child: CustomPaint(
-                    painter: MoodPieChartPainter(moodData),
+                    painter: PieChartPainter(
+                      data: moodData,
+                      getPercentage: (item) => (item as MoodData).percentage,
+                    ),
                   ),
                 ),
                 
@@ -187,10 +163,10 @@ class RecapReport1 extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        children: moodData.map((mood) => _buildMoodItem(
+                        children: moodData.asMap().entries.map((entry) => _buildMoodItem(
                           context, 
-                          '${mood.name} (${mood.count} times) - ${(mood.percentage * 100).toStringAsFixed(2)}%', 
-                          mood.color
+                          '${entry.value.name} (${entry.value.count} times) - ${(entry.value.percentage * 100).toStringAsFixed(2)}%', 
+                          PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
                         )).toList(),
                       ),
                     ),
@@ -280,45 +256,5 @@ class RecapReport1 extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class MoodPieChartPainter extends CustomPainter {
-  final List<MoodData> moodData;
-  
-  MoodPieChartPainter(this.moodData);
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = math.min(size.width, size.height) / 2;
-    
-    var startAngle = -math.pi / 2; // Start from top (minus 90 degrees)
-    
-    // Draw all slices with the correction applied
-    for (int i = 0; i < moodData.length; i++) {
-      final paint = Paint()
-        ..color = moodData[i].color
-        ..style = PaintingStyle.fill;
-      
-      final sweepAngle = moodData[i].percentage * 2 * math.pi;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        true,
-        paint,
-      );
-      
-      startAngle += sweepAngle;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    if (oldDelegate is MoodPieChartPainter) {
-      return oldDelegate.moodData != moodData;
-    }
-    return true;
   }
 }

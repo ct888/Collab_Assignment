@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:seekhere_proj/View/progress_meter.dart';
+import 'package:seek_here/View/progress_meter.dart';
 // import 'package:seek_here/View/recap_report1.dart';
 // import 'package:seek_here/View/recap_report2.dart'; // Corrected import path
 
