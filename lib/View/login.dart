@@ -9,6 +9,7 @@ import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 
 import 'BOA.dart';
+import 'mood_dashboard_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -115,7 +116,7 @@ class LogIn extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => BOA()),
+                          MaterialPageRoute(builder: (context) => MoodDashboardPage()),
                         );
                       },
                       color: CustomColors.blue,

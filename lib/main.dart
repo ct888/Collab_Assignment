@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:seek_here/View/login.dart';
 import 'package:seek_here/View/progress_meter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -16,12 +17,27 @@ void main() async {
   );
 
   // runApp(MyApp());
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: ProgressMeter(),
-  ));
-}
+  runApp(const MyApp());
 
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Seek Here',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7B88F9)),
+        useMaterial3: true,
+        fontFamily: GoogleFonts.aDLaMDisplay().fontFamily,
+      ),
+      // You can choose your start page here
+      home: const LogIn(), // Start with login page
+      // Alternatively, you could directly start with mood dashboard for testing
+      // home: const MoodDashboardPage(),
+      // home: const ProgressMeter(),
+    );
+  }
+}
 // Paint UI to screen
 class App extends StatelessWidget {
   const App({super.key});
