@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/progress_meter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 // import 'package:seek_here/View/recap_report1.dart';
 // import 'package:seek_here/View/recap_report2.dart'; // Corrected import path
 
 // Program start here
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // <--- Ensure Flutter binding is initialized
+
+  await Firebase.initializeApp( // <--- Initialize Firebase
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   // runApp(MyApp());
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
