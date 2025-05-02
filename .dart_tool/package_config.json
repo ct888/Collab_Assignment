@@ -459,7 +459,7 @@
     },
     {
       "name": "url_launcher_web",
-      "rootUri": "file:///C:/Users/KY%20YAP/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_web-2.4.0",
+      "rootUri": "file:///C:/Users/KY%20YAP/AppData/Local/Pub/Cache/hosted/pub.dev/url_launcher_web-2.4.1",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
@@ -512,7 +512,7 @@
       "languageVersion": "3.7"
     }
   ],
-  "generated": "2025-05-01T15:53:04.100239Z",
+  "generated": "2025-05-02T17:14:08.295332Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///C:/flutter",
