@@ -1,65 +1,108 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import 'package:seek_here/View/recap_report2.dart'; // Import RecapReport2
-import 'package:seek_here/View/utils/pie_chart_painter.dart'; // Import shared painter
+import 'package:seek_here/View/recap_report2.dart';
+import 'package:seek_here/View/utils/pie_chart_painter.dart';
 
 // Mood data model
 class MoodData {
   final String name;
   final int count;
-  double percentage = 0.0; // Default percentage
+  double percentage = 0.0;
 
   MoodData({
     required this.name,
     required this.count
   });
 
-  // Factory method to create MoodData with calculated percentages
   static List<MoodData> createWithPercentages(List<MoodData> moods) {
-    // Calculate total count of all moods
     int totalCount = moods.fold(0, (sum, mood) => sum + mood.count);
 
-    // Calculate percentage for each mood
     return moods.map((mood) {
       double percentage = totalCount > 0 ? mood.count / totalCount : 0.0;
       return MoodData(
         name: mood.name,
         count: mood.count
-        )..percentage = percentage;
+      )..percentage = percentage;
     }).toList();
   }
 }
 
-class RecapReport1 extends StatelessWidget {
-  const RecapReport1({super.key});
+class RecapReport1 extends StatefulWidget {
+  final Map<String, List<dynamic>>? preloadedRecords;
+  
+  const RecapReport1({super.key, this.preloadedRecords});
 
-  // Generate sample mood data with auto-calculated percentages
-  List<MoodData> _generateMoodData() {
-    // Create initial data (counts only)
-    final initialMoods = [
-      MoodData(name: 'Happy', count: 22),
-      MoodData(name: 'Sleepy', count: 13),
-      MoodData(name: 'Sad', count: 25),
-      MoodData(name: 'Angry', count: 15),
-      MoodData(name: 'Relax', count: 5),
-      MoodData(name: 'Boring', count: 5),
-      // You can add or remove mood types as needed
-    ];
+  @override
+  State<RecapReport1> createState() => _RecapReport1State();
+}
+
+class _RecapReport1State extends State<RecapReport1> {
+  bool isLoading = true;
+  List<MoodData> moodData = [];
+  int totalDays = 20; // Default value
+  
+  @override
+  void initState() {
+    super.initState();
     
-    // Calculate and assign percentages
-    var result = MoodData.createWithPercentages(initialMoods);
+    // Process the preloaded mood records immediately
+    if (widget.preloadedRecords != null && widget.preloadedRecords!.containsKey('mood')) {
+      _processMoodRecords(widget.preloadedRecords!['mood']!);
+    } else {
+      // No data available, set empty state
+      setState(() {
+        moodData = [];
+        isLoading = false;
+      });
+    }
+  }
+
+  // Process mood records from the preloaded data
+  void _processMoodRecords(List<dynamic> records) {
+    Map<String, int> moodCounts = {};
+    DateTime? latestDate;
+    DateTime? oldestDate;
     
-    // Sort by count in descending order (highest frequency first)
-    result.sort((a, b) => b.count.compareTo(a.count));
+    for (var record in records) {
+      // Extract mood and timestamp from record
+      String mood = record.data['mood'] ?? 'Unknown';
+      DateTime timestamp = record.timestamp;
+      
+      // Update date range tracking
+      if (latestDate == null || timestamp.isAfter(latestDate)) {
+        latestDate = timestamp;
+      }
+      if (oldestDate == null || timestamp.isBefore(oldestDate)) {
+        oldestDate = timestamp;
+      }
+      
+      // Count the mood occurrences
+      moodCounts[mood] = (moodCounts[mood] ?? 0) + 1;
+    }
     
-    return result;
+    // Calculate date range in days
+    if (latestDate != null && oldestDate != null) {
+      totalDays = latestDate.difference(oldestDate).inDays + 1;
+      if (totalDays < 1) totalDays = 1;
+    }
+    
+    // Convert to MoodData objects
+    List<MoodData> moods = moodCounts.entries.map(
+      (entry) => MoodData(name: entry.key, count: entry.value)
+    ).toList();
+    
+    // Calculate percentages and sort
+    final processedMoods = MoodData.createWithPercentages(moods);
+    processedMoods.sort((a, b) => b.count.compareTo(a.count));
+    
+    setState(() {
+      moodData = processedMoods;
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get device screen size for relative calculations
     final Size screenSize = MediaQuery.of(context).size;
-    final List<MoodData> moodData = _generateMoodData();
     
     return Scaffold(
       body: Container(
@@ -77,7 +120,7 @@ class RecapReport1 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Close button - Explicitly navigate to ProgressMeter
+                // Close button
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -88,7 +131,7 @@ class RecapReport1 extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(Icons.close, color: Colors.black54, size: screenSize.width * 0.05),
                         padding: EdgeInsets.zero,
-                        onPressed: () => Navigator.of(context).pop(), // Return to ProgressMeter
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
                   ),
@@ -110,79 +153,106 @@ class RecapReport1 extends StatelessWidget {
                 
                 SizedBox(height: screenSize.height * 0.012),
                 
-                // Description with dynamic total count
-                Text(
-                  'For the last 20 days, you have recorded ${moodData.fold(0, (sum, mood) => sum + mood.count)} times of your mood:',
-                  textAlign: TextAlign.center, // Center-aligned
-                  style: const TextStyle(
-                    color: Color(0xFF525252),
-                    fontSize: 18,
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w400,
-                    height: 1.3,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-                
-                SizedBox(height: screenSize.height * 0.02),
-                
-                // Pie Chart with responsive sizing
-                SizedBox(
-                  width: screenSize.width * 0.5,
-                  height: screenSize.width * 0.5,
-                  child: CustomPaint(
-                    painter: PieChartPainter(
-                      data: moodData,
-                      getPercentage: (item) => (item as MoodData).percentage,
-                    ),
-                  ),
-                ),
-                
-                SizedBox(height: screenSize.height * 0.02),
-                
-                // Legend title - now centered
-                const Text(
-                  'List of moods recorded:',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    height: 1.1,
-                    letterSpacing: -0.40,
-                  ),
-                ),
-                
-                SizedBox(height: screenSize.height * 0.01),
-                
-                // Dynamic mood legend items
-                Center(
-                  child: SizedBox(
-                    height: screenSize.height * 0.22,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: moodData.asMap().entries.map((entry) => _buildMoodItem(
-                          context, 
-                          '${entry.value.name} (${entry.value.count} times) - ${(entry.value.percentage * 100).toStringAsFixed(2)}%', 
-                          PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
-                        )).toList(),
+                if (isLoading)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (moodData.isEmpty)
+                  // No mood data available
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        "No mood data available.",
+                        style: TextStyle(
+                          color: const Color(0xFF525252),
+                          fontSize: screenSize.width * 0.04,
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
+                  )
+                else
+                  // Data available, show pie chart and details
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Description with dynamic total
+                        Text(
+                          'For the last $totalDays days, you have recorded ${moodData.fold(0, (sum, mood) => sum + mood.count)} times of your mood:',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF525252),
+                            fontSize: 18,
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                        
+                        SizedBox(height: screenSize.height * 0.02),
+                        
+                        // Pie Chart
+                        SizedBox(
+                          width: screenSize.width * 0.5,
+                          height: screenSize.width * 0.5,
+                          child: CustomPaint(
+                            painter: PieChartPainter(
+                              data: moodData,
+                              getPercentage: (item) => (item as MoodData).percentage,
+                            ),
+                          ),
+                        ),
+                        
+                        SizedBox(height: screenSize.height * 0.02),
+                        
+                        // Legend title
+                        const Text(
+                          'List of moods recorded:',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w500,
+                            height: 1.1,
+                            letterSpacing: -0.40,
+                          ),
+                        ),
+                        
+                        SizedBox(height: screenSize.height * 0.01),
+                        
+                        // Dynamic mood legend items
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: moodData.asMap().entries.map((entry) => _buildMoodItem(
+                                context, 
+                                '${entry.value.name} (${entry.value.count} times) - ${(entry.value.percentage * 100).toStringAsFixed(1)}%', 
+                                PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
+                              )).toList(),
+                            ),
+                          ),
+                        ),
+                        
+                        const Spacer(),
+                      ],
+                    ),
                   ),
-                ),
                 
-                const Spacer(),
-                
-                // Next button - Updated with relative sizing
+                // Next button
                 Align(
                   alignment: Alignment.bottomRight,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RecapReport2()),
+                        MaterialPageRoute(builder: (context) => RecapReport2(
+                          // Pass the same preloaded records to RecapReport2
+                          preloadedRecords: widget.preloadedRecords,
+                        )),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -224,15 +294,14 @@ class RecapReport1 extends StatelessWidget {
   }
 
   Widget _buildMoodItem(BuildContext context, String text, Color color) {
-    // Get screen width for relative sizing
     final double screenWidth = MediaQuery.of(context).size.width;
     
     return Padding(
       padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.height * 0.004),
       child: Row(
-        mainAxisSize: MainAxisSize.max, // Take full width to align items
+        mainAxisSize: MainAxisSize.max,
         children: [
-          SizedBox(width: screenWidth * 0.05), // Left padding for all items
+          SizedBox(width: screenWidth * 0.05),
           Container(
             width: screenWidth * 0.04,
             height: screenWidth * 0.04,
@@ -241,7 +310,7 @@ class RecapReport1 extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-          SizedBox(width: screenWidth * 0.02), // Consistent spacing
+          SizedBox(width: screenWidth * 0.02),
           Expanded(
             child: Text(
               text,

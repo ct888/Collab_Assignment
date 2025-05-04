@@ -1,8 +1,116 @@
 import 'package:flutter/material.dart';
 import 'package:seek_here/View/recap_report1.dart';
 import 'dart:math';
+import 'dart:async'; // Add this for StreamSubscription
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-int points = 500;
+// Model class for activities with improved error handling
+class UserActivity {
+  final String activity;
+  final DateTime timestamp;
+  final int pointsAdded;
+
+  UserActivity({
+    required this.activity,
+    required this.timestamp,
+    required this.pointsAdded,
+  });
+
+  // Factory to create from Firestore data with better error handling
+  factory UserActivity.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
+    
+    // Handle timestamp that might be null (still processing on server)
+    final timestamp = data['timestamp'];
+    final DateTime date = timestamp is Timestamp 
+        ? timestamp.toDate() 
+        : DateTime.now(); // Fallback to current time
+    
+    return UserActivity(
+      activity: data['activity'] ?? 'Unknown activity',
+      timestamp: date,
+      pointsAdded: (data['pointsAdded'] ?? 0),
+    );
+  }
+}
+
+// Generic record class that can handle all record types
+class RecordEntry {
+  final DateTime timestamp;
+  final String recordType;
+  final Map<String, dynamic> data;
+  
+  RecordEntry({
+    required this.timestamp,
+    required this.recordType,
+    required this.data,
+  });
+  
+  // Add static map with point values for each activity type
+  static const Map<String, int> pointValues = {
+    'mood': 10,
+    'quote': 5,
+    'diary': 10,
+    'recommender': 5,
+    'unknown': 1, // Default value
+  };
+  
+  // Factory to create from Firestore data
+  factory RecordEntry.fromFirestore(DocumentSnapshot doc, String type) {
+    Map<String, dynamic> docData = doc.data() as Map<String, dynamic>? ?? {};
+    
+    // Handle timestamp that might be null - check various field names
+    final timestamp = docData['date'];
+    final DateTime date = timestamp is Timestamp 
+        ? timestamp.toDate() 
+        : DateTime.now(); // Fallback to current time
+    
+    return RecordEntry(
+      timestamp: date,
+      recordType: type,
+      data: docData,
+    );
+  }
+  
+  // Convert to activity-like display
+  UserActivity toActivity() {
+    String activityText;
+    
+    // Set the activity text based on record type
+    switch (recordType) {
+      case 'mood':
+        activityText = "Recorded Mood";
+        break;
+      case 'quote':
+        activityText = "Requested Quote";
+        break;
+      case 'diary':
+        activityText = "Wrote Diary";
+        break;
+      case 'recommender':
+        activityText = "Requested Recommender";
+        break;
+      default:
+        activityText = "Unknown Activity";
+    }
+    
+    // Get points from the static map
+    int points = pointValues[recordType] ?? pointValues['unknown']!;
+    
+    return UserActivity(
+      activity: activityText,
+      timestamp: timestamp,
+      pointsAdded: points,
+    );
+  }
+  
+  // Static method to get points for a specific record type
+  static int getPointsForType(String recordType) {
+    return pointValues[recordType] ?? pointValues['unknown']!;
+  }
+}
+
 const int totalPoints = 500;
 
 // List of motivational prompts
@@ -37,26 +145,325 @@ class ProgressMeter extends StatefulWidget {
 }
 
 class _ProgressMeterState extends State<ProgressMeter> {
-  // Initialize with empty string instead of using late
   String currentPrompt = '';
   final Random _random = Random();
   
+  List<UserActivity> userActivities = [];
+  bool isLoading = true;
+  StreamSubscription<QuerySnapshot>? _activitiesSubscription;
+  int userPoints = 0;
+  
+  // Store all record types in a single map
+  Map<String, List<RecordEntry>> userRecords = {
+    'mood': [],
+    'quote': [],
+    'diary': [],
+    'recommender': [],
+  };
+  
+  Map<String, bool> isLoadingRecords = {
+    'mood': true,
+    'quote': true,
+    'diary': true,
+    'recommender': true,
+  };
+  
+  Map<String, StreamSubscription<QuerySnapshot>?> recordSubscriptions = {
+    'mood': null,
+    'quote': null,
+    'diary': null,
+    'recommender': null,
+  };
+  
+  List<dynamic> combinedActivities = []; // Will hold displayed activities
+  List<dynamic> allActivities = []; // Will hold all activities
+  bool showAllActivities = false; // Track if we're showing all activities
+
   @override
   void initState() {
     super.initState();
-    // Initialize with a random prompt
     currentPrompt = _getRandomPrompt();
+    _listenForActivities();
+    
+    // Initialize data from Firebase
+    _fetchAllRecordTypes();
+  }
+  
+  // New method to fetch all record types at once
+  void _fetchAllRecordTypes() {
+    final recordTypes = [
+      {'name': 'mood', 'collection': 'moods', 'orderBy': 'date'},
+      {'name': 'quote', 'collection': 'quote', 'orderBy': 'date'},
+      {'name': 'diary', 'collection': 'diary', 'orderBy': 'date'},
+      {'name': 'recommender', 'collection': 'recommender', 'orderBy': 'date'},
+    ];
+    
+    for (var type in recordTypes) {
+      _fetchRecordsGeneric(
+        type['collection'] as String,
+        type['orderBy'] as String,
+        type['name'] as String,
+        (data, isLoading) {
+          setState(() {
+            userRecords[type['name'] as String] = data;
+            isLoadingRecords[type['name'] as String] = isLoading;
+            _updateCombinedActivities();
+          });
+        },
+        recordSubscriptions[type['name'] as String],
+        (sub) => recordSubscriptions[type['name'] as String] = sub
+      );
+    }
+  }
+  
+  @override
+  void dispose() {
+    // Cancel all subscriptions
+    _activitiesSubscription?.cancel();
+    recordSubscriptions.forEach((_, subscription) => subscription?.cancel());
+    super.dispose();
+  }
+  
+  // Method to listen for activities from Firebase - Remove the limit(5)
+  void _listenForActivities() {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      
+      // Remove the limit(5) to get all activities
+      final activitiesRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .collection('activities')
+          .orderBy('timestamp', descending: true);
+      
+      // Use stream for real-time updates
+      _activitiesSubscription = activitiesRef.snapshots().listen(
+        (querySnapshot) {
+          if (querySnapshot.docs.isNotEmpty) {
+            setState(() {
+              userActivities = querySnapshot.docs
+                  .map((doc) => UserActivity.fromFirestore(doc))
+                  .toList();
+              
+              // Simplify activity descriptions to match the 4 main categories
+              for (var i = 0; i < userActivities.length; i++) {
+                final activity = userActivities[i].activity.toLowerCase();
+                
+                if (activity.contains('quote')) {
+                  userActivities[i] = UserActivity(
+                    activity: 'Requested Quote',
+                    timestamp: userActivities[i].timestamp,
+                    pointsAdded: userActivities[i].pointsAdded
+                  );
+                } else if (activity.contains('recommend')) {
+                  userActivities[i] = UserActivity(
+                    activity: 'Requested Recommender',
+                    timestamp: userActivities[i].timestamp,
+                    pointsAdded: userActivities[i].pointsAdded
+                  );
+                } else if (activity.contains('diary')) {
+                  userActivities[i] = UserActivity(
+                    activity: 'Wrote Diary',
+                    timestamp: userActivities[i].timestamp,
+                    pointsAdded: userActivities[i].pointsAdded
+                  );
+                } else if (activity.contains('mood')) {
+                  userActivities[i] = UserActivity(
+                    activity: 'Recorded Mood',
+                    timestamp: userActivities[i].timestamp,
+                    pointsAdded: userActivities[i].pointsAdded
+                  );
+                }
+              }
+              
+              // Calculate total points
+              _calculateTotalPoints(user.uid);
+              // Update combined activities
+              _updateCombinedActivities();
+            });
+          } else {
+            setState(() {
+              userActivities = [];
+              isLoading = false;
+              // Update combined activities
+              _updateCombinedActivities();
+            });
+          }
+        },
+        onError: (error) {
+          debugPrint('Error getting activities: $error');
+          setState(() {
+            isLoading = false;
+            // Show only data fetch error, not authentication error
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error fetching activity data: $error'))
+            );
+          });
+        }
+      );
+    } catch (e) {
+      debugPrint('Error in _listenForActivities: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  
+  // Calculate total points - Simplified assuming user is logged in
+  Future<void> _calculateTotalPoints(String userId) async {
+    try {
+      final pointsRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('activities');
+      
+      final pointsSnapshot = await pointsRef.get();
+      
+      // Sum up all points
+      int totalUserPoints = 0;
+      for (var doc in pointsSnapshot.docs) {
+        Map<String, dynamic> data = doc.data();
+        totalUserPoints += (data['pointsAdded'] as num? ?? 0).toInt();
+      }
+      
+      setState(() {
+        userPoints = totalUserPoints;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error calculating total points: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  
+  // Update to fetch all records from Firebase
+  void _fetchRecordsGeneric(
+    String collectionName,
+    String orderByField,
+    String recordType,
+    void Function(List<RecordEntry>, bool) updateState,
+    StreamSubscription<QuerySnapshot>? currentSubscription,
+    void Function(StreamSubscription<QuerySnapshot>?) updateSubscription,
+  ) {
+    // Set loading state to true
+    updateState([], true);
+    
+    try {
+      // Remove limit(5) to get all records
+      final collectionRef = FirebaseFirestore.instance
+          .collection(collectionName)
+          .orderBy(orderByField, descending: true);
+      
+      // Listen for data
+      final subscription = collectionRef.snapshots().listen(
+        (querySnapshot) {
+          if (querySnapshot.docs.isNotEmpty) {
+            final data = querySnapshot.docs
+                .map((doc) => RecordEntry.fromFirestore(doc, recordType))
+                .toList();
+            updateState(data, false);
+          } else {
+            // If no data in root collection, try user-specific collection
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              // Remove limit(5) to get all records from user collection
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection(collectionName)
+                  .orderBy(orderByField, descending: true)
+                  .get()
+                  .then((snapshot) {
+                if (snapshot.docs.isNotEmpty) {
+                  final data = snapshot.docs
+                      .map((doc) => RecordEntry.fromFirestore(doc, recordType))
+                      .toList();
+                  updateState(data, false);
+                } else {
+                  updateState([], false);
+                }
+              }).catchError((error) {
+                debugPrint('Error getting $collectionName: $error');
+                updateState([], false);
+              });
+            } else {
+              updateState([], false);
+            }
+          }
+        },
+        onError: (error) {
+          debugPrint('Error getting $collectionName: $error');
+          updateState([], false);
+        }
+      );
+      
+      // Update the subscription
+      updateSubscription(subscription);
+    } catch (e) {
+      debugPrint('Error in _fetchRecordsGeneric for $collectionName: $e');
+      updateState([], false);
+    }
+  }
+  
+  // Updated method to combine activities and calculate points
+  void _updateCombinedActivities() {
+    List<dynamic> combined = [];
+    int calculatedPoints = 0; // Reset points counter
+    
+    // Add regular activities and sum points
+    for (var activity in userActivities) {
+      combined.add(activity);
+      calculatedPoints += activity.pointsAdded;
+    }
+    
+    // Add all record types and sum points
+    userRecords.forEach((type, records) {
+      for (var record in records) {
+        final activity = record.toActivity();
+        combined.add(activity);
+        calculatedPoints += activity.pointsAdded;
+      }
+    });
+    
+    // Sort by timestamp, newest first
+    combined.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    
+    setState(() {
+      allActivities = List.from(combined); // Store all activities
+      
+      // Decide whether to show all or just the first 5
+      combinedActivities = showAllActivities || combined.length <= 5 
+          ? combined 
+          : combined.sublist(0, 5);
+      
+      userPoints = calculatedPoints; // This includes points from ALL activities
+    });
+  }
+  
+  // Toggle between showing all activities and just the top 5
+  void _toggleShowAllActivities() {
+    setState(() {
+      showAllActivities = !showAllActivities;
+      
+      // Update displayed activities based on the toggle state
+      combinedActivities = showAllActivities || allActivities.length <= 5 
+          ? allActivities 
+          : allActivities.sublist(0, 5);
+    });
   }
   
   // Get a random prompt from the list
   String _getRandomPrompt() {
-    do {
-      int index = _random.nextInt(motivationalPrompts.length);
-      // Check if the prompt is not already selected
-      if (motivationalPrompts[index] != currentPrompt) {
-        return motivationalPrompts[index];
-      }
-    } while (true);
+    int index = _random.nextInt(motivationalPrompts.length);
+    return motivationalPrompts[index] != currentPrompt 
+        ? motivationalPrompts[index]
+        : _getRandomPrompt(); // Try again if same as current
   }
   
   // Change the prompt
@@ -75,6 +482,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
     
     return Scaffold(
       body: Container(
+        height: screenHeight,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/bg/ProgressMeterBg.png"),
@@ -82,6 +490,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
           ),
         ),
         child: SafeArea(
+          // Remove the Stack, we don't need it anymore
           child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.symmetric(
@@ -93,21 +502,26 @@ class _ProgressMeterState extends State<ProgressMeter> {
                 children: [
                   _buildHeader(context),
                   
-                  SizedBox(height: screenHeight * 0.02), // 2% of screen height
+                  SizedBox(height: screenHeight * 0.02),
                   
                   _buildMotivationalCard(context),
                   
-                  SizedBox(height: screenHeight * 0.03), // 3% of screen height
+                  SizedBox(height: screenHeight * 0.03),
                   
                   _buildProgressCircle(context),
                   
-                  SizedBox(height: screenHeight * 0.03), // 3% of screen height
+                  SizedBox(height: screenHeight * 0.03),
                   
                   _buildActivitiesSection(context),
                   
-                  SizedBox(height: screenHeight * 0.02), // 2% of screen height
+                  // Add spacing between activities and button
+                  SizedBox(height: screenHeight * 0.02),
                   
+                  // Place View Recap button here, after the activities
                   _buildViewRecapButton(context),
+                  
+                  // Add bottom padding for scrolling
+                  SizedBox(height: screenHeight * 0.03),
                 ],
               ),
             ),
@@ -265,6 +679,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
     );
   }
 
+  // Update the progress circle to use the calculated points
   Widget _buildProgressCircle(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     final double circleSize = size.width * 0.4; // 40% of screen width
@@ -281,7 +696,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
               width: circleSize,
               height: circleSize,
               child: CircularProgressIndicator(
-                value: points / totalPoints,
+                value: (userPoints / totalPoints).clamp(0.0, 1.0), // Ensure value is between 0 and 1
                 backgroundColor: const Color(0xFFD0D2FF),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8E97FD)),
                 strokeWidth: strokeWidth,
@@ -311,7 +726,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
                 ),
                 SizedBox(height: size.height * 0.005),
                 Text(
-                    '$points of $totalPoints',
+                    '$userPoints of $totalPoints', // Use userPoints instead of points
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: const Color(0xFF262626),
@@ -333,14 +748,17 @@ class _ProgressMeterState extends State<ProgressMeter> {
   Widget _buildActivitiesSection(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     
+    // Check if any record type is still loading
+    bool isAnyLoading = isLoading || isLoadingRecords.values.any((loading) => loading);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Last 5 most recent activities done:',
+          'Recent activities done: ',
           style: TextStyle(
             color: const Color(0xFF525252),
-            fontSize: size.width * 0.035, // 3.5% of screen width
+            fontSize: size.width * 0.035,
             fontFamily: 'Lato',
             fontWeight: FontWeight.w500,
             height: 1.61,
@@ -353,75 +771,148 @@ class _ProgressMeterState extends State<ProgressMeter> {
             color: const Color(0xFFF2F2F2),
             borderRadius: BorderRadius.circular(25),
           ),
-          child: Column(
+          child: isAnyLoading
+              ? _buildLoadingIndicator()
+              : combinedActivities.isNotEmpty
+                  ? _buildCombinedList(context)
+                  : _buildNoActivitiesMessage(context),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildLoadingIndicator() {
+    return const Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+  
+  // New method to display the message when there are no activities
+  Widget _buildNoActivitiesMessage(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.03
+      ),
+      child: Center(
+        child: Text(
+          "You have not interacted with the system yet",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: const Color(0xFF525252),
+            fontSize: size.width * 0.035,
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w500,
+            fontStyle: FontStyle.italic,
+            height: 1.6,
+          ),
+        ),
+      ),
+    );
+  }
+  
+  // Extract the activities list into its own method
+  Widget _buildCombinedList(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
+    
+    return Column(
+      children: [
+        // Header row
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.04,
+            vertical: size.height * 0.015
+          ),
+          child: Row(
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: size.width * 0.04,
-                  vertical: size.height * 0.015
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'Activity',
-                        style: TextStyle(
-                          color: const Color(0xFF525252),
-                          fontSize: size.width * 0.025,
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w700,
-                          height: 1.60,
-                          letterSpacing: 0.40,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        'Time',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF525252),
-                          fontSize: size.width * 0.025,
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w700,
-                          height: 1.60,
-                          letterSpacing: 0.40,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        'Points Added',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF525252),
-                          fontSize: size.width * 0.025,
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w700,
-                          height: 1.60,
-                          letterSpacing: 0.40,
-                        ),
-                      ),
-                    ),
-                  ],
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'Activity Type',
+                  style: TextStyle(
+                    color: const Color(0xFF525252),
+                    fontSize: size.width * 0.025,
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    height: 1.60,
+                    letterSpacing: 0.40,
+                  ),
                 ),
               ),
-              const Divider(height: 1, color: Color(0xFFC2C2C2)),
-              _buildActivityRow(context, 'Wrote a diary', '01/04/2025 11:23:45', '+ 5'),
-              const Divider(height: 1, color: Color(0xFFC2C2C2)),
-              _buildActivityRow(context, 'Recorded mood', '30/03/2025 20:24:07', '+ 5'),
-              const Divider(height: 1, color: Color(0xFFC2C2C2)),
-              _buildActivityRow(context, 'Requested quote', '29/03/2025 09:23:45', '+ 5'),
-              const Divider(height: 1, color: Color(0xFFC2C2C2)),
-              _buildActivityRow(context, 'Requested recommender', '28/03/2025 19:53:45', '+ 5'),
-              const Divider(height: 1, color: Color(0xFFC2C2C2)),
-              _buildActivityRow(context, 'Recorded mood', '27/03/2025 22:24:07', '+ 5'),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  'Time',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF525252),
+                    fontSize: size.width * 0.025,
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    height: 1.60,
+                    letterSpacing: 0.40,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  'Points',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF525252),
+                    fontSize: size.width * 0.025,
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    height: 1.60,
+                    letterSpacing: 0.40,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+        
+        const Divider(height: 1, color: Color(0xFFC2C2C2)),
+        
+        // Activity rows
+        ...combinedActivities.map((item) {
+          final String formattedDate = _formatDateTime(item.timestamp);
+          return Column(
+            children: [
+              _buildActivityRow(
+                context, 
+                item.activity, 
+                formattedDate, 
+                '+ ${item.pointsAdded}'
+              ),
+              const Divider(height: 1, color: Color(0xFFC2C2C2)),
+            ],
+          );
+        }).toList(),
+        
+        // Show More/Less button if there are more than 5 activities
+        if (allActivities.length > 5)
+          Center(
+            child: TextButton(
+              onPressed: _toggleShowAllActivities,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF8E97FD),
+              ),
+              child: Text(
+                showAllActivities ? 'Show Less' : 'Show More',
+                style: TextStyle(
+                  fontSize: size.width * 0.035,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -485,51 +976,63 @@ class _ProgressMeterState extends State<ProgressMeter> {
     );
   }
 
+  // Helper method to format datetime
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
   Widget _buildViewRecapButton(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    final bool hasEnoughPoints = points >= totalPoints;
-    
-    return Center(
-      child: ElevatedButton(
-        onPressed: hasEnoughPoints 
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RecapReport1()),
-                );
-              } 
-            : () {
-                // Show toast message for insufficient points
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Insufficient progress meter!'),
-                    duration: Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: hasEnoughPoints 
-              ? const Color(0xFFBBB5F5)  // Original purple color
-              : Colors.grey,             // Grey for disabled state
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(38),
+    // final bool hasEnoughPoints = userPoints >= totalPoints; // Use userPoints instead of points
+    final bool hasEnoughPoints = true;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+      child: Center(
+        child: ElevatedButton(
+          onPressed: hasEnoughPoints 
+              ? () {
+                  // Pass the collected records to RecapReport1
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RecapReport1(
+                      preloadedRecords: userRecords,
+                    )),
+                  );
+                } 
+              : () {
+                  // Show toast message for insufficient points
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Insufficient progress meter!'),
+                      duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: hasEnoughPoints 
+                ? const Color(0xFFBBB5F5)  // Original purple color
+                : Colors.grey,             // Grey for disabled state
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(38),
+            ),
+            padding: EdgeInsets.symmetric(
+              horizontal: size.width * 0.08, 
+              vertical: size.height * 0.015
+            ),
           ),
-          padding: EdgeInsets.symmetric(
-            horizontal: size.width * 0.08, 
-            vertical: size.height * 0.015
-          ),
-        ),
-        child: Text(
-          'View Recap',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: const Color(0xFF3F414E),
-            fontSize: size.width * 0.04, // 4% of screen width
-            fontFamily: 'ADLaM Display',
-            fontWeight: FontWeight.w400,
-            height: 1.08,
-            letterSpacing: 0.80,
+          child: Text(
+            'View Recap',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF3F414E),
+              fontSize: size.width * 0.04,
+              fontFamily: 'ADLaM Display',
+              fontWeight: FontWeight.w400,
+              height: 1.08,
+              letterSpacing: 0.80,
+            ),
           ),
         ),
       ),
