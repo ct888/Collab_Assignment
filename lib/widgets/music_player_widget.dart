@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:seekhere_proj/utils/spotify_launcher.dart';
+import 'package:seek_here/utils/spotify_launcher.dart';
 import '../../models/music.dart';
 
 class MusicPlayerWidget extends StatefulWidget {

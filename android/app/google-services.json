@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "212394802628",
+    "firebase_url": "https://seekhere-508fb-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "seekhere-508fb",
+    "storage_bucket": "seekhere-508fb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212394802628:android:c0a43231c2be6f34f87891",
+        "android_client_info": {
+          "package_name": "com.example.seekhere_proj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA747pJOrqNSWpXOPOaCIksYKeWQIHiTMQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

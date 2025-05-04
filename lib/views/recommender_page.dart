@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:seekhere_proj/views/video_home_page.dart';
-
+import 'package:seek_here/views/video_home_page.dart';
 import '../viewmodels/moodViewModel.dart';
 import '../viewmodels/musicViewModel.dart';
 import '../viewmodels/videoViewModel.dart';
