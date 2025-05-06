@@ -7,6 +7,9 @@ import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/recap_report1_view.dart';
 import 'package:seek_here/Service/user_records_service.dart';
 
+// userID for testing purposes
+// const String userID = 'E0uSiko9ZWguiI8md0xFbOM3rHD3';
+
 class ActivityDisplayData {
   final String activity;
   final DateTime timestamp;
@@ -87,7 +90,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
     final recordTypes = [
       {'name': 'mood', 'collection': 'moods', 'orderBy': 'date'},
       {'name': 'quote', 'collection': 'quote', 'orderBy': 'date'},
-      {'name': 'diary', 'collection': 'diary', 'orderBy': 'date'},
+      {'name': 'diary', 'collection': 'diary_entries', 'orderBy': 'date'},
       {'name': 'recommender', 'collection': 'recommender', 'orderBy': 'date'},
     ];
     
