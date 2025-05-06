@@ -1,12 +1,19 @@
 import 'package:flutter/widgets.dart';
 
 class WHGetter {
-  static double width(BuildContext context) {
+  static double getWidth(BuildContext context) {
     return MediaQuery.of(context).size.width;
   }
 
-  static double height(BuildContext context) {
+  static double getHeight(BuildContext context) {
     return MediaQuery.of(context).size.height;
+  }
+
+  static (double, double) getHeightAndWidth(BuildContext context) {
+    double h = MediaQuery.of(context).size.height;
+    double w = MediaQuery.of(context).size.width;
+    
+    return (h, w);
   }
 
   static double sx(BuildContext context, double val) {
