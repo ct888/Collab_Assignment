@@ -1,22 +1,32 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-//import 'apikey.dart';
+// import 'apikey.dart';
 
 class OpenAIService {
   static const _endpoint =
       "https://models.inference.ai.azure.com/chat/completions";
 
-  static Future<String> askAI(String prompt, String instruction) async {
+  static List<String> instruction = [
+    "You are now a book of answer that will provide a short quote to user prompt.",
+    "The quote must be less than 10 words",
+    "The quote must be relevant to the prompt if it was given",
+    "If there is no prompt, give a general quote that might help someone who is adapting to new environment."
+  ];
+
+  static Future<String> askAI(String prompt) async {
     try {
       final response = await http.post(
         Uri.parse(_endpoint),
         headers: {
           'Content-Type': 'application/json',
-      //    'Authorization': 'Bearer ${Apikey.APIKey}',
+          // 'Authorization': 'Bearer ${Apikey.APIKey}',
         },
         body: jsonEncode({
           "messages": [
-            {"role": "developer", "content": instruction},
+            {
+              "role": "developer",
+              "content": instruction.join('\n'),
+              },
             {"role": "user", "content": prompt},
           ],
           "model": "gpt-4o",
