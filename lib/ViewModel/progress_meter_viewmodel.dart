@@ -406,4 +406,42 @@ class ProgressMeterViewModel extends ChangeNotifier {
       );
     }
   }
+
+  // Show toast message for progress meter updates
+  void showProgressUpdateToast(BuildContext context, int points) {
+    // Only show toast if points are positive
+    if (points > 0) {
+      // Check if adding these points will reach or exceed the target
+      if (userPoints + points >= totalPoints) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Congratulations! You have reached the goal, you can now view the recap.'),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+            margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Progress meter updated (+$points points)'),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.lightGreen,
+            margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+          ),
+        );
+      }
+    }
+  }
+  
+  // A convenience method to update points and show toast in one call
+  void updatePointsWithToast(BuildContext context, String activityType) {
+    // Get points from the model based on activity type
+    int points = RecordEntry.getPointsForType(activityType);
+    
+    // Show toast with the calculated points
+    showProgressUpdateToast(context, points);
+  }
 }
