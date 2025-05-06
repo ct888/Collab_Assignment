@@ -359,18 +359,37 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 15,
               ),
-              itemCount: 7, // Display 7 mood cards for the week
+              itemCount:
+                  8, // We need 8 slots to place the 7th item in position 7
               itemBuilder: (context, index) {
+                // Skip position 6 (row 3, column 1)
+                if (index == 6) {
+                  return const SizedBox.shrink(); // Empty spacer
+                }
+
+                // Adjust the real data index for items
+                int dataIndex;
+                if (index < 6) {
+                  dataIndex = index; // Items 0-5 stay the same
+                } else {
+                  dataIndex =
+                      index - 1; // Item at index 7 shows data for index 6
+                }
+
+                // Only show data if we're within the original 7 days range
+                if (dataIndex >= 7) {
+                  return const SizedBox.shrink();
+                }
+
                 // Calculate the date for this day
                 final DateTime startOfWeek = _selectedDate.subtract(
                   Duration(days: _selectedDate.weekday % 7),
                 );
-                final DateTime dayDate = startOfWeek.add(Duration(days: index));
+                final DateTime dayDate = startOfWeek.add(
+                  Duration(days: dataIndex),
+                );
                 final String dateString = DateFormat(
                   'yyyy-MM-dd',
-                ).format(dayDate);
-                final String formattedDate = DateFormat(
-                  'MMMM d, yyyy',
                 ).format(dayDate);
 
                 // Get the data for this day
