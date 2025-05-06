@@ -56,6 +56,27 @@ class FavoriteEventsViewModel with ChangeNotifier {
     _error = null; // Clear previous errors
     await _loadFavoriteEvents();
   }
+
+  // Add a new method to re-add a removed event to favorites
+Future<void> undoRemoveFavorite(Event event) async {
+  try {
+    debugPrint('↩️ Undoing removal of event ${event.id} from favorites');
+    _setLoading(true);
+    
+    // Add back to Firebase
+    await _firebaseService.addFavoriteEvent(userId, event);
+    
+    // Update local list
+    if (!_favoriteEvents.any((e) => e.id == event.id)) {
+      _favoriteEvents.add(event);
+    }
+    
+    _setLoading(false);
+  } catch (e) {
+    debugPrint('❌ Error undoing removal from favorites: $e');
+    _setError('Failed to restore favorite: $e');
+  }
+}
   
   void _setLoading(bool loading) {
     _isLoading = loading;

@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
@@ -10,9 +10,78 @@ import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 
-
-class LogIn extends StatelessWidget {
+class LogIn extends StatefulWidget {
   const LogIn({super.key});
+
+  @override
+  State<LogIn> createState() => _LogInState();
+}
+
+class _LogInState extends State<LogIn> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loginUser() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final String email = _emailController.text.trim();
+      final String password = _passwordController.text;
+
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful!', style:GoogleFonts.aDLaMDisplay()),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+      if (e.code == 'user-not-found') {
+        message = 'No user found with this email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Incorrect password.';
+      } else {
+        message = 'Login Failed: ${e.message}';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: GoogleFonts.aDLaMDisplay()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +90,6 @@ class LogIn extends StatelessWidget {
     (h, w) = WHGetter.getHeightAndWidth(context);
 
     // Text Input controller
-    final TextEditingController _emailController = TextEditingController();
-    final TextEditingController _passwordController = TextEditingController();
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -84,7 +151,7 @@ class LogIn extends StatelessWidget {
                         // Email Input
                         InputText(
                           label: "Email",
-                          width: w*0.9,
+                          width: w * 0.9,
                           height: 70,
                           controller: _emailController,
                         ),
@@ -93,12 +160,11 @@ class LogIn extends StatelessWidget {
                         // Password Input
                         InputText(
                           label: "Password",
-                          width: w*0.9,
+                          width: w * 0.9,
                           height: 70,
                           isSensitiveInput: true,
                           controller: _passwordController,
                         ),
-                        
                       ],
                     ),
                   ),
@@ -109,14 +175,9 @@ class LogIn extends StatelessWidget {
                     child: TextButtonWidget(
                       label: "Log In",
                       borderRadius: 38,
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const MainScreen()),
-                        );
-                      },
+                      onPressed: () => _isLoading ? null : _loginUser(),
                       backgroundColor: CustomColors.blue,
-                      width: w*0.9,
+                      width: w * 0.9,
                       height: 60,
                     ),
                   ),
