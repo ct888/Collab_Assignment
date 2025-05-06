@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:seek_here/View/login.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,8 +12,10 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // <--- Ensure Flutter binding is initialized
 
-  await Firebase.initializeApp(
-    // <--- Initialize Firebase
+  // Lock Screen orientation
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  await Firebase.initializeApp( // <--- Initialize Firebase
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
@@ -29,4 +32,8 @@ void main() async {
       ),
     ),
   );
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: LogIn(),
+  ));
 }

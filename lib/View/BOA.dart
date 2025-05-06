@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/Model/appimages.dart';
+import 'package:seek_here/View/BOA_answer.dart';
 import 'package:seek_here/View/utils/input_widget.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/ui_animation.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
-import 'package:seek_here/View/BaseLayout.dart';
 
 class BOA extends StatefulWidget {
   const BOA({super.key});
@@ -18,11 +18,20 @@ class BOA extends StatefulWidget {
 }
 
 class _BOAState extends State<BOA> {
-  int _currentIndex = 0;
+  final TextEditingController _preferenceController = TextEditingController();
+
+  void _submit(){
+    final preference = _preferenceController.text.trim();
+    
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => BOAAnswer(preference: preference,))
+      );
+    
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     double h, w;
     (h, w) = WHGetter.getHeightAndWidth(context);
 
@@ -49,10 +58,12 @@ class _BOAState extends State<BOA> {
                   crossAxisAlignment: CrossAxisAlignment.center,
 
                   children: [
+                    // Logo
                     const Padding(
                       padding: EdgeInsets.only(top: 50),
                       child: LogoWidget(),
                     ),
+                    // Title
                     Padding(
                       padding: EdgeInsets.only(top: 70),
                       child: Text(
@@ -63,6 +74,7 @@ class _BOAState extends State<BOA> {
                         ),
                       ),
                     ),
+                    // Description
                     Padding(
                       padding: EdgeInsets.only(top: 10),
                       child: SizedBox(
@@ -77,6 +89,7 @@ class _BOAState extends State<BOA> {
                         ),
                       ),
                     ),
+                    // Button
                     Padding(
                       padding: EdgeInsets.only(top: 70),
                       child: PulsingWrapper(
@@ -85,9 +98,7 @@ class _BOAState extends State<BOA> {
                           size: w / 2,
                           iconColor: CustomColors.black,
                           backgroundColor: CustomColors.pink,
-                          onPressed: () {
-                            // TODO
-                          },
+                          onPressed: _submit, 
                         ),
                       ),
                     ),
@@ -97,6 +108,7 @@ class _BOAState extends State<BOA> {
                         label: "What's happening now?",
                         width: w * 0.9,
                         height: 70,
+                        controller: _preferenceController,
                       ),
                     ),
                   ],

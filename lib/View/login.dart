@@ -9,16 +9,6 @@ import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LogIn(), // Set your login screen here
-    );
-  }
-}
 
 class LogIn extends StatelessWidget {
   const LogIn({super.key});
