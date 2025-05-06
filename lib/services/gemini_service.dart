@@ -11,7 +11,7 @@ class GeminiService {
 
   GeminiService()
     : _model = GenerativeModel(
-        model: 'gemini-1.5-pro',
+        model: 'gemini-2.5-flash-preview-04-17',    // gemini-1.5-pro
         apiKey: ApiConstants.geminiApiKey,
       );
 
@@ -39,13 +39,21 @@ class GeminiService {
   }
 
   String _buildEmotionAnalysisPromptConstrained(
-    UserMood mood,
-    DiaryEntry? diaryEntry,
-  ) {
+      UserMood mood,
+      DiaryEntry? diaryEntry,
+      ) {
     String diaryText =
-        diaryEntry != null
-            ? "The user's diary entry: ${diaryEntry.content}"
-            : "No diary entry available.";
+    diaryEntry != null
+        ? "The user's diary entry: ${diaryEntry.content}"
+        : "No diary entry available.";
+
+    // Format the array of notes into a readable string
+    String reasonsText = "";
+    if (mood.notes.isNotEmpty) {
+      reasonsText = mood.notes.map((reason) => "- $reason").join("\n");
+    } else {
+      reasonsText = "No specific reasons provided.";
+    }
 
     return '''
 Analyze the user's emotional state based on their mood details and diary entry. Provide actionable recommendations for video and music content to help them reach a desired emotional state.
@@ -53,8 +61,8 @@ Analyze the user's emotional state based on their mood details and diary entry. 
 Based on the analysis, generate specific terms suitable for searching or filtering content on platforms like YouTube (for videos) and Spotify (for music). **IMPORTANT: Place the video search terms/keywords into the "videoCategories" array and the music genres/moods/descriptive styles into the "musicGenres" array in the final JSON output, as per the required format.**
 
 User's mood: ${mood.moodType}
-Mood intensity: ${mood.intensity}/10
-User's notes about their mood: ${mood.notes}
+User's reasons about their mood:
+$reasonsText
 $diaryText
 
 Please provide:

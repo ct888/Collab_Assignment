@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/utils/bottom_navigation_bar.dart';
 import 'package:seek_here/views/video_home_page.dart';
 import '../viewmodels/moodViewModel.dart';
 import '../viewmodels/musicViewModel.dart';
@@ -90,6 +91,9 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const CustomBottomNavBar(
+        currentIndex: 2,
+      ),
     );
   }
 
@@ -153,36 +157,36 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
   Future<void> _proceedWithRecommendation(BuildContext context) async {
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
 
-    // Check if mood data exists
-    if (moodViewModel.currentMood == null) {
-      // Navigate to mood input screen
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MoodInputScreen(),
-        ),
-      );
+    // // Check if mood data exists
+    // if (moodViewModel.currentMood == null) {
+    //   // Navigate to mood input screen
+    //   final result = await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => const MoodInputScreen(),
+    //     ),
+    //   );
+    //
+    //   if (result != true) {
+    //     // User didn't complete the mood input
+    //     return;
+    //   }
+    // }
 
-      if (result != true) {
-        // User didn't complete the mood input
-        return;
-      }
-    }
-
-    setState(() {
-      _isAnalyzing = true;
-    });
-
-    // Analyze emotion
-    final success = await moodViewModel.analyzeEmotion();
-
-    setState(() {
-      _isAnalyzing = false;
-    });
-
-    if (!success) {
-      return;
-    }
+    // setState(() {
+    //   _isAnalyzing = true;
+    // });
+    //
+    // // Analyze emotion
+    // final success = await moodViewModel.analyzeEmotion();
+    //
+    // setState(() {
+    //   _isAnalyzing = false;
+    // });
+    //
+    // if (!success) {
+    //   return;
+    // }
 
     // Navigate to appropriate screen based on selection
     if (_selectedType == RecommendationType.video) {

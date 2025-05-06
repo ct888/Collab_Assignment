@@ -8,6 +8,7 @@ class VideoRecommendationList extends StatelessWidget {
   final Function(VideoItem) onVideoSelected;
   final ScrollController scrollController;
   final bool isLoadingMore;
+  final bool hasReachedEnd;  // Add this new parameter to indicate if we've reached the end
 
   const VideoRecommendationList({
     super.key,
@@ -15,6 +16,7 @@ class VideoRecommendationList extends StatelessWidget {
     required this.onVideoSelected,
     required this.scrollController,
     this.isLoadingMore = false,
+    this.hasReachedEnd = false,  // Default is false
   });
 
   @override
@@ -33,20 +35,30 @@ class VideoRecommendationList extends StatelessWidget {
           child: ListView.builder(
             controller: scrollController,
             padding: const EdgeInsets.all(8.0),
-            itemCount: videos.length + (isLoadingMore ? 1 : 0),
+            itemCount: videos.length + (isLoadingMore || hasReachedEnd ? 1 : 0),
             itemBuilder: (context, index) {
-              // Show loading indicator at the bottom
-              if (index == videos.length) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+              // Show video items
+              if (index < videos.length) {
+                final video = videos[index];
+                return VideoCard(video: video, onTap: () => onVideoSelected(video));
               }
-              
-              final video = videos[index];
-              return VideoCard(video: video, onTap: () => onVideoSelected(video));
+
+              // Show loading indicator or end message at the bottom
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: isLoadingMore
+                      ? const CircularProgressIndicator()
+                      : const Text(
+                    "You've reached the end",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              );
             },
           ),
         ),

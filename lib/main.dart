@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:seek_here/View/login.dart';
 import 'package:seek_here/View/progress_meter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:seek_here/viewmodels/moodViewModel.dart';
+import 'package:seek_here/viewmodels/musicViewModel.dart';
+import 'package:seek_here/viewmodels/videoViewModel.dart';
 import 'firebase_options.dart';
 // import 'package:seek_here/View/recap_report1.dart';
 // import 'package:seek_here/View/recap_report2.dart'; // Corrected import path
@@ -17,7 +21,16 @@ void main() async {
   );
 
   // runApp(MyApp());
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MoodViewModel()),
+        ChangeNotifierProvider(create: (context) => VideoViewModel()),
+        ChangeNotifierProvider(create: (context) => MusicViewModel()),
+      ],
+      child: MyApp(),
+    ),
+  );
 
 
   @override

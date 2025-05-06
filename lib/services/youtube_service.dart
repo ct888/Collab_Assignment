@@ -30,12 +30,19 @@ class YouTubeService {
       // This reduces API calls significantly
       final queryString = categories.join(' | ');
       
+      // final queryParams = {
+      //   'part': 'snippet',
+      //   'maxResults': maxResults.toString(),
+      //   'q': '$queryString short',
+      //   'type': 'video',
+      //   'videoDuration': 'short',
+      //   'key': ApiConstants.youtubeApiKey,
+      // };
       final queryParams = {
         'part': 'snippet',
         'maxResults': maxResults.toString(),
-        'q': '$queryString short',
+        'q': queryString,
         'type': 'video',
-        'videoDuration': 'short',
         'key': ApiConstants.youtubeApiKey,
       };
       

@@ -7,6 +7,8 @@ import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 
+import '../utils/bottom_navigation_bar.dart';
+
 class MoodDashboardPage extends StatefulWidget {
   const MoodDashboardPage({super.key});
 
@@ -468,6 +470,9 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: const CustomBottomNavBar(
+        currentIndex: 1,  // Mood tab selected
       ),
     );
   }

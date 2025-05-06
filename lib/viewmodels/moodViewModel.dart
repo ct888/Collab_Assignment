@@ -3,39 +3,74 @@ import '../../models/mood.dart';
 import '../../models/diary_entry.dart';
 import '../../services/gemini_service.dart';
 import '../../utils/logger.dart';
+import '../services/firebase_service.dart';
 
 class MoodViewModel extends ChangeNotifier {
   final GeminiService _geminiService;
+  final FirebaseService _firebaseMoodService;
   final AppLogger _logger = AppLogger();
-  
+
   UserMood? _currentMood;
   DiaryEntry? _latestDiaryEntry;
   Map<String, dynamic>? _emotionAnalysis;
   bool _isLoading = false;
   String? _errorMessage;
+  DateTime? _lastMoodDate;
 
   MoodViewModel({
     GeminiService? geminiService,
-  }) : _geminiService = geminiService ?? GeminiService();
+    FirebaseService? firebaseMoodService,
+  }) :
+        _geminiService = geminiService ?? GeminiService(),
+        _firebaseMoodService = firebaseMoodService ?? FirebaseService();
 
   UserMood? get currentMood => _currentMood;
   DiaryEntry? get latestDiaryEntry => _latestDiaryEntry;
   Map<String, dynamic>? get emotionAnalysis => _emotionAnalysis;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  DateTime? get lastMoodDate => _lastMoodDate;
 
-  Future<void> setMood(UserMood mood) async {
-    _currentMood = mood;
+  Future<void> fetchLatestMood() async {
+    // Always reset loading state at start
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-  }
 
-  Future<void> setDiaryEntry(DiaryEntry diaryEntry) async {
-    _latestDiaryEntry = diaryEntry;
-    notifyListeners();
+    try {
+      _logger.info('Starting to fetch latest mood...');
+
+      final latestMood = await _firebaseMoodService.fetchLatestMood();
+      _logger.info('Received mood from Firebase: ${latestMood?.toString() ?? "null"}');
+
+      if (latestMood != null) {
+        _currentMood = latestMood;
+        _lastMoodDate = latestMood.timestamp;
+        _logger.info('Mood successfully loaded from Firebase: ${latestMood.timestamp}');
+      } else {
+        _currentMood = null;
+        _lastMoodDate = null;
+        _logger.info('No mood record found in Firebase');
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to fetch mood: ${e.toString()}';
+      _logger.error('Error in fetchLatestMood', e);
+    } finally {
+      // Ensure loading is always false when complete
+      _isLoading = false;
+      notifyListeners();
+
+      _logger.info('''
+      Fetch completed:
+      Current Mood: ${_currentMood?.toString() ?? "null"}
+      Loading: $_isLoading
+    ''');
+    }
   }
 
   Future<bool> analyzeEmotion() async {
     if (_currentMood == null) {
+      _logger.error('Cannot analyze emotion: no mood data available');
       _errorMessage = 'No mood data available for analysis';
       notifyListeners();
       return false;
@@ -51,6 +86,7 @@ class MoodViewModel extends ChangeNotifier {
         _latestDiaryEntry,
       );
 
+      _logger.info('Emotion analysis completed successfully');
       _isLoading = false;
       notifyListeners();
       return true;
@@ -64,7 +100,7 @@ class MoodViewModel extends ChangeNotifier {
   }
 
   List<String> get videoCategories {
-    if (_emotionAnalysis != null && 
+    if (_emotionAnalysis != null &&
         _emotionAnalysis!.containsKey('videoCategories')) {
       return List<String>.from(_emotionAnalysis!['videoCategories']);
     }
@@ -72,7 +108,7 @@ class MoodViewModel extends ChangeNotifier {
   }
 
   List<String> get musicGenres {
-    if (_emotionAnalysis != null && 
+    if (_emotionAnalysis != null &&
         _emotionAnalysis!.containsKey('musicGenres')) {
       return List<String>.from(_emotionAnalysis!['musicGenres']);
     }
@@ -80,7 +116,7 @@ class MoodViewModel extends ChangeNotifier {
   }
 
   String get recommendedMood {
-    if (_emotionAnalysis != null && 
+    if (_emotionAnalysis != null &&
         _emotionAnalysis!.containsKey('recommendedMood')) {
       return _emotionAnalysis!['recommendedMood'] as String;
     }
@@ -90,5 +126,27 @@ class MoodViewModel extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // This method can be called when a new mood is recorded
+  Future<void> recordNewMood(UserMood mood) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Here you would save the mood to Firebase
+      // await _firebaseMoodService.saveMood(mood);
+
+      _currentMood = mood;
+      _lastMoodDate = mood.timestamp;
+
+      _logger.info('New mood recorded: ${mood.moodType}');
+    } catch (e) {
+      _errorMessage = 'Failed to save mood: ${e.toString()}';
+      _logger.error('Error in recordNewMood', e);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
