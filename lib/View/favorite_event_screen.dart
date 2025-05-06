@@ -218,7 +218,7 @@ class FavoriteEventsScreen extends StatelessWidget {
           },
         );
       },
-                onDismissed: (direction) {
+/*                onDismissed: (direction) {
                   final eventTitle = event.title;
                   // Save a reference to the event that was removed
                   final removedEvent = event;
@@ -241,6 +241,7 @@ class FavoriteEventsScreen extends StatelessWidget {
                     ),
                   );
                 },
+                */
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         elevation: 0,
@@ -329,15 +330,6 @@ class FavoriteEventsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        viewModel.removeFromFavorites(event.id);
-                      },
                     ),
                   ],
                 ),
