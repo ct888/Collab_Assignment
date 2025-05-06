@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
@@ -12,10 +13,12 @@ import 'package:seek_here/View/mood_dashboard_page.dart';
 
 class ReasonSelectionPage extends StatefulWidget {
   final String selectedMood;
+  final String userId;
 
   const ReasonSelectionPage({
     super.key, 
     required this.selectedMood,
+    required this.userId,
   });
 
   @override
@@ -205,12 +208,13 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
     final DateTime now = DateTime.now();
 
     try {
-      // Save mood entry to Firebase
+      // Save mood entry to Firebase with userId
       await _firestore.collection('moods').add({
+        'userId': widget.userId, // Add the user ID
         'mood': widget.selectedMood,
         'reasons': finalReasons,
         'date': Timestamp.fromDate(now),
-        'createdAt': FieldValue.serverTimestamp(),
+        
       });
 
       // Show success message
@@ -222,11 +226,7 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       );
 
       // Navigate back to dashboard
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const MoodDashboardPage()),
-        (route) => false,
-      );
+      Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
       print('Error saving mood: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -237,8 +237,6 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       );
     }
   }
-
-  
 
   @override
   Widget build(BuildContext context) {

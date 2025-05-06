@@ -3,13 +3,17 @@ class UserMood {
   final String moodType; // happy, sad, anxious, relaxed, energetic, etc.
   final List<String> notes;
   final DateTime timestamp;
+  final String userID;
 
   UserMood({
     required this.id,
     required this.moodType,
     required this.notes,
     required this.timestamp,
+    required this.userID,
   });
+
+  
 
   factory UserMood.fromJson(Map<String, dynamic> json) {
     return UserMood(
@@ -21,6 +25,7 @@ class UserMood {
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
+      userID: json['userID'] ?? '',
     );
   }
 
@@ -30,6 +35,12 @@ class UserMood {
       'moodType': moodType,
       'notes': notes,
       'timestamp': timestamp.toIso8601String(),
+      'userID': userID,
     };
+  }
+
+  @override
+  String toString() {
+    return 'UserMood(id: $id, mood: $moodType, timestamp: $timestamp, userId: $userID, notes: $notes)';
   }
 }
