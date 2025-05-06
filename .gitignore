@@ -7,6 +7,9 @@
 .buildlog/
 .history
 
+# Add here for more
+/lib/Model/apikey.dart
+/lib/main.dart
 
 
 # Flutter repo-specific

@@ -6,7 +6,7 @@ class OpenAIService {
   static const _endpoint =
       "https://models.inference.ai.azure.com/chat/completions";
 
-  static Future<String> askAI(String prompt) async {
+  static Future<String> askAI(String prompt, String instruction) async {
     try {
       final response = await http.post(
         Uri.parse(_endpoint),
@@ -16,7 +16,7 @@ class OpenAIService {
         },
         body: jsonEncode({
           "messages": [
-            {"role": "developer", "content": "You are a helpful assistant."},
+            {"role": "developer", "content": instruction},
             {"role": "user", "content": prompt},
           ],
           "model": "gpt-4o",
