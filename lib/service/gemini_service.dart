@@ -1,5 +1,6 @@
 // services/gemini_service.dart
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../Model/event.dart';
 import '../Model/location.dart';
@@ -70,6 +71,8 @@ class GeminiService {
         ]
       }),
     );
+
+    debugPrint('🔍 Gemini Service Prompt: $response');
     
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);

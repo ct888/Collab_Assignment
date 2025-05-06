@@ -70,10 +70,19 @@ class EventListScreen extends StatelessWidget {
                                 color: Colors.black87,
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.refresh),
-                              onPressed: () => viewModel.fetchEvents(location),
-                            ),
+                            const Spacer(),
+                            InkWell(
+                              onTap: () => viewModel.fetchEvents(location),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.refresh, color: Colors.black54),
+                              ),
+                            )
                           ],
                         ),
                       ),
