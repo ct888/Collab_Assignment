@@ -10,6 +10,7 @@
 # Add here for more
 /lib/Model/apikey.dart
 /lib/main.dart
+/lib/Model/openai_service.dart
 
 
 # Flutter repo-specific
