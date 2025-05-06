@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/input_widget.dart';
@@ -7,8 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-
-import 'BOA.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -27,9 +26,8 @@ class LogIn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Screen Width & Height
-
-    double w = WHGetter.width(context);
-    double h = WHGetter.height(context);
+    double h, w;
+    (h, w) = WHGetter.getHeightAndWidth(context);
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -91,16 +89,16 @@ class LogIn extends StatelessWidget {
                         // Email Input
                         TextInput(
                           label: "Email",
-                          width: 374, //TODO: tO DYnamic
-                          height: 70, // TODO: to dynamic
+                          width: w*0.9,
+                          height: 70,
                         ),
                         // === Seperator ===
                         SizedBox(height: 10),
                         // Password Input
                         TextInput(
                           label: "Password",
-                          width: 374, // TODO: same
-                          height: 70, // TODO same
+                          width: w*0.9,
+                          height: 70,
                           isSensitiveInput: true,
                         ),
                       ],
@@ -110,17 +108,18 @@ class LogIn extends StatelessWidget {
                   // Login Button
                   Padding(
                     padding: EdgeInsets.only(top: 10),
-                    child: ButtonWidget(
+                    child: TextButtonWidget(
                       label: "Log In",
+                      borderRadius: 38,
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => BOA()),
+                          MaterialPageRoute(builder: (_) => const MainScreen()),
                         );
                       },
-                      color: CustomColors.blue,
-                      width: WHGetter.sx(context, 374),
-                      height: WHGetter.sy(context, 60),
+                      backgroundColor: CustomColors.blue,
+                      width: w*0.9,
+                      height: 60,
                     ),
                   ),
 
