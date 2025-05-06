@@ -1,4 +1,3 @@
-// services/gemini_service.dart
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -37,13 +36,13 @@ class GeminiService {
       2. Organizer
       3. Description
       4. Location address
-      5. Date and time (in<\ctrl3348>-MM-DD HH:MM format)
+      5. Date and time (in YYYY-MM-DD HH:MM format)
       6. Entry fee or cost per person (in Ringgit,RM)
       7. Category (music, sports, food, art, education, business, technology, health, or outdoor)
-      6. Website link or more information source
+      8. Website link or more information source
       9. Requirement for joining or participate the events
 
-    Please find at least 6-8 diverse events of different types, with accurate event details occurs between 5 June 2025 untul 5 August 2025.
+    Please find at least 6-8 diverse events of different types, with accurate event details occurs between 5 June 2025 until 5 August 2025.
     Include both free and paid events. Ensure all events must be organise or conduct in the future(compare to today date).  
     For category, ALWAYS provide ONE of these exact values: music, sports, food, art, education, business, technology, health, outdoor. 
     For webUrl, use real-world website domains (like "eventbrite.com/e/example-event", "meetup.com/events/example", etc).
@@ -71,72 +70,130 @@ class GeminiService {
         "requirements": ["requirement1", "requirement2"]
       }
     ]
-    
-    
     """;
     
-    // Prepare request to Gemini API
-    final url = '$baseUrl?key=$apiKey';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {'text': prompt}
-            ]
-          }
-        ]
-      }),
-    );
-
-    debugPrint('🔍 Gemini Service Prompt: $response');
-    
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body);
-      final text = responseData['candidates'][0]['content']['parts'][0]['text'];
-      
-      // Extract JSON from response
-      final jsonStart = text.indexOf('[');
-      final jsonEnd = text.lastIndexOf(']') + 1;
-      final jsonStr = text.substring(jsonStart, jsonEnd);
-      
-      try {
-        final List<dynamic> eventsJson = jsonDecode(jsonStr);
-        
-        // Process each event to add appropriate image URLs based on category
-        for (var eventData in eventsJson) {
-          if (eventData['imageUrl'] == null || eventData['imageUrl'].isEmpty) {
-            // Get the event category or default to 'default'
-            final category = (eventData['category'] as String?)?.toLowerCase() ?? 'default';
-            
-            // Find appropriate image URL based on category
-            String imageUrl = _categoryImageUrls['default']!;
-            for (final key in _categoryImageUrls.keys) {
-              if (category.contains(key)) {
-                imageUrl = _categoryImageUrls[key]!;
-                break;
-              }
+    try {
+      // Prepare request to Gemini API
+      final url = '$baseUrl?key=$apiKey';
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'contents': [
+            {
+              'parts': [
+                {'text': prompt}
+              ]
             }
-            
-            // Set the image URL
-            eventData['imageUrl'] = imageUrl;
-          }
-          
-          // Ensure webUrl is properly formatted
-          if (eventData['webUrl'] != null && !eventData['webUrl'].toString().startsWith('http')) {
-            eventData['webUrl'] = 'https://' + eventData['webUrl'];
-          }
+          ]
+        }),
+      ).timeout(const Duration(seconds: 20), // Add timeout
+        onTimeout: () {
+          throw Exception('Request to Gemini API timed out');
+        },
+      );
+
+      debugPrint('🔍 Gemini Service Response Status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        
+        // Check if we have valid candidates array
+        if (responseData['candidates'] == null || 
+            responseData['candidates'].isEmpty || 
+            responseData['candidates'][0]['content'] == null ||
+            responseData['candidates'][0]['content']['parts'] == null ||
+            responseData['candidates'][0]['content']['parts'].isEmpty) {
+          throw Exception('Invalid response structure from Gemini API');
         }
         
-        return eventsJson.map((json) => Event.fromJson(json)).toList();
-      } catch (e) {
-        print('Error parsing JSON from Gemini response: $e');
-        throw Exception('Failed to parse events from Gemini response');
+        final text = responseData['candidates'][0]['content']['parts'][0]['text'];
+        
+        // Check if text is empty or null
+        if (text == null || text.isEmpty) {
+          throw Exception('Empty response from Gemini API');
+        }
+        
+        // Extract JSON from response with better error handling
+        int? jsonStart = text.indexOf('[');
+        int? jsonEnd = text.lastIndexOf(']') + 1;
+        
+        if (jsonStart! < 0 || jsonEnd! <= 0 || jsonStart >= jsonEnd) {
+          throw Exception('Could not find valid JSON array in Gemini response');
+        }
+        
+        final jsonStr = text.substring(jsonStart, jsonEnd);
+        
+        try {
+          final List<dynamic> eventsJson = jsonDecode(jsonStr);
+          
+          // Validate events - make sure we have at least one valid event
+          if (eventsJson.isEmpty) {
+            throw Exception('No events found in the response');
+          }
+          
+          // Process each event to add appropriate image URLs based on category
+          for (var eventData in eventsJson) {
+            // Add checks for required fields
+            if (eventData['title'] == null || eventData['organizer'] == null) {
+              debugPrint('Warning: Event missing required fields: $eventData');
+              continue; // Skip invalid events
+            }
+            
+            if (eventData['imageUrl'] == null || eventData['imageUrl'].isEmpty) {
+              // Get the event category or default to 'default'
+              final category = (eventData['category'] as String?)?.toLowerCase() ?? 'default';
+              
+              // Find appropriate image URL based on category
+              String imageUrl = _categoryImageUrls['default']!;
+              for (final key in _categoryImageUrls.keys) {
+                if (category.contains(key)) {
+                  imageUrl = _categoryImageUrls[key]!;
+                  break;
+                }
+              }
+              
+              // Set the image URL
+              eventData['imageUrl'] = imageUrl;
+            }
+            
+            // Ensure webUrl is properly formatted
+            if (eventData['webUrl'] != null && !eventData['webUrl'].toString().startsWith('http')) {
+              eventData['webUrl'] = 'https://' + eventData['webUrl'];
+            }
+          }
+          
+          // Convert to Event objects with error handling for individual events
+          List<Event> events = [];
+          for (var json in eventsJson) {
+            try {
+              events.add(Event.fromJson(json));
+            } catch (e) {
+              debugPrint('Error creating Event from JSON: $e for data: $json');
+              // Continue with other events
+            }
+          }
+          
+          if (events.isEmpty) {
+            throw Exception('Could not create any valid events from the response');
+          }
+          
+          return events;
+        } catch (e) {
+          debugPrint('Error parsing JSON from Gemini response: $e');
+          debugPrint('Raw JSON string: $jsonStr');
+          throw Exception('Failed to parse events from Gemini response: $e');
+        }
+      } else {
+        debugPrint('Gemini API error response: ${response.body}');
+        throw Exception('Failed to get events from Gemini API: ${response.statusCode}');
       }
-    } else {
-      throw Exception('Failed to get events from Gemini API: ${response.body}');
+    } catch (e) {
+      // Re-throw with more context if needed
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Error in getNearbyEvents: $e');
     }
   }
 }

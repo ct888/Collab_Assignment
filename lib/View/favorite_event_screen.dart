@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../ViewModel/utils/favorite_event_viewmodel.dart';
+import '../ViewModel/favorite_event_viewmodel.dart';
 import '../Model/event.dart';
 import 'event_detail_screen.dart';
 

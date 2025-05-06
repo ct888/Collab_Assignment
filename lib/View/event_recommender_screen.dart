@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:seek_here/View/favorite_event_screen.dart';
-import '../ViewModel/utils/event_recommender_viewmodel.dart';
+import '../ViewModel/event_recommender_viewmodel.dart';
 import 'event_list_screen.dart';
 import '../Model/location.dart';
 
@@ -139,7 +139,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () {
+                  debugPrint('address: ${_addressController.text}');
                   if (_addressController.text.isNotEmpty) {
+                    debugPrint('1234567890');
                     viewModel.updateLocationByAddress(_addressController.text);
                   }
                 },

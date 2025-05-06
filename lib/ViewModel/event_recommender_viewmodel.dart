@@ -78,11 +78,14 @@ class EventRecommenderViewModel with ChangeNotifier {
  
   Future<void> updateLocationByAddress(String address) async {
     try {
+      debugPrint('9');
       _setLoading(true);
       _currentLocation = await _locationService.getLocationFromAddress(address);
       _error = null; 
       _setLoading(false);
+      notifyListeners();
     } catch (e) {
+      debugPrint('8');
        _setUserFriendlyError('Could not find location for this address: $e');
     }
   }
