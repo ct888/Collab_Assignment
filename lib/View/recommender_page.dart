@@ -32,15 +32,19 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
             builder: (context, moodViewModel, child) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                children: 
+                [
                   const Text(
                     'What are you in the mood for?',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40),
+                  
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: 
+                    [
                       _buildRecommendationOption(
                         context,
                         RecommendationType.video,
@@ -52,6 +56,9 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
                         RecommendationType.music,
                         'Music',
                         Icons.music_note,
+                      
+                      
+                      
                       ),
                     ],
                   ),
