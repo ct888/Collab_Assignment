@@ -98,18 +98,6 @@ class _ProgressMeterState extends State<ProgressMeter> {
       children: [
         Row(
           children: [
-            Container(
-              width: iconSize,
-              height: iconSize,
-              decoration: BoxDecoration(
-                color: const Color(0xFFBBBDC6),
-                borderRadius: BorderRadius.circular(iconSize / 2),
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
-            ),
             const Spacer(),
             _buildAppTitle(context),
             const Spacer(),
