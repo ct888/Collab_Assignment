@@ -328,7 +328,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MoodSelectionPage()),
+                        MaterialPageRoute(builder: (context) => const MoodSelectionPage(userId: '',)),
                       ).then((_) async {
                         setState(() {
                           _isInitialLoading = true;
