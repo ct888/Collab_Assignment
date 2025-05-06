@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'apikey.dart';
+//import 'apikey.dart';
 
 class OpenAIService {
   static const _endpoint =
@@ -12,7 +12,7 @@ class OpenAIService {
         Uri.parse(_endpoint),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${Apikey.APIKey}',
+      //    'Authorization': 'Bearer ${Apikey.APIKey}',
         },
         body: jsonEncode({
           "messages": [
