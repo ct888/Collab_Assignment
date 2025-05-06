@@ -24,7 +24,13 @@ class HomeNavbarWidget extends StatelessWidget {
     (h, w) = WHGetter.getHeightAndWidth(context);
 
     final List<Map<String, String>> navItems = [
-      {'icon': AppImages.bookOpened, 'label': 'BOA'},
+      
+      
+      
+      {'icon': AppImages.
+
+
+      bookOpened, 'label': 'BOA'},
       {'icon': AppImages.happyFace, 'label': 'Mood'},
       {'icon': AppImages.compass, 'label': 'Recommender'},
       {'icon': AppImages.bookAndPen, 'label': 'Diary'},
