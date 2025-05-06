@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/wh_getter.dart';
 
 class TextButtonWidget extends StatelessWidget {
   final String label;
