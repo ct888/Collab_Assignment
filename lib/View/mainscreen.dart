@@ -23,9 +23,11 @@ class _MainScreenState extends State<MainScreen> {
     ProgressMeter(),
   ];
 
+  
+
   @override
   Widget build(BuildContext context) {
-    print("HAHAHAHAHAHAHAH Mainscreen is rebuilding");
+    
     return Scaffold(
       backgroundColor: CustomColors.white,
       body: _pages[_currentIndex],
