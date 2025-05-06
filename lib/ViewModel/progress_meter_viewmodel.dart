@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
+import 'package:seek_here/View/recap_report1_view.dart';
+import 'package:seek_here/Service/user_records_service.dart';
 
 class ActivityDisplayData {
   final String activity;
@@ -20,30 +22,6 @@ class ActivityDisplayData {
 class ProgressMeterViewModel extends ChangeNotifier {
   final int totalPoints = 500;
   
-  // List of motivational prompts
-  static final List<String> motivationalPrompts = [
-    'Keep going! You can do it!',
-    'You\'re making great progress!',
-    'Every step counts, keep moving forward!',
-    'Believe in yourself, you\'re amazing!',
-    'Small steps lead to big changes!',
-    'Your journey matters, stay focused!',
-    'You\'re stronger than you think!',
-    'Progress over perfection!',
-    'Today is a new opportunity!',
-    'One day at a time, you got this!',
-    'Stay positive, stay motivated!',
-    'You are capable of amazing things!',
-    'Keep pushing, you\'re almost there!',
-    'Success is a journey, not a destination!',
-    'Every effort counts, keep it up!',
-    'You are on the right track!',
-    'Your hard work will pay off!',
-    'Stay committed to your goals!',
-    'You are making a difference!',
-    'Keep striving for greatness!'
-  ];
-
   // State variables
   String currentPrompt = '';
   final Random _random = Random();
@@ -80,6 +58,9 @@ class ProgressMeterViewModel extends ChangeNotifier {
   bool showAllActivities = false; // Track if we're showing all activities
   
   BuildContext? context; // Context for showing snackbars
+  
+  // Reference to the shared service
+  final UserRecordsService _recordsService = UserRecordsService();
   
   // Constructor
   ProgressMeterViewModel() {
@@ -334,6 +315,10 @@ class ProgressMeterViewModel extends ChangeNotifier {
         : combinedDisplayData.sublist(0, 5);
     
     userPoints = calculatedPoints;
+    
+    // Store the data in the shared service for other ViewModels to access
+    _recordsService.setRecordsData(userRecords);
+    
     notifyListeners();
   }
   
@@ -350,9 +335,9 @@ class ProgressMeterViewModel extends ChangeNotifier {
   
   // Get a random motivational prompt
   String _getRandomPrompt() {
-    int index = _random.nextInt(motivationalPrompts.length);
-    return motivationalPrompts[index] != currentPrompt 
-        ? motivationalPrompts[index]
+    int index = _random.nextInt(ProgressMeterData.motivationalPrompts.length);
+    return ProgressMeterData.motivationalPrompts[index] != currentPrompt 
+        ? ProgressMeterData.motivationalPrompts[index]
         : _getRandomPrompt(); // Try again if same as current
   }
   
@@ -377,5 +362,27 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Check if any record type is loading
   bool isAnyLoading() {
     return isLoading || isLoadingRecords.values.any((loading) => loading);
+  }
+  
+  // Navigate to RecapReport1
+  void navigateToRecap1(BuildContext context) {
+    if (hasEnoughPoints()) {
+      // Make sure data is stored in the service
+      _recordsService.setRecordsData(userRecords);
+      
+      // Navigate without passing data
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RecapReport1()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Insufficient progress meter!'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

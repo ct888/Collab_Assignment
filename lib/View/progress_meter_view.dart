@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:seek_here/View/recap_report1_view.dart';
 import 'package:provider/provider.dart';
 import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
@@ -564,14 +563,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
           child: Center(
             child: ElevatedButton(
               onPressed: hasEnoughPoints 
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RecapReport1(
-                          preloadedRecords: viewModel.userRecords,
-                        )),
-                      );
-                    } 
+                  ? () => viewModel.navigateToRecap1(context)
                   : () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

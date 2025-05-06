@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:seek_here/View/recap_report2_view.dart';
 import 'package:seek_here/View/utils/pie_chart_painter.dart';
 import 'package:seek_here/ViewModel/recap_report1_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class RecapReport1 extends StatefulWidget {
-  final Map<String, List<dynamic>>? preloadedRecords;
-  
-  const RecapReport1({super.key, this.preloadedRecords});
+  // Remove preloadedRecords parameter
+  const RecapReport1({super.key});
 
   @override
   State<RecapReport1> createState() => _RecapReport1State();
@@ -20,7 +18,7 @@ class _RecapReport1State extends State<RecapReport1> {
   void initState() {
     super.initState();
     viewModel = RecapReport1ViewModel();
-    viewModel.initialize(widget.preloadedRecords);
+    viewModel.initialize();
   }
 
   @override
@@ -172,14 +170,7 @@ class _RecapReport1State extends State<RecapReport1> {
                   Align(
                     alignment: Alignment.bottomRight,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => RecapReport2(
-                            preloadedRecords: widget.preloadedRecords,
-                          )),
-                        );
-                      },
+                      onPressed: () => viewModel.navigateToRecap2(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFBBB5F5),
                         foregroundColor: const Color(0xFF3F414E),

@@ -224,3 +224,30 @@ class UserActivity {
     );
   }
 }
+
+// Static data for application
+class ProgressMeterData {
+  // List of motivational prompts
+  static final List<String> motivationalPrompts = [
+    'Keep going! You can do it!',
+    'You\'re making great progress!',
+    'Every step counts, keep moving forward!',
+    'Believe in yourself, you\'re amazing!',
+    'Small steps lead to big changes!',
+    'Your journey matters, stay focused!',
+    'You\'re stronger than you think!',
+    'Progress over perfection!',
+    'Today is a new opportunity!',
+    'One day at a time, you got this!',
+    'Stay positive, stay motivated!',
+    'You are capable of amazing things!',
+    'Keep pushing, you\'re almost there!',
+    'Success is a journey, not a destination!',
+    'Every effort counts, keep it up!',
+    'You are on the right track!',
+    'Your hard work will pay off!',
+    'Stay committed to your goals!',
+    'You are making a difference!',
+    'Keep striving for greatness!'
+  ];
+}

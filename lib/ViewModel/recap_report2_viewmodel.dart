@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
+import 'package:seek_here/Service/user_records_service.dart';
 
 // View-specific data class to avoid direct Model access from View
 class InteractionDisplayData {
@@ -20,11 +21,15 @@ class RecapReport2ViewModel extends ChangeNotifier {
   int totalPoints = 0;
   int totalDays = 1; // Default value
   
+  final UserRecordsService _recordsService = UserRecordsService();
+  
   // Expose display data for the view
   List<InteractionDisplayData> get interactionData => _interactionDisplayData;
   
-  // Initialize view model with preloaded records
-  void initialize(Map<String, List<dynamic>>? preloadedRecords) {
+  // Initialize view model
+  void initialize() {
+    Map<String, List<dynamic>>? preloadedRecords = _recordsService.getRecordsData();
+    
     if (preloadedRecords != null && preloadedRecords.isNotEmpty) {
       processInteractionData(preloadedRecords);
     } else {

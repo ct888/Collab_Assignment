@@ -4,9 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:seek_here/ViewModel/recap_report2_viewmodel.dart';
 
 class RecapReport2 extends StatefulWidget {
-  final Map<String, List<dynamic>>? preloadedRecords;
-  
-  const RecapReport2({super.key, this.preloadedRecords});
+  const RecapReport2({super.key});
 
   @override
   State<RecapReport2> createState() => _RecapReport2State();
@@ -19,7 +17,7 @@ class _RecapReport2State extends State<RecapReport2> {
   void initState() {
     super.initState();
     viewModel = RecapReport2ViewModel();
-    viewModel.initialize(widget.preloadedRecords);
+    viewModel.initialize();
   }
 
   @override
