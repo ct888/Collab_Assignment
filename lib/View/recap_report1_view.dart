@@ -38,68 +38,70 @@ class _RecapReport1State extends State<RecapReport1> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Close button
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(top: screenSize.height * 0.006),
-                      child: CircleAvatar(
-                        radius: screenSize.width * 0.05,
-                        backgroundColor: const Color(0xDDC4C4C4),
-                        child: IconButton(
-                          icon: Icon(Icons.close, color: Colors.black54, size: screenSize.width * 0.05),
-                          padding: EdgeInsets.zero,
-                          onPressed: () => Navigator.of(context).pop(),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Close button
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: screenSize.height * 0.006),
+                        child: CircleAvatar(
+                          radius: screenSize.width * 0.05,
+                          backgroundColor: const Color(0xDDC4C4C4),
+                          child: IconButton(
+                            icon: Icon(Icons.close, color: Colors.black54, size: screenSize.width * 0.05),
+                            padding: EdgeInsets.zero,
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.01),
-                  
-                  // Title
-                  const Text(
-                    'Recap Report',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF3F414E),
-                      fontSize: 30,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
+                    
+                    SizedBox(height: screenSize.height * 0.01),
+                    
+                    // Title
+                    const Text(
+                      'Recap Report',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF3F414E),
+                        fontSize: 30,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.012),
-                  
-                  // Content - Using Consumer to listen to view model changes
-                  Consumer<RecapReport1ViewModel>(
-                    builder: (context, viewModel, child) {
-                      if (viewModel.isLoading) {
-                        return const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      } else if (viewModel.moodData.isEmpty) {
-                        return Expanded(
-                          child: Center(
-                            child: Text(
-                              "No mood data available.",
-                              style: TextStyle(
-                                color: const Color(0xFF525252),
-                                fontSize: screenSize.width * 0.04,
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w500,
+                    
+                    SizedBox(height: screenSize.height * 0.012),
+                    
+                    // Content - Using Consumer to listen to view model changes
+                    Consumer<RecapReport1ViewModel>(
+                      builder: (context, viewModel, child) {
+                        if (viewModel.isLoading) {
+                          return SizedBox(
+                            height: screenSize.height * 0.6,
+                            child: const Center(child: CircularProgressIndicator()),
+                          );
+                        } else if (viewModel.moodData.isEmpty) {
+                          return SizedBox(
+                            height: screenSize.height * 0.6,
+                            child: Center(
+                              child: Text(
+                                "No mood data available.",
+                                style: TextStyle(
+                                  color: const Color(0xFF525252),
+                                  fontSize: screenSize.width * 0.04,
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      } else {
-                        return Expanded(
-                          child: Column(
+                          );
+                        } else {
+                          return Column(
                             children: [
                               Text(
                                 'For the last ${viewModel.totalDays} days, you have recorded ${viewModel.getTotalMoodCount()} times of your mood:',
@@ -145,63 +147,60 @@ class _RecapReport1State extends State<RecapReport1> {
                               
                               SizedBox(height: screenSize.height * 0.01),
                               
-                              // Dynamic mood legend items - Removed Expanded widget to let content use available space
-                              SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: viewModel.moodData.asMap().entries.map((entry) => _buildMoodItem(
-                                    context, 
-                                    '${entry.value.name} (${entry.value.count} times) - ${(entry.value.percentage * 100).toStringAsFixed(1)}%', 
-                                    PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
-                                  )).toList(),
-                                ),
+                              // Dynamic mood legend items
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: viewModel.moodData.asMap().entries.map((entry) => _buildMoodItem(
+                                  context, 
+                                  '${entry.value.name} (${entry.value.count} times) - ${(entry.value.percentage * 100).toStringAsFixed(1)}%', 
+                                  PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
+                                )).toList(),
                               ),
                               
-                              // Removed the Spacer to allow content to use more space
                               SizedBox(height: screenSize.height * 0.02),
                             ],
+                          );
+                        }
+                      },
+                    ),
+                    
+                    // Next button
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: () => viewModel.navigateToRecap2(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFBBB5F5),
+                          foregroundColor: const Color(0xFF3F414E),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
-                        );
-                      }
-                    },
-                  ),
-                  
-                  // Next button
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: ElevatedButton(
-                      onPressed: () => viewModel.navigateToRecap2(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFBBB5F5),
-                        foregroundColor: const Color(0xFF3F414E),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenSize.width * 0.075,
+                            vertical: screenSize.height * 0.015,
+                          ),
                         ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenSize.width * 0.075,
-                          vertical: screenSize.height * 0.015,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Text(
-                            'Next',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontFamily: 'ADLaM Display',
-                              fontWeight: FontWeight.w400,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Next',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'ADLaM Display',
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 16),
-                        ],
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward, size: 16),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.025),
-                ],
+                    
+                    SizedBox(height: screenSize.height * 0.025),
+                  ],
+                ),
               ),
             ),
           ),

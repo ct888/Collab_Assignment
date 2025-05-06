@@ -173,26 +173,27 @@ class _ProgressMeterState extends State<ProgressMeter> {
 
   Widget _buildMotivationalCard(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    final double cardHeight = size.height * 0.12; // 12% of screen height
     final double refreshIconSize = size.width * 0.1; // 10% of screen width
     
     return Consumer<ProgressMeterViewModel>(
       builder: (context, viewModel, child) {
         return Container(
           width: double.infinity,
-          height: cardHeight,
-          padding: EdgeInsets.all(size.width * 0.05),
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.05,
+            vertical: size.height * 0.02,
+          ),
           decoration: BoxDecoration(
             color: const Color(0xFF8E97FD),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
                       'Motivational Prompt',
@@ -206,19 +207,20 @@ class _ProgressMeterState extends State<ProgressMeter> {
                     SizedBox(height: size.height * 0.01),
                     Text(
                       viewModel.currentPrompt,
-                      style: const TextStyle(
-                        color: Color(0xFF464A55),
-                        fontSize: 11,
+                      style: TextStyle(
+                        color: const Color(0xFF464A55),
+                        fontSize: size.width * 0.03,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w500,
                         letterSpacing: 0.55,
                       ),
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                      maxLines: 3,
                     ),
                   ],
                 ),
               ),
+              SizedBox(width: size.width * 0.02),
               GestureDetector(
                 onTap: () => viewModel.refreshPrompt(),
                 child: Container(
