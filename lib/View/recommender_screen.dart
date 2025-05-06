@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:seek_here/View/music_home_page.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
+import 'package:seek_here/View/video_home_page.dart';
 import 'event_recommender_screen.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 
@@ -73,10 +75,7 @@ class RecommenderScreen extends StatelessWidget {
 
                     const Text(
                       'We Wish you have a good day',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
 
                     const SizedBox(height: 30),
@@ -87,7 +86,9 @@ class RecommenderScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EventRecommenderScreen(userId: userId),
+                            builder:
+                                (context) =>
+                                    EventRecommenderScreen(userId: userId),
                           ),
                         );
                       },
@@ -123,7 +124,10 @@ class RecommenderScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 15),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 24,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(25),
@@ -168,152 +172,178 @@ class RecommenderScreen extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     // Relaxation Music Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8FE3CF),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Row(
-                        children: [
-                          // Left content
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Relaxation',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'MUSIC',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 15),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black45,
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: const Text(
-                                    'START',
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MusicPlayerScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8FE3CF),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          children: [
+                            // Left content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Relaxation',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Right image
-                          SizedBox(
-                            width: 140,
-                            height: 140,
-                            child: Image.asset(
-                              'assets/recommender_module2.png',
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.headphones,
-                                      size: 40,
+                                  const SizedBox(height: 5),
+                                  const Text(
+                                    'MUSIC',
+                                    style: TextStyle(
+                                      fontSize: 12,
                                       color: Colors.black54,
                                     ),
-                                  ],
-                                );
-                              },
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 24,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black45,
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    child: const Text(
+                                      'START',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+
+                            // Right image
+                            SizedBox(
+                              width: 140,
+                              height: 140,
+                              child: Image.asset(
+                                'assets/recommender_module2.png',
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.headphones,
+                                        size: 40,
+                                        color: Colors.black54,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 20),
 
                     // Relaxation Video Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFC288),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Row(
-                        children: [
-                          // Left content
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Relaxation',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'VIDEO',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 15),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: const Text(
-                                    'START',
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VideoPlayerScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFC288),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          children: [
+                            // Left content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Relaxation',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFFFC288),
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Right image
-                          SizedBox(
-                            width: 160,
-                            height: 160,
-                            child: Image.asset(
-                              'assets/recommender_module3.png',
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.tv,
-                                      size: 40,
+                                  const SizedBox(height: 5),
+                                  const Text(
+                                    'VIDEO',
+                                    style: TextStyle(
+                                      fontSize: 12,
                                       color: Colors.black54,
-                                    )
-                                  ],
-                                );
-                              },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 24,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    child: const Text(
+                                      'START',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFFFC288),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+
+                            // Right image
+                            SizedBox(
+                              width: 160,
+                              height: 160,
+                              child: Image.asset(
+                                'assets/recommender_module3.png',
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.tv,
+                                        size: 40,
+                                        color: Colors.black54,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/View/favorite_event_screen.dart';
 import '../ViewModel/utils/event_recommender_viewmodel.dart';
 import 'event_list_screen.dart';
 import '../Model/location.dart';
@@ -9,7 +10,8 @@ import '../Model/location.dart';
 class EventRecommenderScreen extends StatefulWidget {
   final String userId;
 
-  const EventRecommenderScreen({Key? key, required this.userId}) : super(key: key);
+  const EventRecommenderScreen({Key? key, required this.userId})
+    : super(key: key);
 
   @override
   _EventRecommenderScreenState createState() => _EventRecommenderScreenState();
@@ -36,7 +38,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-        create: (_) {
+      create: (_) {
         final viewModel = EventRecommenderViewModel(userId: widget.userId);
         // Store the viewModel reference and set up the listener
         _viewModel = viewModel;
@@ -56,22 +58,30 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                   icon: const Icon(Icons.favorite),
                   onPressed: () {
                     // Navigate to favorite events screen
-                    Navigator.pushNamed(context, '/favorite-events');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FavoriteEventsScreen(userId: "User123",),
+                      ),
+                    );
                   },
                 ),
               ],
             ),
-            body: viewModel.isLoading && viewModel.currentLocation == null
-                ? const Center(child: CircularProgressIndicator())
-                : _buildContent(context, viewModel),
+            body:
+                viewModel.isLoading && viewModel.currentLocation == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildContent(context, viewModel),
           );
         },
       ),
     );
   }
 
-    void _checkForErrors() {
-    if (_viewModel != null && _viewModel!.shouldShowErrorSnackbar && _viewModel!.error != null) {
+  void _checkForErrors() {
+    if (_viewModel != null &&
+        _viewModel!.shouldShowErrorSnackbar &&
+        _viewModel!.error != null) {
       // Show a SnackBar with the error message
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -95,17 +105,16 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
 
   void _onLocationChanged() {
     if (_viewModel == null || _mapController == null) return;
-    
+
     final currentLocation = _viewModel!.currentLocation;
-    
+
     // Check if location has actually changed to avoid unnecessary camera updates
-    if (currentLocation != null && 
-        (_lastLocation == null || 
-         _lastLocation!.latitude != currentLocation.latitude || 
-         _lastLocation!.longitude != currentLocation.longitude)) {
-         
+    if (currentLocation != null &&
+        (_lastLocation == null ||
+            _lastLocation!.latitude != currentLocation.latitude ||
+            _lastLocation!.longitude != currentLocation.longitude)) {
       _lastLocation = currentLocation;
-      
+
       _mapController!.animateCamera(
         CameraUpdate.newLatLng(
           LatLng(currentLocation.latitude, currentLocation.longitude),
@@ -114,7 +123,10 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
     }
   }
 
-  Widget _buildContent(BuildContext context, EventRecommenderViewModel viewModel) {
+  Widget _buildContent(
+    BuildContext context,
+    EventRecommenderViewModel viewModel,
+  ) {
     return Column(
       children: [
         // Search bar for address
@@ -126,11 +138,11 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
               labelText: 'Enter an address',
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search),
-                  onPressed: () {
-                    if (_addressController.text.isNotEmpty) {
-                           viewModel.updateLocationByAddress(_addressController.text);
-                    }
-                  },
+                onPressed: () {
+                  if (_addressController.text.isNotEmpty) {
+                    viewModel.updateLocationByAddress(_addressController.text);
+                  }
+                },
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -141,9 +153,10 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
 
         // Google Map
         Expanded(
-          child: viewModel.currentLocation == null
-              ? const Center(child: Text('Location Searching....'))
-              : _buildMap(viewModel),
+          child:
+              viewModel.currentLocation == null
+                  ? const Center(child: Text('Location Searching....'))
+                  : _buildMap(viewModel),
         ),
 
         // Action buttons
@@ -156,7 +169,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 icon: const Icon(Icons.save_alt),
                 label: const Text('Save Place'),
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all<Color>(const Color.fromARGB(255, 174, 181, 255)),
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                    const Color.fromARGB(255, 174, 181, 255),
+                  ),
                 ),
                 onPressed: () => _showSavePlaceDialog(context, viewModel),
               ),
@@ -164,17 +179,20 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 icon: const Icon(Icons.event),
                 label: const Text('Find Events'),
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all<Color>(const Color.fromARGB(255, 174, 181, 255)),
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                    const Color.fromARGB(255, 174, 181, 255),
+                  ),
                 ),
                 onPressed: () {
                   if (viewModel.currentLocation != null) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EventListScreen(
-                          userId: widget.userId,
-                          location: viewModel.currentLocation!,
-                        ),
+                        builder:
+                            (context) => EventListScreen(
+                              userId: widget.userId,
+                              location: viewModel.currentLocation!,
+                            ),
                       ),
                     );
                   }
@@ -182,7 +200,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -227,7 +245,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
             viewModel.updateLocationByCoordinates(position);
           },
         ),
-        
+
         // Map type and current location buttons
         Positioned(
           top: 16,
@@ -253,16 +271,17 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 onPressed: () async {
                   // Get the actual current device location
                   await viewModel.refreshCurrentLocation();
-                  
+
                   // If we have a valid location and map controller, animate to it
-                  if (viewModel.currentLocation != null && _mapController != null) {
+                  if (viewModel.currentLocation != null &&
+                      _mapController != null) {
                     _mapController!.animateCamera(
                       CameraUpdate.newLatLng(
                         LatLng(
-                          viewModel.currentLocation!.latitude, 
-                          viewModel.currentLocation!.longitude
-                        )
-                      )
+                          viewModel.currentLocation!.latitude,
+                          viewModel.currentLocation!.longitude,
+                        ),
+                      ),
                     );
                   }
                 },
@@ -270,7 +289,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
             ],
           ),
         ),
-        
+
         // Saved places list button
         Positioned(
           bottom: 16,
@@ -315,7 +334,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                     _currentMapType = MapType.satellite;
                   });
                   Navigator.pop(context);
-                },    
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.terrain),
@@ -334,7 +353,10 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
     );
   }
 
-  void _showSavePlaceDialog(BuildContext context, EventRecommenderViewModel viewModel) {
+  void _showSavePlaceDialog(
+    BuildContext context,
+    EventRecommenderViewModel viewModel,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -342,9 +364,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
           title: const Text('Save Current Location'),
           content: TextField(
             controller: _placeNameController,
-            decoration: const InputDecoration(
-              labelText: 'Place Name',
-            ),
+            decoration: const InputDecoration(labelText: 'Place Name'),
           ),
           actions: <Widget>[
             TextButton(
@@ -372,13 +392,18 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
     );
   }
 
-  void _showSavedPlaces(BuildContext context, EventRecommenderViewModel viewModel) {
+  void _showSavedPlaces(
+    BuildContext context,
+    EventRecommenderViewModel viewModel,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // This allows the bottom sheet to be larger
       builder: (BuildContext context) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.6, // Use 60% of screen height
+          height:
+              MediaQuery.of(context).size.height *
+              0.6, // Use 60% of screen height
           child: SafeArea(
             child: Column(
               children: <Widget>[
@@ -386,49 +411,57 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                   padding: EdgeInsets.all(16.0),
                   child: Text(
                     'Saved Places',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
                 Expanded(
-                  child: viewModel.savedPlaces.isEmpty
-                      ? const Center(child: Text('No saved places yet'))
-                      : ListView.builder(
-                          itemCount: viewModel.savedPlaces.length,
-                          itemBuilder: (context, index) {
-                            final place = viewModel.savedPlaces[index];
-                            return ListTile(
-                              title: Text(place.name),
-                              subtitle: Text(place.location.address ?? 'No address'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  viewModel.deleteSavedPlace(place.id);
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Place deleted')),
-                                  );
-                                },
-                              ),
-                              onTap: () {
-                                final location = place.location;
-                                viewModel.updateLocationByCoordinates(
-                                  LatLng(location.latitude, location.longitude),
-                                );
-                                if (_mapController != null) {
-                                  _mapController!.animateCamera(
-                                    CameraUpdate.newLatLng(
-                                      LatLng(location.latitude, location.longitude),
+                  child:
+                      viewModel.savedPlaces.isEmpty
+                          ? const Center(child: Text('No saved places yet'))
+                          : ListView.builder(
+                            itemCount: viewModel.savedPlaces.length,
+                            itemBuilder: (context, index) {
+                              final place = viewModel.savedPlaces[index];
+                              return ListTile(
+                                title: Text(place.name),
+                                subtitle: Text(
+                                  place.location.address ?? 'No address',
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    viewModel.deleteSavedPlace(place.id);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Place deleted'),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                onTap: () {
+                                  final location = place.location;
+                                  viewModel.updateLocationByCoordinates(
+                                    LatLng(
+                                      location.latitude,
+                                      location.longitude,
                                     ),
                                   );
-                                }
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
+                                  if (_mapController != null) {
+                                    _mapController!.animateCamera(
+                                      CameraUpdate.newLatLng(
+                                        LatLng(
+                                          location.latitude,
+                                          location.longitude,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  Navigator.pop(context);
+                                },
+                              );
+                            },
+                          ),
                 ),
               ],
             ),
