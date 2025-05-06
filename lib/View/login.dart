@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
@@ -18,6 +19,10 @@ class LogIn extends StatelessWidget {
     // Screen Width & Height
     double h, w;
     (h, w) = WHGetter.getHeightAndWidth(context);
+
+    // Text Input controller
+    final TextEditingController _emailController = TextEditingController();
+    final TextEditingController _passwordController = TextEditingController();
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -77,20 +82,23 @@ class LogIn extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Email Input
-                        TextInput(
+                        InputText(
                           label: "Email",
                           width: w*0.9,
                           height: 70,
+                          controller: _emailController,
                         ),
                         // === Seperator ===
                         SizedBox(height: 10),
                         // Password Input
-                        TextInput(
+                        InputText(
                           label: "Password",
                           width: w*0.9,
                           height: 70,
                           isSensitiveInput: true,
+                          controller: _passwordController,
                         ),
+                        
                       ],
                     ),
                   ),
