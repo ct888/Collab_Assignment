@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
@@ -10,7 +11,7 @@ import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/reason_selection_page.dart';
 
 class MoodSelectionPage extends StatefulWidget {
-  const MoodSelectionPage({super.key});
+  const MoodSelectionPage({super.key, required String userId});
 
   @override
   State<MoodSelectionPage> createState() => _MoodSelectionPageState();
@@ -18,6 +19,8 @@ class MoodSelectionPage extends StatefulWidget {
 
 class _MoodSelectionPageState extends State<MoodSelectionPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _userId;
 
   // List of moods from Firebase
   List<String> _moods = [];
@@ -34,7 +37,27 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
   @override
   void initState() {
     super.initState();
+    _getCurrentUser();
     _fetchMoods();
+  }
+
+  // Get current user ID
+  void _getCurrentUser() {
+    final User? user = _auth.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
+      });
+    } else {
+      // Handle case where user is not logged in
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Not logged in. Please log in to record your mood.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -102,6 +125,16 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
 
   // Continue to reason selection
   void _continueToReasonSelection() {
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Not logged in. Please log in to record your mood.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     final String finalMood =
         _showCustomMoodInput
             ? _customMoodController.text.trim()
@@ -134,7 +167,10 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReasonSelectionPage(selectedMood: finalMood),
+        builder: (context) => ReasonSelectionPage(
+          selectedMood: finalMood,
+          userId: _userId!,
+        ),
       ),
     );
   }
