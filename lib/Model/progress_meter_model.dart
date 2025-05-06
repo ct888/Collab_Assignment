@@ -276,29 +276,4 @@ class ProgressMeterData {
     'You are making a difference!',
     'Keep striving for greatness!'
   ];
-  
-  
-  // Method to insert timestamp data into specified Firebase collection
-  static Future<void> insertTimestampToCollection(String tableName) async {
-    try {
-      // Get the current user ID
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        throw Exception('No user is currently logged in');
-      }
-      
-      final data = {
-        'date': Timestamp.now(),
-      };
-      
-      // Insert into the specified collection under the user's document
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .collection(tableName)
-          .add(data);
-    } catch (e) {
-      debugPrint('Error inserting timestamp: $e');
-    }
-  }
 }
