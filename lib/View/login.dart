@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/input_widget.dart';
@@ -8,28 +10,86 @@ import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 
-import 'BOA.dart';
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LogIn extends StatefulWidget {
+  const LogIn({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LogIn(), // Set your login screen here
-    );
-  }
+  State<LogIn> createState() => _LogInState();
 }
 
-class LogIn extends StatelessWidget {
-  const LogIn({super.key});
+class _LogInState extends State<LogIn> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loginUser() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final String email = _emailController.text.trim();
+      final String password = _passwordController.text;
+
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful!', style:GoogleFonts.aDLaMDisplay()),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+      if (e.code == 'user-not-found') {
+        message = 'No user found with this email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Incorrect password.';
+      } else {
+        message = 'Login Failed: ${e.message}';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: GoogleFonts.aDLaMDisplay()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Screen Width & Height
+    double h, w;
+    (h, w) = WHGetter.getHeightAndWidth(context);
 
-    double w = WHGetter.width(context);
-    double h = WHGetter.height(context);
+    // Text Input controller
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -89,19 +149,21 @@ class LogIn extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Email Input
-                        TextInput(
+                        InputText(
                           label: "Email",
-                          width: 374, //TODO: tO DYnamic
-                          height: 70, // TODO: to dynamic
+                          width: w * 0.9,
+                          height: 70,
+                          controller: _emailController,
                         ),
                         // === Seperator ===
                         SizedBox(height: 10),
                         // Password Input
-                        TextInput(
+                        InputText(
                           label: "Password",
-                          width: 374, // TODO: same
-                          height: 70, // TODO same
+                          width: w * 0.9,
+                          height: 70,
                           isSensitiveInput: true,
+                          controller: _passwordController,
                         ),
                       ],
                     ),
@@ -110,17 +172,13 @@ class LogIn extends StatelessWidget {
                   // Login Button
                   Padding(
                     padding: EdgeInsets.only(top: 10),
-                    child: ButtonWidget(
+                    child: TextButtonWidget(
                       label: "Log In",
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => BOA()),
-                        );
-                      },
-                      color: CustomColors.blue,
-                      width: WHGetter.sx(context, 374),
-                      height: WHGetter.sy(context, 60),
+                      borderRadius: 38,
+                      onPressed: () => _isLoading ? null : _loginUser(),
+                      backgroundColor: CustomColors.blue,
+                      width: w * 0.9,
+                      height: 60,
                     ),
                   ),
 

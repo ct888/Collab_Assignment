@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/wh_getter.dart';
 
-class ButtonWidget extends StatelessWidget {
+class TextButtonWidget extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final double? width;
   final double? height;
-  final Color? color;
+  final Color? backgroundColor;
+  final double borderRadius;
 
-  const ButtonWidget({
+  const TextButtonWidget({
     super.key,
     required this.label,
     required this.onPressed,
     this.width,
     this.height,
-    this.color,
+    this.backgroundColor,
+    this.borderRadius = 0,
   });
 
   @override
@@ -27,11 +28,11 @@ class ButtonWidget extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color ?? CustomColors.blue,
+          backgroundColor: backgroundColor ?? CustomColors.blue,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
-          elevation: 4,
+          elevation: 0,
         ),
         child: Center(
           child: Text(
@@ -47,3 +48,46 @@ class ButtonWidget extends StatelessWidget {
     );
   }
 }
+
+class IconButtonWidget extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+  final double size;
+  final Color? backgroundColor;
+  final Color? iconColor;
+
+  const IconButtonWidget({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.size = 55,
+    this.backgroundColor,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor ?? CustomColors.blue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(size / 2),
+          ),
+          padding: EdgeInsets.zero,
+          elevation: 0,
+        ),
+        child: Icon(
+          icon,
+          color: iconColor ?? CustomColors.grayDark,
+          size: size * 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+
