@@ -8,7 +8,7 @@ import 'package:seek_here/View/recap_report1_view.dart';
 import 'package:seek_here/Service/user_records_service.dart';
 
 // userID for testing purposes
-// const String userID = 'E0uSiko9ZWguiI8md0xFbOM3rHD3';
+const String userId = 'E0uSiko9ZWguiI8md0xFbOM3rHD3';
 
 class ActivityDisplayData {
   final String activity;
@@ -119,7 +119,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
     try {
       final user = FirebaseAuth.instance.currentUser;
       
-      // Get all activities
+      // MODIFIED QUERY - Remove where() clause
       final activitiesRef = FirebaseFirestore.instance
           .collection('users')
           .doc(user!.uid)
@@ -130,27 +130,34 @@ class ProgressMeterViewModel extends ChangeNotifier {
       _activitiesSubscription = activitiesRef.snapshots().listen(
         (querySnapshot) {
           if (querySnapshot.docs.isNotEmpty) {
-            userActivities = querySnapshot.docs.map((doc) {
-              Map<String, dynamic> data = doc.data();
-              
-              // Extract data from the document
-              String activity = data['activity'] ?? 'Unknown activity';
-              
-              // Handle timestamp that might be null
-              final timestamp = data['timestamp'];
-              final DateTime date = timestamp is Timestamp 
-                  ? timestamp.toDate() 
-                  : DateTime.now();
-              
-              int pointsAdded = (data['pointsAdded'] ?? 0);
-              
-              // Use the standardizer helper from the model
-              return UserActivity.createStandardized(
-                activity, 
-                date, 
-                pointsAdded
-              );
-            }).toList();
+            // Filter by userId in code
+            userActivities = querySnapshot.docs
+                .where((doc) {
+                  Map<String, dynamic> data = doc.data();
+                  return data['userId'] == userId;
+                })
+                .map((doc) {
+                  Map<String, dynamic> data = doc.data();
+                  // Extract data from the document
+                  String activity = data['activity'] ?? 'Unknown activity';
+                  
+                  // Handle timestamp that might be null
+                  final timestamp = data['timestamp'];
+                  final DateTime date = timestamp is Timestamp 
+                      ? timestamp.toDate() 
+                      : DateTime.now();
+                  
+                  int pointsAdded = (data['pointsAdded'] ?? 0);
+                  
+                  // Use the standardizer helper from the model with userId parameter
+                  return UserActivity.createStandardized(
+                    activity, 
+                    date, 
+                    pointsAdded,
+                    userId: userId
+                  );
+                })
+                .toList();
             
             // Calculate total points
             _calculateTotalPoints(user.uid);
@@ -186,6 +193,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Calculate total points
   Future<void> _calculateTotalPoints(String userId) async {
     try {
+      // MODIFIED QUERY - Remove where() clause
       final pointsRef = FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -193,11 +201,13 @@ class ProgressMeterViewModel extends ChangeNotifier {
       
       final pointsSnapshot = await pointsRef.get();
       
-      // Sum up all points
+      // Sum up all points, filtering by userId
       int totalUserPoints = 0;
       for (var doc in pointsSnapshot.docs) {
         Map<String, dynamic> data = doc.data();
-        totalUserPoints += (data['pointsAdded'] as num? ?? 0).toInt();
+        if (data['userId'] == userId) {  // Filter by userId in code
+          totalUserPoints += (data['pointsAdded'] as num? ?? 0).toInt();
+        }
       }
       
       userPoints = totalUserPoints;
@@ -223,7 +233,8 @@ class ProgressMeterViewModel extends ChangeNotifier {
     updateState([], true);
     
     try {
-      // Get all records
+      // Get all records - MODIFIED QUERY
+      // Option 1: Get all records and filter in code
       final collectionRef = FirebaseFirestore.instance
           .collection(collectionName)
           .orderBy(orderByField, descending: true);
@@ -232,14 +243,20 @@ class ProgressMeterViewModel extends ChangeNotifier {
       final subscription = collectionRef.snapshots().listen(
         (querySnapshot) {
           if (querySnapshot.docs.isNotEmpty) {
+            // Filter by userId in code rather than in the query
             final data = querySnapshot.docs
-                .map((doc) => RecordEntry.fromFirestore(doc, recordType))
+                .where((doc) {
+                  Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
+                  return docData['userId'] == userId;
+                })
+                .map((doc) => RecordEntry.fromFirestore(doc, recordType, userId: userId))
                 .toList();
             updateState(data, false);
           } else {
-            // If no data in root collection, try user-specific collection
+            // Try user-specific collection if root collection is empty
             final user = FirebaseAuth.instance.currentUser;
             if (user != null) {
+              // For user-specific collection, also modify the query
               FirebaseFirestore.instance
                   .collection('users')
                   .doc(user.uid)
@@ -248,8 +265,13 @@ class ProgressMeterViewModel extends ChangeNotifier {
                   .get()
                   .then((snapshot) {
                 if (snapshot.docs.isNotEmpty) {
+                  // Filter by userId in code
                   final data = snapshot.docs
-                      .map((doc) => RecordEntry.fromFirestore(doc, recordType))
+                      .where((doc) {
+                        Map<String, dynamic> docData = doc.data();
+                        return docData['userId'] == userId;
+                      })
+                      .map((doc) => RecordEntry.fromFirestore(doc, recordType, userId: userId))
                       .toList();
                   updateState(data, false);
                 } else {

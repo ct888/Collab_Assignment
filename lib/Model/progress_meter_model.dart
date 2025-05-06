@@ -56,11 +56,13 @@ class RecordEntry {
   final DateTime timestamp;
   final String recordType; // 'mood', 'journal', 'meditation', etc.
   final Map<String, dynamic> data; // Flexible data structure to store different record types
+  final String userId;
 
   RecordEntry({
     required this.timestamp,
     required this.recordType,
     required this.data,
+    required this.userId,
   });
 
   // Convert a record entry to a map for storage
@@ -69,15 +71,17 @@ class RecordEntry {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'recordType': recordType,
       'data': data,
+      'userId': userId,
     };
   }
 
   // Create a record entry from a map
-  factory RecordEntry.fromMap(Map<String, dynamic> map) {
+  factory RecordEntry.fromMap(Map<String, dynamic> map, {required String userId}) {
     return RecordEntry(
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
       recordType: map['recordType'],
       data: map['data'],
+      userId: map['userId'] ?? userId,
     );
   }
 
@@ -98,7 +102,7 @@ class RecordEntry {
   }
   
   // Factory to create from Firestore data
-  factory RecordEntry.fromFirestore(DocumentSnapshot doc, String type) {
+  factory RecordEntry.fromFirestore(DocumentSnapshot doc, String type, {required String userId}) {
     Map<String, dynamic> docData = doc.data() as Map<String, dynamic>? ?? {};
     
     // Handle timestamp that might be null - check various field names
@@ -111,6 +115,7 @@ class RecordEntry {
       timestamp: date,
       recordType: type,
       data: docData,
+      userId: docData['userId'] ?? userId,
     );
   }
   
@@ -143,11 +148,12 @@ class RecordEntry {
       activity: activityText,
       timestamp: timestamp,
       pointsAdded: points,
+      userId: userId,
     );
   }
 
   // Method to insert timestamp data into specified Firebase collection
-  static Future<void> insertTimestampToCollection(String tableName) async {
+  static Future<void> insertTimestampToCollection(String tableName, {required String userId}) async {
     try {
       // Get the current user ID
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -157,6 +163,7 @@ class RecordEntry {
       
       final data = {
         'date': Timestamp.now(),
+        'userId': userId,
       };
       
       // Insert into the specified collection under the user's document
@@ -176,11 +183,13 @@ class UserActivity {
   final String activity;
   final DateTime timestamp;
   final int pointsAdded;
+  final String userId;
 
   UserActivity({
     required this.activity,
     required this.timestamp,
     required this.pointsAdded,
+    required this.userId,
   });
 
   // Convert an activity to a map for storage
@@ -189,15 +198,17 @@ class UserActivity {
       'activity': activity,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'pointsAdded': pointsAdded,
+      'userId': userId,
     };
   }
 
   // Create an activity from a map
-  factory UserActivity.fromMap(Map<String, dynamic> map) {
+  factory UserActivity.fromMap(Map<String, dynamic> map, {required String userId}) {
     return UserActivity(
       activity: map['activity'],
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
       pointsAdded: map['pointsAdded'],
+      userId: map['userId'] ?? userId, // Use provided userId
     );
   }
 
@@ -207,8 +218,8 @@ class UserActivity {
     return activities;
   }
 
-  // Factory to create from Firestore data with better error handling
-  factory UserActivity.fromFirestore(DocumentSnapshot doc) {
+  // Factory to create from Firestore data
+  factory UserActivity.fromFirestore(DocumentSnapshot doc, {required String userId}) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
     
     // Handle timestamp that might be null (still processing on server)
@@ -221,6 +232,7 @@ class UserActivity {
       activity: data['activity'] ?? 'Unknown activity',
       timestamp: date,
       pointsAdded: (data['pointsAdded'] ?? 0),
+      userId: data['userId'] ?? userId,
     );
   }
 
@@ -242,11 +254,12 @@ class UserActivity {
   }
 
   // Create a standardized activity
-  static UserActivity createStandardized(String rawActivity, DateTime timestamp, int pointsAdded) {
+  static UserActivity createStandardized(String rawActivity, DateTime timestamp, int pointsAdded, {required String userId}) {
     return UserActivity(
       activity: standardizeActivityName(rawActivity),
       timestamp: timestamp,
-      pointsAdded: pointsAdded
+      pointsAdded: pointsAdded,
+      userId: userId,
     );
   }
 }
