@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
+import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
@@ -222,11 +223,13 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       );
 
       // Navigate back to dashboard
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const MoodDashboardPage()),
-        (route) => false,
-      );
+      // Navigator.pushAndRemoveUntil(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const MainScreen()),
+      //   (route) => false,
+      // );
+      Navigator.popUntil(context, (route) => route.isFirst);
+
     } catch (e) {
       print('Error saving mood: $e');
       ScaffoldMessenger.of(context).showSnackBar(

@@ -3,6 +3,7 @@ import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/progress_meter.dart';
 import 'package:seek_here/View/recommender_page.dart';
+import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
 
 class MainScreen extends StatefulWidget {
@@ -24,7 +25,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("HAHAHAHAHAHAHAH Mainscreen is rebuilding");
     return Scaffold(
+      backgroundColor: CustomColors.white,
       body: _pages[_currentIndex],
       bottomNavigationBar: HomeNavbarWidget(
         currentIndex: _currentIndex,
