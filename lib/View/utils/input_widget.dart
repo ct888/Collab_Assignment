@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 
-class TextInput extends StatelessWidget {
+class InputText extends StatelessWidget {
   final String label;
   final TextEditingController? controller;
   final bool isSensitiveInput;
   final double? width;
   final double? height;
 
-  const TextInput({
+  const InputText({
     super.key,
     required this.label,
     this.controller,

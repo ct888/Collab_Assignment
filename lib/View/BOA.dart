@@ -104,7 +104,7 @@ class _BOAState extends State<BOA> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(top: 50, bottom: 100),
-                      child: TextInput(
+                      child: InputText(
                         label: "What's happening now?",
                         width: w * 0.9,
                         height: 70,
