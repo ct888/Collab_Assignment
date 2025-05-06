@@ -7,9 +7,6 @@ import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/recap_report1_view.dart';
 import 'package:seek_here/Service/user_records_service.dart';
 
-// userID for testing purposes
-const String userId = 'E0uSiko9ZWguiI8md0xFbOM3rHD3';
-
 class ActivityDisplayData {
   final String activity;
   final DateTime timestamp;
@@ -134,7 +131,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
             userActivities = querySnapshot.docs
                 .where((doc) {
                   Map<String, dynamic> data = doc.data();
-                  return data['userId'] == userId;
+                  return data['userId'] == uid;
                 })
                 .map((doc) {
                   Map<String, dynamic> data = doc.data();
@@ -153,8 +150,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
                   return UserActivity.createStandardized(
                     activity, 
                     date, 
-                    pointsAdded,
-                    userId: userId
+                    pointsAdded
                   );
                 })
                 .toList();
@@ -247,9 +243,9 @@ class ProgressMeterViewModel extends ChangeNotifier {
             final data = querySnapshot.docs
                 .where((doc) {
                   Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
-                  return docData['userId'] == userId;
+                  return docData['userId'] == uid;
                 })
-                .map((doc) => RecordEntry.fromFirestore(doc, recordType, userId: userId))
+                .map((doc) => RecordEntry.fromFirestore(doc, recordType))
                 .toList();
             updateState(data, false);
           } else {
@@ -269,9 +265,9 @@ class ProgressMeterViewModel extends ChangeNotifier {
                   final data = snapshot.docs
                       .where((doc) {
                         Map<String, dynamic> docData = doc.data();
-                        return docData['userId'] == userId;
+                        return docData['userId'] == uid;
                       })
-                      .map((doc) => RecordEntry.fromFirestore(doc, recordType, userId: userId))
+                      .map((doc) => RecordEntry.fromFirestore(doc, recordType))
                       .toList();
                   updateState(data, false);
                 } else {

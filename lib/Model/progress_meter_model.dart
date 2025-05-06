@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+String uid = FirebaseAuth.instance.currentUser!.uid;
+
 // MoodData class for managing mood statistics
 class MoodData {
   final String name;
@@ -75,16 +77,6 @@ class RecordEntry {
     };
   }
 
-  // Create a record entry from a map
-  factory RecordEntry.fromMap(Map<String, dynamic> map, {required String userId}) {
-    return RecordEntry(
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
-      recordType: map['recordType'],
-      data: map['data'],
-      userId: map['userId'] ?? userId,
-    );
-  }
-
   // Get points value based on record type
   static int getPointsForType(String recordType) {
     switch (recordType.toLowerCase()) {
@@ -102,7 +94,7 @@ class RecordEntry {
   }
   
   // Factory to create from Firestore data
-  factory RecordEntry.fromFirestore(DocumentSnapshot doc, String type, {required String userId}) {
+  factory RecordEntry.fromFirestore(DocumentSnapshot doc, String type) {
     Map<String, dynamic> docData = doc.data() as Map<String, dynamic>? ?? {};
     
     // Handle timestamp that might be null - check various field names
@@ -115,7 +107,7 @@ class RecordEntry {
       timestamp: date,
       recordType: type,
       data: docData,
-      userId: docData['userId'] ?? userId,
+      userId: docData['userId'] ?? uid,
     );
   }
   
@@ -153,23 +145,18 @@ class RecordEntry {
   }
 
   // Method to insert timestamp data into specified Firebase collection
-  static Future<void> insertTimestampToCollection(String tableName, {required String userId}) async {
+  static Future<void> insertTimestampToCollection(String tableName) async {
     try {
-      // Get the current user ID
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        throw Exception('No user is currently logged in');
-      }
-      
+      // Use the global uid variable directly
       final data = {
         'date': Timestamp.now(),
-        'userId': userId,
+        'userId': uid,
       };
       
       // Insert into the specified collection under the user's document
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUser.uid)
+          .doc(uid)
           .collection(tableName)
           .add(data);
     } catch (e) {
@@ -202,24 +189,8 @@ class UserActivity {
     };
   }
 
-  // Create an activity from a map
-  factory UserActivity.fromMap(Map<String, dynamic> map, {required String userId}) {
-    return UserActivity(
-      activity: map['activity'],
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
-      pointsAdded: map['pointsAdded'],
-      userId: map['userId'] ?? userId, // Use provided userId
-    );
-  }
-
-  // Sort activities by timestamp (newest first)
-  static List<UserActivity> sortByTimestamp(List<UserActivity> activities) {
-    activities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return activities;
-  }
-
   // Factory to create from Firestore data
-  factory UserActivity.fromFirestore(DocumentSnapshot doc, {required String userId}) {
+  factory UserActivity.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
     
     // Handle timestamp that might be null (still processing on server)
@@ -232,7 +203,7 @@ class UserActivity {
       activity: data['activity'] ?? 'Unknown activity',
       timestamp: date,
       pointsAdded: (data['pointsAdded'] ?? 0),
-      userId: data['userId'] ?? userId,
+      userId: data['userId'] ?? uid,
     );
   }
 
@@ -254,12 +225,12 @@ class UserActivity {
   }
 
   // Create a standardized activity
-  static UserActivity createStandardized(String rawActivity, DateTime timestamp, int pointsAdded, {required String userId}) {
+  static UserActivity createStandardized(String rawActivity, DateTime timestamp, int pointsAdded) {
     return UserActivity(
       activity: standardizeActivityName(rawActivity),
       timestamp: timestamp,
       pointsAdded: pointsAdded,
-      userId: userId,
+      userId: uid,
     );
   }
 }
