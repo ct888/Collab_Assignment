@@ -134,23 +134,59 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
   Future<void> _saveMoodEntry() async {
     // Get final list of reasons
     List<String> finalReasons = List.from(_selectedReasons);
-    
+
     // Add custom reason if provided
     final String customReason = _customReasonController.text.trim();
-    if (_showCustomReasonInput && customReason.isNotEmpty && finalReasons.length < 3) {
+    if (_showCustomReasonInput && customReason.isNotEmpty) {
+      // Check if the custom reason is already in the selected reasons (case-insensitive)
+      bool isDuplicate = _selectedReasons.any(
+        (selected) => selected.toLowerCase() == customReason.toLowerCase(),
+      );
+
+      if (isDuplicate) {
+        // Show error message if duplicate reason
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Duplicate reason: "$customReason" is already selected.',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Check if we would exceed 3 reasons
+      if (finalReasons.length >= 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You can select a maximum of 3 reasons.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Add the custom reason
       finalReasons.add(customReason);
-      
-      // Add to Firebase if it's a new reason
-      if (!_reasons.contains(customReason)) {
+
+      // Add to Firebase if it's a new reason (case-insensitive check)
+      bool reasonExists = _reasons.any(
+        (existing) => existing.toLowerCase() == customReason.toLowerCase(),
+      );
+
+      if (!reasonExists) {
         _reasons.add(customReason);
         _firestore
             .collection('app_data')
             .doc('reasons')
             .update({'list': _reasons})
-            .catchError((error) => print('Failed to add custom reason: $error'));
+            .catchError(
+              (error) => print('Failed to add custom reason: $error'),
+            );
       }
     }
-    
+
     if (finalReasons.isEmpty) {
       // Show error message if no reason is selected
       ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +200,7 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
 
     // Current date and time
     final DateTime now = DateTime.now();
-    
+
     try {
       // Save mood entry to Firebase
       await _firestore.collection('moods').add({
@@ -203,8 +239,8 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    double w = WHGetter.width(context);
-    double h = WHGetter.height(context);
+    double w = WHGetter.getWidth(context);
+    double h = WHGetter.getHeight(context);
 
     return Scaffold(
       body: Stack(

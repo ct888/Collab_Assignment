@@ -130,8 +130,8 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    double w = WHGetter.width(context);
-    double h = WHGetter.height(context);
+    double w = WHGetter.getWidth(context);
+    double h = WHGetter.getHeight(context);
 
     return Scaffold(
       body: Stack(

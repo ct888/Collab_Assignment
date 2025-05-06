@@ -200,8 +200,8 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
   
   @override
   Widget build(BuildContext context) {
-    final double w = WHGetter.width(context);
-    final double h = WHGetter.height(context);
+    final double w = WHGetter.getWidth(context);
+    final double h = WHGetter.getHeight(context);
     
     return Scaffold(
       body: Stack(
@@ -393,11 +393,11 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
                         children: [
                           // Save button
                           Expanded(
-                            child: ButtonWidget(
+                            child: TextButtonWidget(
                               label: "Save",
                               onPressed: _saveMoodAndReasons,
                               height: WHGetter.sy(context, 50),
-                              color: CustomColors.blue,
+                              backgroundColor: CustomColors.blue,
                             ),
                           ),
                           
@@ -405,11 +405,11 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
                           
                           // Cancel button
                           Expanded(
-                            child: ButtonWidget(
+                            child: TextButtonWidget(
                               label: "Cancel",
                               onPressed: () => Navigator.of(context).pop(),
                               height: WHGetter.sy(context, 50),
-                              color: CustomColors.pink,
+                              backgroundColor: CustomColors.pink,
                             ),
                           ),
                         ],

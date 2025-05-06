@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:seek_here/View/boa.dart';
+import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
+import 'package:seek_here/views/recommender_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -9,15 +11,14 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   final List<Widget> _pages = [
     BOA(),
+    MoodDashboardPage(),
+    RecommenderScreen(),
     BOA(),
     BOA(),
-    BOA(),
-    BOA(),
-
   ];
 
   @override

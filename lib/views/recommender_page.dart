@@ -91,9 +91,6 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentIndex: 2,
-      ),
     );
   }
 

@@ -127,8 +127,8 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    double w = WHGetter.width(context);
-    double h = WHGetter.height(context);
+    double w = WHGetter.getWidth(context);
+    double h = WHGetter.getHeight(context);
 
     // Calculate the date for the selected day (only when a day is selected)
     String formattedSelectedDate = '';
@@ -158,6 +158,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
         selectedDayData = _weeklyMoods[selectedDateString];
       }
     }
+
 
     return Scaffold(
       body: Stack(
@@ -251,9 +252,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                 : _buildMainContent(w, h, formattedSelectedDate, hasSelectedDayData, selectedDayData),
           ),
         ],
-      ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentIndex: 1,  // Mood tab selected
       ),
     );
   }
