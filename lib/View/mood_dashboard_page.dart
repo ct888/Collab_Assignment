@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
+import 'package:seek_here/Model/mood.dart'; // Import UserMood model
+import 'package:flutter/foundation.dart'; // For print debugging
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
-
+import 'package:seek_here/ViewModel/moodViewModel.dart';
 import '../utils/bottom_navigation_bar.dart';
 
 class MoodDashboardPage extends StatefulWidget {
@@ -20,7 +20,8 @@ class MoodDashboardPage extends StatefulWidget {
 }
 
 class _MoodDashboardPageState extends State<MoodDashboardPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final MoodViewModel _moodViewModel =
+      MoodViewModel(); // Create an instance of MoodViewModel
 
   // Selected day from weekly view (SU, M, T, etc.)
   String? _selectedDay;
@@ -28,8 +29,11 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
   // Selected date
   DateTime _selectedDate = DateTime.now();
 
+  // List to store all user moods
+  List<UserMood> _allMoods = [];
+
   // Map to store daily moods by date string
-  Map<String, Map<String, dynamic>> _weeklyMoods = {};
+  Map<String, UserMood> _weeklyMoods = {};
 
   // Day abbreviations
   final List<String> _weekDays = ['SU', 'M', 'T', 'W', 'TH', 'F', 'S'];
@@ -42,89 +46,114 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
     super.initState();
     // Initially no day is selected
     _selectedDay = null;
-    _fetchWeeklyMoods();
+    _fetchAllMoods();
   }
 
-  // Fetch the mood entries for the current week
-  Future<void> _fetchWeeklyMoods() async {
+  // Fetch all mood entries and then filter for the current week
+  Future<void> _fetchAllMoods() async {
     setState(() {
       _isLoading = true;
     });
 
-    // Calculate the start of the week (Sunday)
-    DateTime startOfWeek = _selectedDate.subtract(
-      Duration(days: _selectedDate.weekday % 7),
-    );
-    // Calculate the end of the week (Saturday)
-    DateTime endOfWeek = startOfWeek.add(
-      const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
-    );
-
     try {
-      // Fetch all mood entries for the current week
-      final QuerySnapshot snapshot =
-          await _firestore
-              .collection('moods')
-              .where(
-                'date',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfWeek),
-              )
-              .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfWeek))
-              .get();
+      // Get all moods using the MoodViewModel
+      final moods = await _moodViewModel.fetchAllMoods();
 
-      Map<String, Map<String, dynamic>> weeklyMoods = {};
-
-      // Initialize the map with empty data for each day of the week
-      for (int i = 0; i < 7; i++) {
-        DateTime currentDate = startOfWeek.add(Duration(days: i));
-        String dateString = DateFormat('yyyy-MM-dd').format(currentDate);
-
-        weeklyMoods[dateString] = {
-          'mood': 'N/A',
-          'reasons': <String>[],
-          'date': currentDate,
-          'hasData': false,
-        };
-      }
-
-      // Fill in data from Firebase
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final Timestamp timestamp = data['date'] as Timestamp;
-        final DateTime date = timestamp.toDate();
-        final String dateString = DateFormat('yyyy-MM-dd').format(date);
-
-        // Only add data if the date falls within our week
-        if (date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-            date.isBefore(endOfWeek.add(const Duration(days: 1)))) {
-          weeklyMoods[dateString] = {
-            'mood': data['mood'],
-            'reasons': data['reasons'],
-            'date': date,
-            'hasData': true,
-          };
-        }
-      }
+      // Sort all moods by timestamp in descending order (most recent first)
+      moods.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       setState(() {
-        _weeklyMoods = weeklyMoods;
+        _allMoods = moods;
         _isLoading = false;
       });
+
+      // Process moods for the current week
+      _processWeeklyMoods();
     } catch (e) {
-      print('Error fetching weekly moods: $e');
+      print('Error fetching moods: $e');
       setState(() {
         _isLoading = false;
       });
     }
   }
 
-  // Update selected date and fetch moods
+  // Process the fetched moods for the current week view
+  void _processWeeklyMoods() {
+    // Calculate the start of the week (Sunday)
+    DateTime startOfWeek = _selectedDate.subtract(
+      Duration(days: _selectedDate.weekday % 7),
+    );
+
+    // Calculate the end of the week (Saturday)
+    DateTime endOfWeek = startOfWeek.add(
+      const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
+    );
+
+    // Map to store the latest mood for each day
+    Map<String, UserMood> weeklyMoods = {};
+
+    // Group moods by date string
+    Map<String, List<UserMood>> moodsByDate = {};
+
+    if (kDebugMode) {
+      print('Processing weekly moods from ${_allMoods.length} total moods');
+      print('Start of week: $startOfWeek, End of week: $endOfWeek');
+    }
+
+    // Filter moods that fall within the current week
+    for (var mood in _allMoods) {
+      if (mood.timestamp.isAfter(
+            startOfWeek.subtract(const Duration(days: 0)),
+          ) &&
+          mood.timestamp.isBefore(endOfWeek.add(const Duration(days: 0)))) {
+        final String dateString = DateFormat(
+          'yyyy-MM-dd',
+        ).format(mood.timestamp);
+
+        // Initialize list if this date doesn't exist yet
+        if (!moodsByDate.containsKey(dateString)) {
+          moodsByDate[dateString] = [];
+        }
+
+        // Add the mood to this date's list
+        moodsByDate[dateString]!.add(mood);
+
+        if (kDebugMode) {
+          print(
+            'Found mood for $dateString: ${mood.moodType} (${mood.timestamp})',
+          );
+        }
+      }
+    }
+
+    // For each date, find the most recent mood entry
+    moodsByDate.forEach((dateString, moodsList) {
+      // Sort the moods by timestamp in descending order (most recent first)
+      moodsList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      // Add the most recent mood for this date to the weekly moods map
+      if (moodsList.isNotEmpty) {
+        weeklyMoods[dateString] = moodsList.first;
+        if (kDebugMode) {
+          print(
+            'Selected latest mood for $dateString: ${moodsList.first.moodType} (${moodsList.first.timestamp})',
+          );
+        }
+      }
+    });
+
+    setState(() {
+      _weeklyMoods = weeklyMoods;
+    });
+  }
+
+  // Update selected date and process moods
   void _updateSelectedDate(DateTime date) {
     setState(() {
       _selectedDate = date;
       _selectedDay = _weekDays[date.weekday % 7];
     });
-    _fetchWeeklyMoods();
+    _processWeeklyMoods();
   }
 
   @override
@@ -135,7 +164,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
     // Calculate the date for the selected day (only when a day is selected)
     String formattedSelectedDate = '';
     bool hasSelectedDayData = false;
-    Map<String, dynamic>? selectedDayData;
+    UserMood? selectedDayMood;
 
     if (_selectedDay != null) {
       final DateTime startOfWeek = _selectedDate.subtract(
@@ -153,11 +182,9 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
       ).format(selectedDayDate);
 
       // Check if we have mood data for the selected day
-      hasSelectedDayData =
-          _weeklyMoods.containsKey(selectedDateString) &&
-          _weeklyMoods[selectedDateString]!['hasData'] == true;
+      hasSelectedDayData = _weeklyMoods.containsKey(selectedDateString);
       if (hasSelectedDayData) {
-        selectedDayData = _weeklyMoods[selectedDateString];
+        selectedDayMood = _weeklyMoods[selectedDateString];
       }
     }
 
@@ -170,7 +197,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
             left: -2,
             child: SvgPicture.asset(AppImages.bgCloud),
           ),
-          // Top wave decoration
 
           // logo
           Positioned(
@@ -214,7 +240,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                       h,
                       formattedSelectedDate,
                       hasSelectedDayData,
-                      selectedDayData,
+                      selectedDayMood,
                     ),
           ),
         ],
@@ -250,7 +276,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
     double h,
     String formattedSelectedDate,
     bool hasSelectedDayData,
-    Map<String, dynamic>? selectedDayData,
+    UserMood? selectedDayMood,
   ) {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: w * 0.05),
@@ -298,7 +324,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                       ? Column(
                         children: [
                           Text(
-                            'Mood: ${selectedDayData!['mood']}',
+                            'Mood: ${selectedDayMood!.moodType}',
                             style: GoogleFonts.aDLaMDisplay(
                               fontSize: 18,
                               color: Colors.black,
@@ -306,8 +332,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                             ),
                           ),
                           const SizedBox(height: 15),
-                          if (selectedDayData!['reasons'] != null &&
-                              (selectedDayData!['reasons'] as List).isNotEmpty)
+                          if (selectedDayMood.notes.isNotEmpty)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -320,9 +345,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                ...(selectedDayData!['reasons'] as List).map((
-                                  reason,
-                                ) {
+                                ...selectedDayMood.notes.map((reason) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 5),
                                     child: Text(
@@ -349,165 +372,51 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
               ),
             )
           else
-            // Grid view of all 7 days
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1.2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 15,
-              ),
-              itemCount:
-                  8, // We need 8 slots to place the 7th item in position 7
-              itemBuilder: (context, index) {
-                // Skip position 6 (row 3, column 1)
-                if (index == 6) {
-                  return const SizedBox.shrink(); // Empty spacer
-                }
-
-                // Adjust the real data index for items
-                int dataIndex;
-                if (index < 6) {
-                  dataIndex = index; // Items 0-5 stay the same
-                } else {
-                  dataIndex =
-                      index - 1; // Item at index 7 shows data for index 6
-                }
-
-                // Only show data if we're within the original 7 days range
-                if (dataIndex >= 7) {
-                  return const SizedBox.shrink();
-                }
-
-                // Calculate the date for this day
-                final DateTime startOfWeek = _selectedDate.subtract(
-                  Duration(days: _selectedDate.weekday % 7),
-                );
-                final DateTime dayDate = startOfWeek.add(
-                  Duration(days: dataIndex),
-                );
-                final String dateString = DateFormat(
-                  'yyyy-MM-dd',
-                ).format(dayDate);
-
-                // Get the data for this day
-                final bool hasData =
-                    _weeklyMoods.containsKey(dateString) &&
-                    _weeklyMoods[dateString]!['hasData'] == true;
-                final String mood =
-                    hasData ? _weeklyMoods[dateString]!['mood'] : 'N/A';
-                final List<dynamic> reasons =
-                    hasData && _weeklyMoods[dateString]!['reasons'] != null
-                        ? _weeklyMoods[dateString]!['reasons']
-                        : [];
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedDay = _weekDays[dayDate.weekday % 7];
-                      _selectedDate = dayDate;
-                    });
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 5,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          DateFormat('MMM d, yyyy').format(dayDate),
-                          style: GoogleFonts.aDLaMDisplay(
-                            fontSize: 10,
-                            color: Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          'Mood: ${mood}',
-                          style: GoogleFonts.aDLaMDisplay(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        if (hasData && reasons.isNotEmpty)
-                          Expanded(
-                            child: Text(
-                              'Reason: ${reasons.join(", ")}',
-                              style: GoogleFonts.aDLaMDisplay(
-                                fontSize: 10,
-                                color: Colors.black,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+            // Grid view of all 7 days of the week
+            _buildWeeklyMoodGrid(),
 
           const SizedBox(height: 25),
 
-          Positioned(
-            top: h * 0.05,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedDay = null;
-                      });
-                    },
-                    child: Text(
-                      'Your Mood on',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: CustomColors.grayDark,
-                      ),
+          // Date selection header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDay = null;
+                    });
+                  },
+                  child: Text(
+                    'Your Mood on',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: CustomColors.grayDark,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime.now(),
-                      );
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now(),
+                    );
 
-                      if (picked != null && picked != _selectedDate) {
-                        _updateSelectedDate(picked);
-                      }
-                    },
-                    child: Text(
-                      DateFormat('MMM d, yyyy').format(_selectedDate),
-                      style: TextStyle(color: CustomColors.blue),
-                    ),
+                    if (picked != null && picked != _selectedDate) {
+                      _updateSelectedDate(picked);
+                    }
+                  },
+                  child: Text(
+                    DateFormat('MMM d, yyyy').format(_selectedDate),
+                    style: TextStyle(color: CustomColors.blue),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 
@@ -560,11 +469,11 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MoodSelectionPage(),
+                    builder: (context) => const MoodSelectionPage(userId: ''),
                   ),
                 ).then((_) {
                   // Refresh data when coming back from mood selection
-                  _fetchWeeklyMoods();
+                  _fetchAllMoods();
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -588,6 +497,154 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           const SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  // Weekly mood grid widget
+  Widget _buildWeeklyMoodGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 15,
+      ),
+      itemCount: 8, // We need 8 slots to place the 7th item in position 7
+      itemBuilder: (context, index) {
+        // Skip position 6 (row 3, column 1)
+        if (index == 6) {
+          return const SizedBox.shrink(); // Empty spacer
+        }
+
+        // Adjust the real data index for items
+        int dataIndex;
+        if (index < 6) {
+          dataIndex = index; // Items 0-5 stay the same
+        } else {
+          dataIndex = index - 1; // Item at index 7 shows data for index 6
+        }
+
+        // Only show data if we're within the original 7 days range
+        if (dataIndex >= 7) {
+          return const SizedBox.shrink();
+        }
+
+        // Calculate the date for this day
+        final DateTime startOfWeek = _selectedDate.subtract(
+          Duration(days: _selectedDate.weekday % 7),
+        );
+        final DateTime dayDate = startOfWeek.add(Duration(days: dataIndex));
+        final String dateString = DateFormat('yyyy-MM-dd').format(dayDate);
+
+        // Get the data for this day
+        final bool hasData = _weeklyMoods.containsKey(dateString);
+        final String mood =
+            hasData ? _weeklyMoods[dateString]!.moodType : 'N/A';
+        final List<String> reasons =
+            hasData ? _weeklyMoods[dateString]!.notes : [];
+
+        // Determine the background color based on mood (if custom styling is desired)
+        Color cardColor = Colors.white;
+        if (hasData) {
+          // You can customize these colors based on your app's design
+          switch (mood.toLowerCase()) {
+            case 'happy':
+              cardColor = Colors.yellow.shade50;
+              break;
+            case 'sad':
+              cardColor = Colors.blue.shade50;
+              break;
+            case 'angry':
+              cardColor = Colors.red.shade50;
+              break;
+            case 'anxious':
+              cardColor = Colors.purple.shade50;
+              break;
+            case 'relaxed':
+              cardColor = Colors.green.shade50;
+              break;
+            default:
+              cardColor = Colors.white;
+          }
+        }
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDay = _weekDays[dayDate.weekday % 7];
+              _selectedDate = dayDate;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _weekDays[dayDate.weekday % 7],
+                      style: GoogleFonts.aDLaMDisplay(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('d').format(dayDate),
+                      style: GoogleFonts.aDLaMDisplay(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  hasData ? 'Mood: $mood' : 'No mood',
+                  style: GoogleFonts.aDLaMDisplay(
+                    fontSize: 12,
+                    color: Colors.black87,
+                    fontWeight: hasData ? FontWeight.w500 : FontWeight.normal,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 5),
+                if (hasData && reasons.isNotEmpty)
+                  Expanded(
+                    child: Text(
+                      reasons.length == 1
+                          ? reasons.first
+                          : '${reasons.length} reasons',
+                      style: GoogleFonts.aDLaMDisplay(
+                        fontSize: 10,
+                        color: Colors.black54,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

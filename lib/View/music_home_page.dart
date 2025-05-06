@@ -152,7 +152,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
               // Navigate to the mood tracker page
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MoodSelectionPage()),
+                MaterialPageRoute(builder: (context) => const MoodSelectionPage(userId: '',)),
               ).then((_) async {
                 // When returning from mood selection, reload data
                 setState(() {

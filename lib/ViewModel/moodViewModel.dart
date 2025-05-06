@@ -20,9 +20,8 @@ class MoodViewModel extends ChangeNotifier {
   MoodViewModel({
     GeminiService? geminiService,
     FirebaseService? firebaseMoodService,
-  }) :
-        _geminiService = geminiService ?? GeminiService(),
-        _firebaseMoodService = firebaseMoodService ?? FirebaseService();
+  }) : _geminiService = geminiService ?? GeminiService(),
+       _firebaseMoodService = firebaseMoodService ?? FirebaseService();
 
   UserMood? get currentMood => _currentMood;
   DiaryEntry? get latestDiaryEntry => _latestDiaryEntry;
@@ -161,9 +160,9 @@ class MoodViewModel extends ChangeNotifier {
     try {
       _isLoading = true;
       notifyListeners();
-
+      
       final moods = await _firebaseMoodService.fetchAllMoods();
-
+      
       _isLoading = false;
       notifyListeners();
       return moods;
@@ -172,7 +171,8 @@ class MoodViewModel extends ChangeNotifier {
       _isLoading = false;
       _errorMessage = 'Failed to fetch moods: ${e.toString()}';
       notifyListeners();
-      throw Exception('Failed to fetch moods:$e');
+      throw Exception('Failed to fetch moods: $e');
     }
   }
 }
+

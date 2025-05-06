@@ -13,6 +13,8 @@ class UserMood {
     required this.userID,
   });
 
+  
+
   factory UserMood.fromJson(Map<String, dynamic> json) {
     return UserMood(
       id: json['id'] ?? '',
@@ -35,5 +37,10 @@ class UserMood {
       'timestamp': timestamp.toIso8601String(),
       'userID': userID,
     };
+  }
+
+  @override
+  String toString() {
+    return 'UserMood(id: $id, mood: $moodType, timestamp: $timestamp, userId: $userID, notes: $notes)';
   }
 }
