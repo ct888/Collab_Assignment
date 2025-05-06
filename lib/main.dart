@@ -18,7 +18,10 @@ void main() async {
 
   await Firebase.initializeApp( // <--- Initialize Firebase
     options: DefaultFirebaseOptions.currentPlatform,
+
   );
+
+
 
   // runApp(MyApp());
   runApp(
