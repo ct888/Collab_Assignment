@@ -218,21 +218,29 @@ class FavoriteEventsScreen extends StatelessWidget {
           },
         );
       },
-      onDismissed: (direction) {
-        viewModel.removeFromFavorites(event.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${event.title} removed from favorites'),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () {
-                // This is a placeholder for the undo action
-                viewModel.refreshFavorites();
-              },
-            ),
-          ),
-        );
-      },
+                onDismissed: (direction) {
+                  final eventTitle = event.title;
+                  // Save a reference to the event that was removed
+                  final removedEvent = event;
+                  
+                  // Remove from favorites
+                  viewModel.removeFromFavorites(event.id);
+
+                  // Show snackbar with undo option
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$eventTitle removed from favorites'),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () {
+                          // Instead of relying on external ViewModel, use our own ViewModel's method
+                          // to re-add the event to favorites
+                          viewModel.undoRemoveFavorite(removedEvent);
+                        },
+                      ),
+                    ),
+                  );
+                },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         elevation: 0,

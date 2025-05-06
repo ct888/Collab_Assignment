@@ -30,7 +30,26 @@ class GeminiService {
     
     // Create prompt for Gemini
     final prompt = """
-    Find nearby events and activities near latitude: ${location.latitude}, longitude: ${location.longitude}.
+    Find nearby events and activities around latitude: ${location.latitude}, longitude: ${location.longitude}.
+
+      Please provide the following details for each event:
+      1. Event title
+      2. Organizer
+      3. Description
+      4. Location address
+      5. Date and time (in<\ctrl3348>-MM-DD HH:MM format)
+      6. Entry fee or cost per person (in Ringgit,RM)
+      7. Category (music, sports, food, art, education, business, technology, health, or outdoor)
+      6. Website link or more information source
+      9. Requirement for joining or participate the events
+
+    Please find at least 6-8 diverse events of different types, with accurate event details occurs between 5 June 2025 untul 5 August 2025.
+    Include both free and paid events. Ensure all events must be organise or conduct in the future(compare to today date).  
+    For category, ALWAYS provide ONE of these exact values: music, sports, food, art, education, business, technology, health, outdoor. 
+    For webUrl, use real-world website domains (like "eventbrite.com/e/example-event", "meetup.com/events/example", etc).
+    Please ensure the webUrl are valid and related to the event or activities
+    Leave imageUrl empty as I'll provide placeholder images.
+
     Please return the information in the following JSON format:
     [
       {
@@ -53,7 +72,7 @@ class GeminiService {
       }
     ]
     
-    Please find at least 5 diverse events of different types, with accurate event details. Include both free and paid events. Ensure all dates are in the future. For category, ALWAYS provide ONE of these exact values: music, sports, food, art, education, business, technology, health, outdoor. For webUrl, use real-world website domains (like "eventbrite.com/e/example-event", "meetup.com/events/example", etc). Leave imageUrl empty as I'll provide placeholder images.
+    
     """;
     
     // Prepare request to Gemini API
