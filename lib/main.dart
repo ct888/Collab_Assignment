@@ -1,66 +1,148 @@
+// main.dart
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
-import 'package:google_fonts/google_fonts.dart';
-import 'package:seek_here/View/progress_meter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'View/event_recommender_screen.dart';
+import 'View/favorite_event_screen.dart';
+import 'View/recommender_screen.dart';
 import 'firebase_options.dart';
-// import 'package:seek_here/View/recap_report1.dart';
-// import 'package:seek_here/View/recap_report2.dart'; // Corrected import path
 
-// Program start here
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // <--- Ensure Flutter binding is initialized
-
-  await Firebase.initializeApp( // <--- Initialize Firebase
-    options: DefaultFirebaseOptions.currentPlatform,
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+   options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // runApp(MyApp());
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: ProgressMeter(),
-  ));
+  
+  // Get saved user ID or generate a temporary one
+  final prefs = await SharedPreferences.getInstance();
+  String userId = prefs.getString('userId') ?? 'user123';
+  
+  runApp(MyApp(userId: userId));
 }
 
-// Paint UI to screen
-class App extends StatelessWidget {
-  const App({super.key});
+class MyApp extends StatelessWidget {
+  final String userId;
+  
+  const MyApp({Key? key, required this.userId}) : super(key: key);
 
-  // Rebuild UI
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: const Text('Hello World'),
+      title: 'Seekhere',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF8E97FD)),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF8E97FD),
+          foregroundColor: Colors.white,
+          elevation: 2,
         ),
-      
-        body:ListView.builder(
-            itemBuilder: (_, index) {
-              Color currentColor = randomColor();
-              return Container(
-                color: currentColor,
-                width: 500,
-                height: 200,
-                child: Text(
-                  randomColor().toString(),
-                  style: TextStyle(
-                    fontFamily: GoogleFonts.aBeeZee().fontFamily,
-                    fontWeight: FontWeight.bold,
-                    color: currentColor.computeLuminance() > 0.5 ? Colors.black : Colors.white
-                  )
-                )
-                
-              );
-            },
-        )
-      )
+        cardTheme: CardTheme(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        useMaterial3: true,
+      ),
+      home: const MainScreen(),
+      routes: {
+        '/event-recommender': (context) => EventRecommenderScreen(userId: userId),
+        '/favorite-events': (context) => FavoriteEventsScreen(userId: userId),
+        '/recommender': (context) => RecommenderScreen(userId: userId),
+      },
     );
-  }
-  
-  Color randomColor() {
-    return Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withAlpha(255);
   }
 }
 
+class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 2; // Default to the recommender tab
+  late String userId;
+  
+  @override
+  void initState() {
+    super.initState();
+    _getUserId();
+  }
+  
+  Future<void> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId') ?? 'user123';
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get userId from parent widget
+    userId = 'user123';
+    
+    final List<Widget> pages = [
+      const Placeholder(child: Center(child: Text('Book of Answer'))),
+      const Placeholder(child: Center(child: Text('Mood Recorder'))),
+      RecommenderScreen(userId: userId),
+      const Placeholder(child: Center(child: Text('Diary'))),
+      const Placeholder(child: Center(child: Text('Account'))),
+    ];
+
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color(0xFF8E97FD),
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'BoA',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.mood),
+            label: 'Mood',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on, color: Color(0xFF8E97FD)),
+            activeIcon: CircleAvatar(
+              backgroundColor: Color(0xFF8E97FD),
+              radius: 24,
+              child: Icon(Icons.location_on, color: Colors.white),
+            ),
+            label: 'Recommender',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Diary',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Account',
+          ),
+        ],
+      ),
+    );
+  }
+}
