@@ -1,3 +1,4 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +9,6 @@ import 'package:seek_here/ViewModel/musicViewModel.dart';
 import 'package:seek_here/ViewModel/videoViewModel.dart';
 import 'firebase_options.dart';
 
-// Program start here
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // <--- Ensure Flutter binding is initialized
 

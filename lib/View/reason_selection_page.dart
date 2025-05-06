@@ -225,11 +225,10 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       // Navigate back to dashboard
       // Navigator.pushAndRemoveUntil(
       //   context,
-      //   MaterialPageRoute(builder: (context) => const MainScreen()),
+      //   MaterialPageRoute(builder: (context) => const MoodDashboardPage()),
       //   (route) => false,
       // );
       Navigator.popUntil(context, (route) => route.isFirst);
-
     } catch (e) {
       print('Error saving mood: $e');
       ScaffoldMessenger.of(context).showSnackBar(

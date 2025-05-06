@@ -4,6 +4,8 @@ import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/progress_meter.dart';
 import 'package:seek_here/View/recommender_page.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
+import 'package:seek_here/View/progress_meter_view.dart';
+import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     BOA(),
     MoodDashboardPage(),
-    RecommenderScreen(),
+    RecommenderScreen(userId: "User123"),
     BOA(),
     ProgressMeter(),
   ];
