@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/mood.dart';
+import 'package:seek_here/Model/mood.dart';
 import '../utils/logger.dart';
 
 class FirebaseService {

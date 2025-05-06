@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodels/musicViewModel.dart';
-import '../../viewmodels/moodViewModel.dart';
-import '../View/mood_selection_page.dart';
-import '../widgets/music_player_widget.dart';
-import '../widgets/recommendation_list.dart';
+import 'package:seek_here/View/mood_selection_page.dart';
+import 'package:seek_here/ViewModel/moodViewModel.dart';
+import 'package:seek_here/ViewModel/musicViewModel.dart';
+import 'package:seek_here/widgets/music_player_widget.dart';
+import 'package:seek_here/widgets/recommendation_list.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({Key? key}) : super(key: key);

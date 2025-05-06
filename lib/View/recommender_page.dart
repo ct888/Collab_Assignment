@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/View/video_home_page.dart';
+import 'package:seek_here/ViewModel/moodViewModel.dart';
+import 'package:seek_here/ViewModel/musicViewModel.dart';
+import 'package:seek_here/ViewModel/videoViewModel.dart';
 import 'package:seek_here/utils/bottom_navigation_bar.dart';
-import 'package:seek_here/views/video_home_page.dart';
-import '../viewmodels/moodViewModel.dart';
-import '../viewmodels/musicViewModel.dart';
-import '../viewmodels/videoViewModel.dart';
 import 'mood_input_screen.dart';
 import 'music_home_page.dart';
 

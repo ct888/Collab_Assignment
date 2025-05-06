@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import '../../models/music.dart';
-import '../../services/spotify_service.dart';
-import '../../utils/logger.dart';
+import 'package:seek_here/Model/music.dart';
+import 'package:seek_here/services/spotify_service.dart';
+import 'package:seek_here/utils/logger.dart';
 
 class MusicViewModel extends ChangeNotifier {
   final SpotifyService _spotifyService;

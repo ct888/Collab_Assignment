@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../View/mood_selection_page.dart';
-import '../viewmodels/videoViewModel.dart';
-import '../widgets/video_player_widget.dart';
-import '../viewmodels/moodViewModel.dart';
-import '../widgets/recommendation_list.dart';
+import 'package:seek_here/View/mood_selection_page.dart';
+import 'package:seek_here/ViewModel/moodViewModel.dart';
+import 'package:seek_here/ViewModel/videoViewModel.dart';
+import 'package:seek_here/widgets/recommendation_list.dart';
+import 'package:seek_here/widgets/video_player_widget.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({Key? key}) : super(key: key);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:seek_here/Model/video.dart';
 import '../constants/api_constants.dart';
-import '../../models/video.dart';
 import '../utils/logger.dart';
 
 class YouTubeSearchResult {

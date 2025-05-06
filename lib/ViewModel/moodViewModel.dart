@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
-import '../../models/mood.dart';
-import '../../models/diary_entry.dart';
-import '../../services/gemini_service.dart';
-import '../../utils/logger.dart';
-import '../services/firebase_service.dart';
+import 'package:seek_here/Model/diary_entry.dart';
+import 'package:seek_here/Model/mood.dart';
+import 'package:seek_here/services/firebase_service.dart';
+import 'package:seek_here/services/gemini_service.dart';
+import 'package:seek_here/utils/logger.dart';
 
 class MoodViewModel extends ChangeNotifier {
   final GeminiService _geminiService;

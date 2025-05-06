@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:seek_here/Model/music.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
-import '../../models/music.dart';
 import '../utils/logger.dart';
 
 class SpotifyService {

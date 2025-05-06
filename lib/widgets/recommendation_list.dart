@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/video.dart';
-import '../../models/music.dart';
+import 'package:seek_here/Model/music.dart';
+import 'package:seek_here/Model/video.dart';
 
 class VideoRecommendationList extends StatelessWidget {
   final List<VideoItem> videos;

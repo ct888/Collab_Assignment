@@ -1,7 +1,7 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:seek_here/Model/diary_entry.dart';
+import 'package:seek_here/Model/mood.dart';
 import '../constants/api_constants.dart';
-import '../../models/mood.dart';
-import '../../models/diary_entry.dart';
 import '../utils/logger.dart';
 import 'dart:convert';
 

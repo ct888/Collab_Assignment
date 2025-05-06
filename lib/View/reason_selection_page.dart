@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
+import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 
@@ -245,75 +248,48 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background container with gradient
-          Container(
-            width: w,
-            height: h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  CustomColors.blue.withOpacity(0.8),
-                  Colors.white,
-                ],
-              ),
-            ),
-          ),
+       
 
+          // Logo at top
+          Positioned(
+            top: 60,
+            left: -2,
+            child: SvgPicture.asset(AppImages.bgCloud),
+          ),
           // Top wave decoration
+
+          // logo
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              height: h * 0.25,
-              decoration: BoxDecoration(
-                color: CustomColors.blue.withOpacity(0.8),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: WHGetter.sy(context, 50)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Back button
+                      Padding(padding: const EdgeInsets.only(left: 38.0)),
+
+                      // Logo in the center
+                      LogoWidget(),
+
+                      // Empty container with the same width as the back button
+                      Padding(
+                        padding: const EdgeInsets.only(right: 0.0),
+                        child: SizedBox(width: 40, height: 40),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
 
-          // Logo at top
-          Positioned(
-            top: h * 0.05,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Seek',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF7B88F9),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Here',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+            
 
           // Main content
           Positioned.fill(
@@ -348,7 +324,7 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
                   
                   // Subtitle
                   Text(
-                    'You can select more than one reasons (maximum 3)',
+                    'You can select more than one reasons (max 3)',
                     style: GoogleFonts.aDLaMDisplay(
                       fontSize: 14,
                       color: Colors.black87,
@@ -400,26 +376,7 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Save button
-                      ElevatedButton(
-                        onPressed: _saveMoodEntry,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CustomColors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          'Save',
-                          style: GoogleFonts.aDLaMDisplay(),
-                        ),
-                      ),
-                      
+
                       // Cancel button
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
@@ -436,6 +393,25 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
                         ),
                         child: Text(
                           'Cancel',
+                          style: GoogleFonts.aDLaMDisplay(),
+                        ),
+                      ),
+                      // Save button
+                      ElevatedButton(
+                        onPressed: _saveMoodEntry,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: CustomColors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                        child: Text(
+                          'Save',
                           style: GoogleFonts.aDLaMDisplay(),
                         ),
                       ),

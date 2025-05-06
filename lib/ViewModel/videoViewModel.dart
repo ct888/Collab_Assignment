@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import '../../models/video.dart';
-import '../../services/youtube_service.dart';
-import '../../utils/logger.dart';
+import 'package:seek_here/Model/video.dart';
+import 'package:seek_here/services/youtube_service.dart';
+import 'package:seek_here/utils/logger.dart';
 
 class VideoViewModel extends ChangeNotifier {
   final YouTubeService _youtubeService;

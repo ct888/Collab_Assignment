@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
@@ -48,7 +50,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
     setState(() {
       _isLoading = true;
     });
-    
+
     // Calculate the start of the week (Sunday)
     DateTime startOfWeek = _selectedDate.subtract(
       Duration(days: _selectedDate.weekday % 7),
@@ -159,44 +161,18 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
       }
     }
 
-
     return Scaffold(
       body: Stack(
         children: [
           // Background container with gradient
-          Container(
-            width: w,
-            height: h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  CustomColors.blue.withOpacity(0.8),
-                  CustomColors.white,
-                ],
-              ),
-            ),
-          ),
-
-          // Top wave decoration
           Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: h * 0.12,
-              decoration: BoxDecoration(
-                color: CustomColors.blue.withOpacity(0.8),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-            ),
+            top: 60,
+            left: -2,
+            child: SvgPicture.asset(AppImages.bgCloud),
           ),
+          // Top wave decoration
 
-          // Back button and logo with clickable functionality
+          // logo
           Positioned(
             top: 0,
             left: 0,
@@ -210,32 +186,15 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Back button
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: InkWell(
-                          onTap: () => Navigator.pop(context),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.arrow_back, color: Colors.black54),
-                          ),
-                        ),
-                      ),
-                      
+                      Padding(padding: const EdgeInsets.only(left: 38.0)),
+
                       // Logo in the center
                       LogoWidget(),
-                      
+
                       // Empty container with the same width as the back button
                       Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: SizedBox(
-                          width: 40,
-                          height: 40,
-                        ),
+                        padding: const EdgeInsets.only(right: 0.0),
+                        child: SizedBox(width: 40, height: 40),
                       ),
                     ],
                   ),
@@ -246,10 +205,17 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
 
           // Main content with loading state
           Positioned.fill(
-            top: h * 0.15,
-            child: _isLoading
-                ? _buildLoadingIndicator()
-                : _buildMainContent(w, h, formattedSelectedDate, hasSelectedDayData, selectedDayData),
+            top: h * 0.19,
+            child:
+                _isLoading
+                    ? _buildLoadingIndicator()
+                    : _buildMainContent(
+                      w,
+                      h,
+                      formattedSelectedDate,
+                      hasSelectedDayData,
+                      selectedDayData,
+                    ),
           ),
         ],
       ),
@@ -265,7 +231,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(CustomColors.blue),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
           Text(
             'Loading your mood data...',
             style: GoogleFonts.aDLaMDisplay(
@@ -279,8 +245,13 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
   }
 
   // Main content widget
-  Widget _buildMainContent(double w, double h, String formattedSelectedDate, 
-      bool hasSelectedDayData, Map<String, dynamic>? selectedDayData) {
+  Widget _buildMainContent(
+    double w,
+    double h,
+    String formattedSelectedDate,
+    bool hasSelectedDayData,
+    Map<String, dynamic>? selectedDayData,
+  ) {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: w * 0.05),
       child: Column(
@@ -325,53 +296,55 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                   const SizedBox(height: 20),
                   hasSelectedDayData
                       ? Column(
-                          children: [
-                            Text(
-                              'Mood: ${selectedDayData!['mood']}',
-                              style: GoogleFonts.aDLaMDisplay(
-                                fontSize: 18,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
+                        children: [
+                          Text(
+                            'Mood: ${selectedDayData!['mood']}',
+                            style: GoogleFonts.aDLaMDisplay(
+                              fontSize: 18,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(height: 15),
-                            if (selectedDayData!['reasons'] != null &&
-                                (selectedDayData!['reasons'] as List).isNotEmpty)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Reasons:',
-                                    style: GoogleFonts.aDLaMDisplay(
-                                      fontSize: 16,
-                                      color: Colors.black87,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ...(selectedDayData!['reasons'] as List).map((reason) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 5),
-                                      child: Text(
-                                        '• $reason',
-                                        style: GoogleFonts.aDLaMDisplay(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              ),
-                          ],
-                        )
-                      : Text(
-                          'No mood recorded for this day',
-                          style: GoogleFonts.aDLaMDisplay(
-                            fontSize: 16,
-                            color: Colors.grey,
                           ),
+                          const SizedBox(height: 15),
+                          if (selectedDayData!['reasons'] != null &&
+                              (selectedDayData!['reasons'] as List).isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Reasons:',
+                                  style: GoogleFonts.aDLaMDisplay(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ...(selectedDayData!['reasons'] as List).map((
+                                  reason,
+                                ) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 5),
+                                    child: Text(
+                                      '• $reason',
+                                      style: GoogleFonts.aDLaMDisplay(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                        ],
+                      )
+                      : Text(
+                        'No mood recorded for this day',
+                        style: GoogleFonts.aDLaMDisplay(
+                          fontSize: 16,
+                          color: Colors.grey,
                         ),
+                      ),
                 ],
               ),
             )
@@ -392,20 +365,24 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
                 final DateTime startOfWeek = _selectedDate.subtract(
                   Duration(days: _selectedDate.weekday % 7),
                 );
-                final DateTime dayDate = startOfWeek.add(
-                  Duration(days: index),
-                );
-                final String dateString = DateFormat('yyyy-MM-dd').format(dayDate);
-                final String formattedDate = DateFormat('MMMM d, yyyy').format(dayDate);
+                final DateTime dayDate = startOfWeek.add(Duration(days: index));
+                final String dateString = DateFormat(
+                  'yyyy-MM-dd',
+                ).format(dayDate);
+                final String formattedDate = DateFormat(
+                  'MMMM d, yyyy',
+                ).format(dayDate);
 
                 // Get the data for this day
-                final bool hasData = _weeklyMoods.containsKey(dateString) &&
+                final bool hasData =
+                    _weeklyMoods.containsKey(dateString) &&
                     _weeklyMoods[dateString]!['hasData'] == true;
-                final String mood = hasData ? _weeklyMoods[dateString]!['mood'] : 'N/A';
-                final List<dynamic> reasons = hasData &&
-                        _weeklyMoods[dateString]!['reasons'] != null
-                    ? _weeklyMoods[dateString]!['reasons']
-                    : [];
+                final String mood =
+                    hasData ? _weeklyMoods[dateString]!['mood'] : 'N/A';
+                final List<dynamic> reasons =
+                    hasData && _weeklyMoods[dateString]!['reasons'] != null
+                        ? _weeklyMoods[dateString]!['reasons']
+                        : [];
 
                 return GestureDetector(
                   onTap: () {
@@ -520,34 +497,39 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           // Day selection
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _weekDays.map((day) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedDay = day;
-                  });
-                },
-                child: Container(
-                  width: 35,
-                  height: 35,
-                  decoration: BoxDecoration(
-                    color: _selectedDay == day
-                        ? Colors.black87
-                        : Colors.grey.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      day,
-                      style: TextStyle(
-                        color: _selectedDay == day ? Colors.white : Colors.black,
-                        fontWeight: FontWeight.bold,
+            children:
+                _weekDays.map((day) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedDay = day;
+                      });
+                    },
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color:
+                            _selectedDay == day
+                                ? Colors.black87
+                                : Colors.grey.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          day,
+                          style: TextStyle(
+                            color:
+                                _selectedDay == day
+                                    ? Colors.white
+                                    : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
 
           const SizedBox(height: 30),

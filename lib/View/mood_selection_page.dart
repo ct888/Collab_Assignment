@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
+import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/reason_selection_page.dart';
 
@@ -15,16 +18,16 @@ class MoodSelectionPage extends StatefulWidget {
 
 class _MoodSelectionPageState extends State<MoodSelectionPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // List of moods from Firebase
   List<String> _moods = [];
-  
+
   // Selected mood
   String _selectedMood = '';
-  
+
   // Text controller for custom mood input
   final TextEditingController _customMoodController = TextEditingController();
-  
+
   // Show custom mood input
   bool _showCustomMoodInput = false;
 
@@ -43,10 +46,8 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
   // Fetch moods from Firebase
   Future<void> _fetchMoods() async {
     try {
-      final DocumentSnapshot snapshot = await _firestore
-          .collection('app_data')
-          .doc('moods')
-          .get();
+      final DocumentSnapshot snapshot =
+          await _firestore.collection('app_data').doc('moods').get();
 
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>;
@@ -72,9 +73,17 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
   // Set default moods and save to Firebase if needed
   void _setDefaultMoods() async {
     final defaultMoods = [
-      'Happy', 'Bored', 'Love', 'Surprised', 
-      'Angry', 'Sad', 'Hopeless', 'Jealous', 
-      'Anxious', 'Overwhelmed', 'Confused'
+      'Happy',
+      'Bored',
+      'Love',
+      'Surprised',
+      'Angry',
+      'Sad',
+      'Hopeless',
+      'Jealous',
+      'Anxious',
+      'Overwhelmed',
+      'Confused',
     ];
 
     setState(() {
@@ -83,10 +92,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
 
     // Save default moods to Firebase
     try {
-      await _firestore
-          .collection('app_data')
-          .doc('moods')
-          .set({'list': defaultMoods});
+      await _firestore.collection('app_data').doc('moods').set({
+        'list': defaultMoods,
+      });
     } catch (e) {
       print('Error setting default moods: $e');
     }
@@ -94,10 +102,11 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
 
   // Continue to reason selection
   void _continueToReasonSelection() {
-    final String finalMood = _showCustomMoodInput 
-        ? _customMoodController.text.trim()
-        : _selectedMood;
-        
+    final String finalMood =
+        _showCustomMoodInput
+            ? _customMoodController.text.trim()
+            : _selectedMood;
+
     if (finalMood.isEmpty) {
       // Show error message if no mood is selected
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +119,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
     }
 
     // Add custom mood to Firebase if it's a new one
-    if (_showCustomMoodInput && !_moods.contains(finalMood) && finalMood.isNotEmpty) {
+    if (_showCustomMoodInput &&
+        !_moods.contains(finalMood) &&
+        finalMood.isNotEmpty) {
       _moods.add(finalMood);
       _firestore
           .collection('app_data')
@@ -136,75 +147,44 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background container with gradient
-          Container(
-            width: w,
-            height: h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  CustomColors.blue.withOpacity(0.8),
-                  Colors.white,
-                ],
-              ),
-            ),
+          Positioned(
+            top: 60,
+            left: -2,
+            child: SvgPicture.asset(AppImages.bgCloud),
           ),
 
-          // Top wave decoration
+          
+          // logo
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              height: h * 0.25,
-              decoration: BoxDecoration(
-                color: CustomColors.blue.withOpacity(0.8),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-            ),
-          ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: WHGetter.sy(context, 50)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Back button
+                      Padding(padding: const EdgeInsets.only(left: 38.0)),
 
-          // Logo at top
-          Positioned(
-            top: h * 0.05,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Seek',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
+                      // Logo in the center
+                      LogoWidget(),
+
+                      // Empty container with the same width as the back button
+                      Padding(
+                        padding: const EdgeInsets.only(right: 0.0),
+                        child: SizedBox(width: 40, height: 40),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF7B88F9),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Here',
-                    style: GoogleFonts.aDLaMDisplay(
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+           
 
           // Main content
           Positioned.fill(
@@ -222,9 +202,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 15),
-                  
+
                   // Mood question
                   Text(
                     'What is your mood my Dear?',
@@ -233,9 +213,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                       color: Colors.black87,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 10),
-                  
+
                   // Subtitle
                   Text(
                     'Select an emotion to represent your mood',
@@ -245,9 +225,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 25),
-                  
+
                   // Mood options grid
                   Wrap(
                     spacing: 10,
@@ -259,9 +239,9 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                       _buildMoodButton('Other'),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Custom mood input field (shown when "Other" is selected)
                   if (_showCustomMoodInput)
                     Padding(
@@ -283,33 +263,14 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                         ),
                       ),
                     ),
-                  
+
                   const SizedBox(height: 30),
-                  
+
                   // Action buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Continue button
-                      ElevatedButton(
-                        onPressed: _continueToReasonSelection,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CustomColors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          'Continue',
-                          style: GoogleFonts.aDLaMDisplay(),
-                        ),
-                      ),
-                      
+
                       // Cancel button
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),
@@ -329,9 +290,30 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
                           style: GoogleFonts.aDLaMDisplay(),
                         ),
                       ),
+                      // Continue button
+                      ElevatedButton(
+                        onPressed: _continueToReasonSelection,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: CustomColors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                        child: Text(
+                          'Continue',
+                          style: GoogleFonts.aDLaMDisplay(),
+                        ),
+                      ),
+
+                      
                     ],
                   ),
-                  
+
                   const SizedBox(height: 30),
                 ],
               ),
@@ -352,7 +334,7 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
         setState(() {
           _selectedMood = mood;
           _showCustomMoodInput = isOther;
-          
+
           // Clear custom mood when selecting a predefined mood
           if (!isOther) {
             _customMoodController.clear();

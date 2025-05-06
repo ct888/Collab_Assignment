@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
+import 'package:seek_here/View/recommender_page.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
-import 'package:seek_here/views/recommender_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

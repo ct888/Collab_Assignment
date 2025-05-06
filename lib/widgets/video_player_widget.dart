@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:seek_here/Model/video.dart';
+import 'package:seek_here/ViewModel/videoViewModel.dart';
+import 'package:seek_here/utils/logger.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../viewmodels/videoViewModel.dart'; // Adjust import path as needed
-import '../models/video.dart'; // Adjust import path as needed
-import '../utils/logger.dart'; // Adjust import path as needed
 
 class VideoPlayerWidget extends StatefulWidget {
   final String videoId;
