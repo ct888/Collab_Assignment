@@ -45,7 +45,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
 
     // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestMood();
+    await moodViewModel.fetchLatestData("E0uSiko9ZWguiI8md0xFbOM3rHD3");
 
     // Only proceed if we have a mood (regardless of when it was recorded)
     if (moodViewModel.currentMood != null) {
@@ -301,7 +301,84 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               ),
             )
                 : videoViewModel.videos.isEmpty
-                ? const Center(child: Text('No videos found'))
+                ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Empty state illustration
+                    Icon(
+                      Icons.video_library_outlined,
+                      size: 80,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 20),
+                    // Clear, informative heading
+                    const Text(
+                      'No videos available',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Helpful explanation text
+                    const Text(
+                      'We couldn\'t find any videos that match your current mood.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Primary action button
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () async {
+                        setState(() {
+                          _isInitialLoading = true;
+                        });
+                        await _loadData();
+                        setState(() {
+                          _isInitialLoading = false;
+                        });
+                      },
+                      child: const Text(
+                        'Refresh',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Secondary action - update mood
+                    TextButton.icon(
+                      icon: const Icon(Icons.mood),
+                      label: const Text('Update your mood'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MoodSelectionPage()),
+                        ).then((_) async {
+                          setState(() {
+                            _isInitialLoading = true;
+                          });
+                          await _loadData();
+                          setState(() {
+                            _isInitialLoading = false;
+                          });
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )
                 : RefreshIndicator(
               onRefresh: () async {
                 setState(() {

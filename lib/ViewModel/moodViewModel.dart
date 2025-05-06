@@ -31,7 +31,7 @@ class MoodViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   DateTime? get lastMoodDate => _lastMoodDate;
 
-  Future<void> fetchLatestMood() async {
+  Future<void> fetchLatestData(String currentUserID) async {
     // Always reset loading state at start
     _isLoading = true;
     _errorMessage = null;
@@ -40,15 +40,22 @@ class MoodViewModel extends ChangeNotifier {
     try {
       _logger.info('Starting to fetch latest mood...');
 
-      final latestMood = await _firebaseMoodService.fetchLatestMood();
+      final latestMood = await _firebaseMoodService.fetchLatestMood(currentUserID);
+      final latestDiary = await _firebaseMoodService.fetchLatestDiary(currentUserID);
       _logger.info('Received mood from Firebase: ${latestMood?.toString() ?? "null"}');
 
-      if (latestMood != null) {
+      if (latestMood != null || latestDiary != null) {
         _currentMood = latestMood;
-        _lastMoodDate = latestMood.timestamp;
-        _logger.info('Mood successfully loaded from Firebase: ${latestMood.timestamp}');
+        _latestDiaryEntry = latestDiary;
+        _logger.info('''
+    Mood Details:
+    Type: ${_currentMood?.moodType}
+    Notes: ${_currentMood?.notes.join(', ')}
+    Date: ${_currentMood?.timestamp}
+  ''');
       } else {
         _currentMood = null;
+        _latestDiaryEntry = null;
         _lastMoodDate = null;
         _logger.info('No mood record found in Firebase');
       }
@@ -147,6 +154,25 @@ class MoodViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<List<UserMood>> fetchAllMoods() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final moods = await _firebaseMoodService.fetchAllMoods();
+
+      _isLoading = false;
+      notifyListeners();
+      return moods;
+    } catch (e) {
+      _logger.error('Error in fetchAllMoods: $e');
+      _isLoading = false;
+      _errorMessage = 'Failed to fetch moods: ${e.toString()}';
+      notifyListeners();
+      throw Exception('Failed to fetch moods:$e');
     }
   }
 }
