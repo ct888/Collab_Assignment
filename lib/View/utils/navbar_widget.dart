@@ -24,50 +24,48 @@ class HomeNavbarWidget extends StatelessWidget {
     (h, w) = WHGetter.getHeightAndWidth(context);
 
     final List<Map<String, String>> navItems = [
-      
-      
-      
-      {'icon': AppImages.
-
-
-      bookOpened, 'label': 'BOA'},
+      {'icon': AppImages.bookOpened, 'label': 'BOA'},
       {'icon': AppImages.happyFace, 'label': 'Mood'},
       {'icon': AppImages.compass, 'label': 'Recommender'},
       {'icon': AppImages.bookAndPen, 'label': 'Diary'},
       {'icon': AppImages.user, 'label': 'Account'},
     ];
 
-    return Container(
-      height: 60,
-      width: w,
-      decoration: BoxDecoration(color: CustomColors.grayLight),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(navItems.length, (index) {
-          
-          return GestureDetector(
-            onTap: () => onTap(index),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  navItems[index]['icon']!,
-                  width: 24,
-                  height: 24,
-                  colorFilter: ColorFilter.mode(_changeColor(index), BlendMode.srcIn),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  navItems[index]['label']!,
-                  style: GoogleFonts.aDLaMDisplay(
-                    color: _changeColor(index),
-                    fontSize: 12,
-                  )
-                )
-              ],
-            ),
-          );
-        }),
+    return SafeArea(
+      child: Container(
+        height: 60,
+        width: w,
+        decoration: BoxDecoration(color: CustomColors.grayLight),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(navItems.length, (index) {
+            return GestureDetector(
+              onTap: () => onTap(index),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    navItems[index]['icon']!,
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      _changeColor(index),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    navItems[index]['label']!,
+                    style: GoogleFonts.aDLaMDisplay(
+                      color: _changeColor(index),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
