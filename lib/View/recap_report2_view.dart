@@ -37,52 +37,54 @@ class _RecapReport2State extends State<RecapReport2> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Empty space at top to match RecapReport1 (replacing X button)
-                  SizedBox(height: screenSize.height * 0.03),
-                  
-                  // Title
-                  const Text(
-                    'Recap Report',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF3F414E),
-                      fontSize: 30,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w700,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.06),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Empty space at top to match RecapReport1 (replacing X button)
+                    SizedBox(height: screenSize.height * 0.03),
+                    
+                    // Title
+                    const Text(
+                      'Recap Report',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF3F414E),
+                        fontSize: 30,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.012),
-                  
-                  // Content - Using Consumer to listen to view model changes
-                  Consumer<RecapReport2ViewModel>(
-                    builder: (context, viewModel, child) {
-                      if (viewModel.isLoading) {
-                        return const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      } else if (viewModel.interactionData.isEmpty) {
-                        return Expanded(
-                          child: Center(
-                            child: Text(
-                              "No interaction data available.",
-                              style: TextStyle(
-                                color: const Color(0xFF525252),
-                                fontSize: screenSize.width * 0.04,
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w500,
+                    
+                    SizedBox(height: screenSize.height * 0.012),
+                    
+                    // Content - Using Consumer to listen to view model changes
+                    Consumer<RecapReport2ViewModel>(
+                      builder: (context, viewModel, child) {
+                        if (viewModel.isLoading) {
+                          return SizedBox(
+                            height: screenSize.height * 0.6,
+                            child: const Center(child: CircularProgressIndicator()),
+                          );
+                        } else if (viewModel.interactionData.isEmpty) {
+                          return SizedBox(
+                            height: screenSize.height * 0.6,
+                            child: Center(
+                              child: Text(
+                                "No interaction data available.",
+                                style: TextStyle(
+                                  color: const Color(0xFF525252),
+                                  fontSize: screenSize.width * 0.04,
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      } else {
-                        return Expanded(
-                          child: Column(
+                          );
+                        } else {
+                          return Column(
                             children: [
                               // Description with dynamic total points
                               Padding(
@@ -132,120 +134,117 @@ class _RecapReport2State extends State<RecapReport2> {
                               SizedBox(height: screenSize.height * 0.01),
                               
                               // Interaction items
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: viewModel.interactionData.asMap().entries.map((entry) => 
-                                      _buildInteractionItem(
-                                        context,
-                                        '${entry.value.name} (${entry.value.points} points) - ${(entry.value.percentage * 100).toStringAsFixed(1)}%', 
-                                        PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
-                                      )
-                                    ).toList(),
-                                  ),
-                                ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: viewModel.interactionData.asMap().entries.map((entry) => 
+                                  _buildInteractionItem(
+                                    context,
+                                    '${entry.value.name} (${entry.value.points} points) - ${(entry.value.percentage * 100).toStringAsFixed(1)}%', 
+                                    PieChartPainter.chartColors[entry.key % PieChartPainter.chartColors.length]
+                                  )
+                                ).toList(),
                               ),
                               
-                              const Spacer(),
+                              // Add spacer to push the congratulations text and buttons to the bottom
+                              SizedBox(height: screenSize.height * 0.15),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                    
+                    // Congratulations text
+                    const Text(
+                      'Congratulations!\nYou have achieved the goal.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF525252),
+                        fontSize: 24,
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                      ),
+                    ),
+                    
+                    SizedBox(height: screenSize.height * 0.025),
+                    
+                    // Back and End buttons in a row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Back button - left aligned
+                        ElevatedButton(
+                          onPressed: () {
+                            // Navigate back to previous page (RecapReport1)
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFBBB5F5),
+                            foregroundColor: const Color(0xFF3F414E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenSize.width * 0.075,
+                              vertical: screenSize.height * 0.015,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.arrow_back, size: 16),
+                              SizedBox(width: 8),
+                              Text(
+                                'Back',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'ADLaM Display',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
                             ],
                           ),
-                        );
-                      }
-                    },
-                  ),
-                  
-                  // Congratulations text
-                  const Text(
-                    'Congratulations!\nYou have achieved the goal.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF525252),
-                      fontSize: 24,
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
+                        ),
+                        
+                        // End button - right aligned
+                        ElevatedButton(
+                          onPressed: () {
+                            // Navigate back to ProgressMeter (popping both RecapReport2 and RecapReport1)
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFBBB5F5),
+                            foregroundColor: const Color(0xFF3F414E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenSize.width * 0.075,
+                              vertical: screenSize.height * 0.015,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text(
+                                'End',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'ADLaM Display',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, size: 16),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.025),
-                  
-                  // Back and End buttons in a row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Back button - left aligned
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate back to previous page (RecapReport1)
-                          Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFBBB5F5),
-                          foregroundColor: const Color(0xFF3F414E),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenSize.width * 0.075,
-                            vertical: screenSize.height * 0.015,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.arrow_back, size: 16),
-                            SizedBox(width: 8),
-                            Text(
-                              'Back',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'ADLaM Display',
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // End button - right aligned
-                      ElevatedButton(
-                        onPressed: () {
-                          // Navigate back to ProgressMeter (popping both RecapReport2 and RecapReport1)
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFBBB5F5),
-                          foregroundColor: const Color(0xFF3F414E),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenSize.width * 0.075,
-                            vertical: screenSize.height * 0.015,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              'End',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'ADLaM Display',
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 16),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  SizedBox(height: screenSize.height * 0.025),
-                ],
+                    
+                    SizedBox(height: screenSize.height * 0.025),
+                  ],
+                ),
               ),
             ),
           ),
