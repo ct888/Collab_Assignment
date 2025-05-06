@@ -252,6 +252,9 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           ),
         ],
       ),
+      bottomNavigationBar: const CustomBottomNavBar(
+        currentIndex: 1,  // Mood tab selected
+      ),
     );
   }
 
@@ -273,9 +276,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: const CustomBottomNavBar(
-        currentIndex: 1,  // Mood tab selected
       ),
     );
   }
