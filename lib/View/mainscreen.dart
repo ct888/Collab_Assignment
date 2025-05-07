@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
@@ -13,21 +14,18 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   final List<Widget> _pages = [
     BOA(),
+    RecommenderScreen(userId: FirebaseAuth.instance.currentUser!.uid),
     MoodDashboardPage(),
-    RecommenderScreen(userId: "User123"),
     BOA(),
     ProgressMeter(),
   ];
 
-  
-
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: CustomColors.white,
       body: _pages[_currentIndex],
