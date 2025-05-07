@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/music_home_page.dart';
+import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/video_home_page.dart';
 import 'event_recommender_screen.dart';
@@ -65,17 +67,16 @@ class RecommenderScreen extends StatelessWidget {
                     const SizedBox(height: 30),
 
                     // Recommend header
-                    const Text(
+                    Text(
                       'Recommend',
-                      style: TextStyle(
+                      style: GoogleFonts.aDLaMDisplay(
                         fontSize: 28,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const Text(
-                      'We Wish you have a good day',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    Text(
+                      'We wish you have a good day',
+                      style: GoogleFonts.aDLaMDisplay(fontSize: 16, color: CustomColors.grayMid),
                     ),
 
                     const SizedBox(height: 30),
@@ -106,18 +107,17 @@ class RecommenderScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Activity',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  const Text(
+                                  Text(
                                     'NEARBY EVENT',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 12,
                                       color: Colors.white70,
                                     ),
@@ -132,9 +132,9 @@ class RecommenderScreen extends StatelessWidget {
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'START',
-                                      style: TextStyle(
+                                      style: GoogleFonts.aDLaMDisplay(
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF8E97FD),
                                       ),
@@ -195,18 +195,17 @@ class RecommenderScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Relaxation',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  const Text(
+                                  Text(
                                     'MUSIC',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 12,
                                       color: Colors.black54,
                                     ),
@@ -221,9 +220,9 @@ class RecommenderScreen extends StatelessWidget {
                                       color: Colors.black45,
                                       borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'START',
-                                      style: TextStyle(
+                                      style: GoogleFonts.aDLaMDisplay(
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -284,18 +283,17 @@ class RecommenderScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Relaxation',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  const Text(
+                                  Text(
                                     'VIDEO',
-                                    style: TextStyle(
+                                    style: GoogleFonts.aDLaMDisplay(
                                       fontSize: 12,
                                       color: Colors.black54,
                                     ),
@@ -310,9 +308,9 @@ class RecommenderScreen extends StatelessWidget {
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child: const Text(
+                                    child: Text(
                                       'START',
-                                      style: TextStyle(
+                                      style: GoogleFonts.aDLaMDisplay(
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFFFFC288),
                                       ),
