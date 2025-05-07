@@ -45,7 +45,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
 
     // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestData("E0uSiko9ZWguiI8md0xFbOM3rHD3");
+    await moodViewModel.fetchLatestData();
 
     // Only proceed if we have a mood (regardless of when it was recorded)
     if (moodViewModel.currentMood != null) {

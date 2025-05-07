@@ -12,8 +12,13 @@ class FirebaseService {
   FirebaseService({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<UserMood?> fetchLatestMood(String userId) async {
+  Future<UserMood?> fetchLatestMood() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        _logger.warning('No user logged in');
+        return null;
+      }
       // Get today's date at midnight (start of day)
       final DateTime today = DateTime.now();
       final DateTime startOfDay = DateTime(today.year, today.month, today.day);
@@ -55,8 +60,14 @@ class FirebaseService {
     }
   }
 
-  Future<DiaryEntry?> fetchLatestDiary(String userId) async {
+  Future<DiaryEntry?> fetchLatestDiary() async {
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        _logger.warning('No user logged in');
+        return null;
+      }
+      _logger.info('Fetching moods for user: $userId');
       // Get today's date at midnight (start of day)
       final DateTime today = DateTime.now();
       final DateTime startOfDay = DateTime(today.year, today.month, today.day);
