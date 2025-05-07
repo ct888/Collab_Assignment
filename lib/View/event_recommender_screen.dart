@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/favorite_event_screen.dart';
 import '../ViewModel/event_recommender_viewmodel.dart';
+import '../Viewmodel/progress_meter_viewmodel.dart';
 import 'event_list_screen.dart';
 import '../Model/location.dart';
 
@@ -20,6 +22,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   GoogleMapController? _mapController;
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _placeNameController = TextEditingController();
+  final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
   //Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
   EventRecommenderViewModel? _viewModel;
@@ -186,6 +189,8 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 ),
                 onPressed: () {
                   if (viewModel.currentLocation != null) {
+                    _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+                    RecordEntry.insertTimestampToCollection("recommender");
                     Navigator.push(
                       context,
                       MaterialPageRoute(
