@@ -11,6 +11,7 @@ import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
+import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
 class ReasonSelectionPage extends StatefulWidget {
   final String selectedMood;
@@ -28,6 +29,7 @@ class ReasonSelectionPage extends StatefulWidget {
 
 class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
   
   // List of reasons from Firebase
   List<String> _reasons = [];
@@ -219,12 +221,16 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       });
 
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mood recorded successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Mood recorded successfully!'),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
+      //obtain the user points from the mood entry
+
+      // Show progress update toast
+      _progressMeterViewModel.showProgressUpdateToast(context, 'mood');
 
       // Navigate back to dashboard
       Navigator.popUntil(context, (route) => route.isFirst);
