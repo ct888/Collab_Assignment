@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:seek_here/View/account_setting.dart';
 import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/recommender_screen.dart';
@@ -21,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
     RecommenderScreen(userId: FirebaseAuth.instance.currentUser!.uid),
     MoodDashboardPage(),
     BOA(),
-    ProgressMeter(),
+    AccountSetting(),
   ];
 
   @override
