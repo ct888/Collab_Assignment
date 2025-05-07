@@ -155,10 +155,9 @@ class RecordEntry {
       
       // Insert into the specified collection under the user's document
       await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
           .collection(tableName)
-          .add(data);
+          .doc()
+          .set(data);
     } catch (e) {
       debugPrint('Error inserting timestamp: $e');
     }
