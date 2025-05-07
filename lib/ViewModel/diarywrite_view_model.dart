@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:seek_here/Model/progress_meter_model.dart';
+import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 import '../model/diary_entry.dart';
 import '../service/database_service.dart';
 import '../service/storage_service.dart';
+
 
 class DiaryViewModel extends ChangeNotifier {
   final TextEditingController contentController = TextEditingController();
@@ -15,18 +18,21 @@ class DiaryViewModel extends ChangeNotifier {
 
   String? errorMessage;
   String? successMessage;
-  String? successMessage1;
-
 
   bool publicVisibility = false;
   bool dataTracking = false;
   bool isUploading = false;
   bool isImageUploading = false;
+  bool _isDraft = false;
+
+  bool get isDraft => _isDraft;
+  
 
   // Store multiple images (with a max limit of 3)
   List<File> imageFiles = [];
 
   int currentDraftCount = 0;
+
 
   // Constructor to accept userId and initialize the draft count
   DiaryViewModel({required this.currentUserId}) {
@@ -149,6 +155,7 @@ class DiaryViewModel extends ChangeNotifier {
       imageFiles.clear(); // Clear the image list after saving
       successMessage =
           "Draft saved successfully. Current draft count: $currentDraftCount";
+      _isDraft = true;
       notifyListeners();
     } catch (e) {
       errorMessage = "Failed to save draft: $e";
@@ -192,6 +199,7 @@ class DiaryViewModel extends ChangeNotifier {
       return;
     }
 
+    _isDraft = true;
     isUploading = true;
     notifyListeners();
 

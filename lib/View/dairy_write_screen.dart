@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/Model/progress_meter_model.dart';
 import '../viewmodel/diarywrite_view_model.dart';
 import '/widgets/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
@@ -49,10 +50,13 @@ class DiaryWriteView extends StatelessWidget {
           message: viewModel.successMessage!,
           onConfirm: () {
             viewModel.clearMessages();
-            progressMeterViewModel.showProgressUpdateToast(context, 'diary');
-
+              if (!viewModel.isDraft){
+                print('noway');
+              progressMeterViewModel.showProgressUpdateToast(context, 'diary');
+              }
           },
         );
+
       }
    /*   if (viewModel.successMessage1 != null) {
         showConfirmationDialog(
