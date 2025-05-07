@@ -20,7 +20,20 @@ class ActivityDisplayData {
 }
 
 class ProgressMeterViewModel extends ChangeNotifier {
-  final int totalPoints = 500;
+  static const int totalPoints = 500;
+  
+  // Create a static instance that can be accessed globally
+  static final ProgressMeterViewModel _instance = ProgressMeterViewModel._internal();
+  
+  // Factory constructor to return the singleton instance
+  factory ProgressMeterViewModel() {
+    return _instance;
+  }
+  
+  // Private constructor for singleton
+  ProgressMeterViewModel._internal() {
+    currentPrompt = _getRandomPrompt();
+  }
   
   // State variables
   String currentPrompt = '';
@@ -62,11 +75,6 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Reference to the shared service
   final UserRecordsService _recordsService = UserRecordsService();
   
-  // Constructor
-  ProgressMeterViewModel() {
-    currentPrompt = _getRandomPrompt();
-  }
-  
   // Initialize data
   void initialize(BuildContext context) {
     this.context = context;
@@ -77,9 +85,31 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Dispose resources
   @override
   void dispose() {
+    // Cancel subscriptions but don't dispose the ChangeNotifier
+    _cleanupSubscriptions();
+    // Don't call super.dispose() since this is a singleton
+  }
+
+  // New method for cleaning up subscriptions without disposing
+  void _cleanupSubscriptions() {
     _activitiesSubscription?.cancel();
-    recordSubscriptions.forEach((_, subscription) => subscription?.cancel());
-    super.dispose();
+    _activitiesSubscription = null;
+    
+    recordSubscriptions.forEach((key, subscription) {
+      subscription?.cancel();
+      recordSubscriptions[key] = null;
+    });
+  }
+  
+  // New method for reinitializing when needed
+  void reinitialize(BuildContext context) {
+    // Clean up any existing subscriptions
+    _cleanupSubscriptions();
+    
+    // Set the context and initialize again
+    this.context = context;
+    _listenForActivities();
+    _fetchAllRecordTypes();
   }
 
   // New method to fetch all record types at once
@@ -408,40 +438,30 @@ class ProgressMeterViewModel extends ChangeNotifier {
   }
 
   // Show toast message for progress meter updates
-  void showProgressUpdateToast(BuildContext context, int points) {
-    // Only show toast if points are positive
-    if (points > 0) {
-      // Check if adding these points will reach or exceed the target
-      if (userPoints + points >= totalPoints) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Congratulations! You have reached the goal, you can now view the recap.'),
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green,
-            margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Progress meter updated (+$points points)'),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.lightGreen,
-            margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-          ),
-        );
-      }
-    }
-  }
-  
-  // A convenience method to update points and show toast in one call
-  void updatePointsWithToast(BuildContext context, String activityType) {
-    // Get points from the model based on activity type
+  void showProgressUpdateToast(BuildContext context, String activityType) {
+    // Get points for this activity type
     int points = RecordEntry.getPointsForType(activityType);
     
-    // Show toast with the calculated points
-    showProgressUpdateToast(context, points);
+    // Ensure we have a context
+    this.context = context;
+    
+    // Check if adding these points will reach or exceed the target
+    if (userPoints >= totalPoints) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Congratulations! You have reached the goal, you can now view the recap.'),
+          duration: Duration(seconds: 4),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Progress meter updated (+$points points)'),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.lightGreen,
+        ),
+      );
+    }
   }
 }
