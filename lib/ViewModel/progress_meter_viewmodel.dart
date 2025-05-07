@@ -20,7 +20,11 @@ class ActivityDisplayData {
 }
 
 class ProgressMeterViewModel extends ChangeNotifier {
-  static const int totalPoints = 500;
+  // Replace fixed static value with a getter that dynamically checks current user
+  static int get totalPoints {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    return currentUid == 'AiTF3BPPtjSzlJXgQH0zGVaQjRp2' ? 100 : 500;
+  }
   
   // Create a static instance that can be accessed globally
   static final ProgressMeterViewModel _instance = ProgressMeterViewModel._internal();
