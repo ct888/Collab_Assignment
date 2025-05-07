@@ -15,8 +15,7 @@ class HomeNavbarWidget extends StatelessWidget {
     required this.onTap,
   });
 
-  Color _changeColor(int index) =>
-      currentIndex == index ? CustomColors.blue : CustomColors.grayMid;
+  bool _inCurrentPage(int index) => currentIndex == index;
 
   @override
   Widget build(BuildContext context) {
@@ -25,43 +24,65 @@ class HomeNavbarWidget extends StatelessWidget {
 
     final List<Map<String, String>> navItems = [
       {'icon': AppImages.bookOpened, 'label': 'BOA'},
+      {'icon': AppImages.compass, 'label': 'Recommend'},
       {'icon': AppImages.happyFace, 'label': 'Mood'},
-      {'icon': AppImages.compass, 'label': 'Recommender'},
       {'icon': AppImages.bookAndPen, 'label': 'Diary'},
       {'icon': AppImages.user, 'label': 'Account'},
     ];
 
     return SafeArea(
       child: Container(
-        height: 60,
+        height: 70,
         width: w,
         decoration: BoxDecoration(color: CustomColors.grayLight),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: List.generate(navItems.length, (index) {
             return GestureDetector(
               onTap: () => onTap(index),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    navItems[index]['icon']!,
-                    width: 24,
-                    height: 24,
-                    colorFilter: ColorFilter.mode(
-                      _changeColor(index),
-                      BlendMode.srcIn,
+              child: SizedBox(
+                width: _inCurrentPage(index) ? w*0.2 + 10 :  w*0.2 - 10,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(4),
+                      decoration:
+                          _inCurrentPage(index)
+                              ? BoxDecoration(
+                                color: CustomColors.blue.withAlpha(255),
+                                borderRadius: BorderRadius.circular(8),
+                              )
+                              : null,
+                      child: SvgPicture.asset(
+                        navItems[index]['icon']!,
+                        width: 40,
+                        height: 30,
+                        colorFilter: ColorFilter.mode(
+                          _inCurrentPage(index)
+                              ? CustomColors.white
+                              : CustomColors.grayDark,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    navItems[index]['label']!,
-                    style: GoogleFonts.aDLaMDisplay(
-                      color: _changeColor(index),
-                      fontSize: 12,
+                    SizedBox(height: 4),
+                    Text(
+                      navItems[index]['label']!,
+                      style: GoogleFonts.aDLaMDisplay(
+                        color:
+                            _inCurrentPage(index)
+                                ? CustomColors.blue
+                                : CustomColors.grayDark,
+                        fontSize: _inCurrentPage(index) ? 12 : 10, // Reduced
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }),
