@@ -6,10 +6,12 @@ import '../../Model/location.dart';
 import '../../Model/saved_place.dart';
 import '../../service/location_service.dart';
 import '../../service/firebase_service.dart';
+import 'event_list_viewmodel.dart';
 
 class EventRecommenderViewModel with ChangeNotifier {
   final LocationService _locationService = LocationService();
   final FirebaseService _firebaseService = FirebaseService();
+  final EventListViewModel _eventListViewModel = EventListViewModel();
   String? userId;
  
   Location? _currentLocation;
@@ -28,6 +30,7 @@ class EventRecommenderViewModel with ChangeNotifier {
     if (userId != null && !_isDisposed) {
       _initializeLocation();
       _loadSavedPlaces();
+      _eventListViewModel.resetRecommenderToastFlag();
     }
   }
  

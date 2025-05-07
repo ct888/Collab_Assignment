@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:seek_here/Model/progress_meter_model.dart';
+//import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/favorite_event_screen.dart';
 import '../ViewModel/event_recommender_viewmodel.dart';
 import '../Viewmodel/progress_meter_viewmodel.dart';
@@ -10,7 +10,9 @@ import 'event_list_screen.dart';
 import '../Model/location.dart';
 
 class EventRecommenderScreen extends StatefulWidget {
-  const EventRecommenderScreen({Key? key}) : super(key: key);
+
+  const EventRecommenderScreen({Key? key})
+    : super(key: key);
 
   @override
   _EventRecommenderScreenState createState() => _EventRecommenderScreenState();
@@ -20,22 +22,18 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   GoogleMapController? _mapController;
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _placeNameController = TextEditingController();
-  final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+ // final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+  //Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
   EventRecommenderViewModel? _viewModel;
   Location? _lastLocation;
-  bool _isDisposed = false;
 
   @override
   void dispose() {
-    _isDisposed = true;
     _mapController?.dispose();
     _addressController.dispose();
     _placeNameController.dispose();
-    if (_viewModel != null) {
-      _viewModel!.removeListener(_onLocationChanged);
-      _viewModel!.removeListener(_checkForErrors);
-    }
+    _viewModel?.removeListener(_onLocationChanged);
     super.dispose();
   }
 
@@ -52,6 +50,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
       },
       child: Consumer<EventRecommenderViewModel>(
         builder: (context, viewModel, child) {
+          // Do NOT call setState here or functions that call setState
           return Scaffold(
             appBar: AppBar(
               title: const Text('Event Recommender'),
@@ -82,41 +81,32 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   }
 
   void _checkForErrors() {
-    // Prevent callback if widget is disposed
-    if (_isDisposed) return;
-    
     if (_viewModel != null &&
         _viewModel!.shouldShowErrorSnackbar &&
         _viewModel!.error != null) {
       // Show a SnackBar with the error message
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Check again before showing the snackbar
-        if (!_isDisposed && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_viewModel!.error!),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: 'Dismiss',
-                textColor: Colors.white,
-                onPressed: () {
-                  if (!_isDisposed && mounted) {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  }
-                },
-              ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_viewModel!.error!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
             ),
-          );
-          _viewModel!.errorSnackbarShown();
-        }
+          ),
+        );
+        _viewModel!.errorSnackbarShown();
       });
     }
   }
 
   void _onLocationChanged() {
-    // Prevent callback if widget is disposed
-    if (_isDisposed || !mounted || _viewModel == null || _mapController == null) return;
+    if (_viewModel == null || _mapController == null) return;
 
     final currentLocation = _viewModel!.currentLocation;
 
@@ -199,22 +189,15 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 ),
                 onPressed: () {
                   if (viewModel.currentLocation != null) {
-                    // Clone the location to avoid accessing the viewModel after navigation
-                    final locationCopy = Location(
-                      latitude: viewModel.currentLocation!.latitude,
-                      longitude: viewModel.currentLocation!.longitude,
-                      address: viewModel.currentLocation!.address,
-                    );
-                    
-                    _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
-                    RecordEntry.insertTimestampToCollection("recommender");
-                    
+                    //_progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+                    //RecordEntry.insertTimestampToCollection("recommender");
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EventListScreen(
-                          location: locationCopy,
-                        ),
+                        builder:
+                            (context) => EventListScreen(
+                              location: viewModel.currentLocation!,
+                            ),
                       ),
                     );
                   }
@@ -246,9 +229,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
         draggable: true,
         onDragEnd: (LatLng position) {
           // Update location when marker is dragged
-          if (!_isDisposed && mounted) {
-            viewModel.updateLocationByCoordinates(position);
-          }
+          viewModel.updateLocationByCoordinates(position);
         },
       ),
     };
@@ -261,16 +242,12 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
           markers: markers, // Use the locally created markers
           onMapCreated: (controller) {
             // Using setState here is okay because this is a callback, not during build
-            if (!_isDisposed && mounted) {
-              setState(() {
-                _mapController = controller;
-              });
-            }
+            setState(() {
+              _mapController = controller;
+            });
           },
           onTap: (LatLng position) {
-            if (!_isDisposed && mounted) {
-              viewModel.updateLocationByCoordinates(position);
-            }
+            viewModel.updateLocationByCoordinates(position);
           },
         ),
 
@@ -287,9 +264,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 child: const Icon(Icons.layers),
                 onPressed: () {
                   // Show map type selector
-                  if (!_isDisposed && mounted) {
-                    _showMapTypeSelector(context);
-                  }
+                  _showMapTypeSelector(context);
                 },
               ),
               const SizedBox(height: 8),
@@ -299,14 +274,11 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 backgroundColor: Color.fromARGB(255, 174, 181, 255),
                 child: const Icon(Icons.my_location),
                 onPressed: () async {
-                  // Check if we're disposed before proceeding
-                  if (_isDisposed || !mounted) return;
-                  
                   // Get the actual current device location
                   await viewModel.refreshCurrentLocation();
 
                   // If we have a valid location and map controller, animate to it
-                  if (!_isDisposed && mounted && viewModel.currentLocation != null &&
+                  if (viewModel.currentLocation != null &&
                       _mapController != null) {
                     _mapController!.animateCamera(
                       CameraUpdate.newLatLng(
@@ -333,9 +305,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
             child: const Icon(Icons.bookmark),
             onPressed: () {
               // Show saved places
-              if (!_isDisposed && mounted) {
-                _showSavedPlaces(context, viewModel);
-              }
+              _showSavedPlaces(context, viewModel);
             },
           ),
         ),
@@ -344,8 +314,6 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   }
 
   void _showMapTypeSelector(BuildContext context) {
-    if (_isDisposed || !mounted) return;
-    
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -357,11 +325,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 leading: const Icon(Icons.map),
                 title: const Text('Normal'),
                 onTap: () {
-                  if (!_isDisposed && mounted) {
-                    setState(() {
-                      _currentMapType = MapType.normal;
-                    });
-                  }
+                  setState(() {
+                    _currentMapType = MapType.normal;
+                  });
                   Navigator.pop(context);
                 },
               ),
@@ -369,11 +335,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 leading: const Icon(Icons.satellite),
                 title: const Text('Satellite'),
                 onTap: () {
-                  if (!_isDisposed && mounted) {
-                    setState(() {
-                      _currentMapType = MapType.satellite;
-                    });
-                  }
+                  setState(() {
+                    _currentMapType = MapType.satellite;
+                  });
                   Navigator.pop(context);
                 },
               ),
@@ -381,11 +345,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 leading: const Icon(Icons.terrain),
                 title: const Text('Terrain'),
                 onTap: () {
-                  if (!_isDisposed && mounted) {
-                    setState(() {
-                      _currentMapType = MapType.terrain;
-                    });
-                  }
+                  setState(() {
+                    _currentMapType = MapType.terrain;
+                  });
                   Navigator.pop(context);
                 },
               ),
@@ -400,8 +362,6 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
     BuildContext context,
     EventRecommenderViewModel viewModel,
   ) {
-    if (_isDisposed || !mounted) return;
-    
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -421,7 +381,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
             TextButton(
               child: const Text('Save'),
               onPressed: () {
-                if (_placeNameController.text.isNotEmpty && !_isDisposed && mounted) {
+                if (_placeNameController.text.isNotEmpty) {
                   viewModel.saveCurrentPlace(_placeNameController.text);
                   _placeNameController.clear();
                   Navigator.of(context).pop();
@@ -441,8 +401,6 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
     BuildContext context,
     EventRecommenderViewModel viewModel,
   ) {
-    if (_isDisposed || !mounted) return;
-    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // This allows the bottom sheet to be larger
@@ -477,36 +435,32 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                                 trailing: IconButton(
                                   icon: const Icon(Icons.delete),
                                   onPressed: () {
-                                    if (!_isDisposed && mounted) {
-                                      viewModel.deleteSavedPlace(place.id);
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Place deleted'),
-                                        ),
-                                      );
-                                    }
+                                    viewModel.deleteSavedPlace(place.id);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Place deleted'),
+                                      ),
+                                    );
                                   },
                                 ),
                                 onTap: () {
-                                  if (!_isDisposed && mounted) {
-                                    final location = place.location;
-                                    viewModel.updateLocationByCoordinates(
-                                      LatLng(
-                                        location.latitude,
-                                        location.longitude,
+                                  final location = place.location;
+                                  viewModel.updateLocationByCoordinates(
+                                    LatLng(
+                                      location.latitude,
+                                      location.longitude,
+                                    ),
+                                  );
+                                  if (_mapController != null) {
+                                    _mapController!.animateCamera(
+                                      CameraUpdate.newLatLng(
+                                        LatLng(
+                                          location.latitude,
+                                          location.longitude,
+                                        ),
                                       ),
                                     );
-                                    if (_mapController != null) {
-                                      _mapController!.animateCamera(
-                                        CameraUpdate.newLatLng(
-                                          LatLng(
-                                            location.latitude,
-                                            location.longitude,
-                                          ),
-                                        ),
-                                      );
-                                    }
                                   }
                                   Navigator.pop(context);
                                 },
