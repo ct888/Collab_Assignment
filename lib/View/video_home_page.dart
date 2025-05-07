@@ -6,6 +6,10 @@ import 'package:seek_here/ViewModel/videoViewModel.dart';
 import 'package:seek_here/widgets/recommendation_list.dart';
 import 'package:seek_here/widgets/video_player_widget.dart';
 
+import '../Model/progress_meter_model.dart';
+import '../ViewModel/progress_meter_viewmodel.dart';
+import '../utils/logger.dart';
+
 class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({Key? key}) : super(key: key);
 
@@ -43,21 +47,43 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Future<void> _loadData({bool refresh = true}) async {
     final videoViewModel = Provider.of<VideoViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
+    final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
+    final AppLogger _logger = AppLogger();
 
-    // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestData();
+    try {
+      // First, fetch the mood from Firebase
+      await moodViewModel.fetchLatestData();
 
-    // Only proceed if we have a mood (regardless of when it was recorded)
-    if (moodViewModel.currentMood != null) {
-      // Analyze emotion based on the current mood
-      await moodViewModel.analyzeEmotion();
+      // Only proceed if we have a mood
+      if (moodViewModel.currentMood != null) {
+        // Analyze emotion based on the current mood
+        final analysisSuccess = await moodViewModel.analyzeEmotion();
 
-      // Then fetch video recommendations based on analysis
-      await videoViewModel.fetchRecommendedVideos(
-        moodViewModel.videoCategories,
-        moodViewModel.recommendedMood,
-        refresh: refresh,
-      );
+        if (analysisSuccess) {
+          // Record the recommendation action
+          await RecordEntry.insertTimestampToCollection("recommender");
+
+          // Then fetch video recommendations based on analysis
+          await videoViewModel.fetchRecommendedVideos(
+            moodViewModel.videoCategories,
+            moodViewModel.recommendedMood,
+            refresh: refresh,
+          );
+
+          // Show progress toast after successful load
+          if (videoViewModel.videos.isNotEmpty) {
+            progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading data: $e');
+      _logger.info('Failed to load recommendations');
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
     }
   }
 

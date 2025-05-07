@@ -6,6 +6,10 @@ import 'package:seek_here/ViewModel/musicViewModel.dart';
 import 'package:seek_here/widgets/music_player_widget.dart';
 import 'package:seek_here/widgets/recommendation_list.dart';
 
+import '../Model/progress_meter_model.dart';
+import '../ViewModel/progress_meter_viewmodel.dart';
+import '../utils/logger.dart';
+
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({Key? key}) : super(key: key);
 
@@ -33,20 +37,42 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Future<void> _loadData() async {
     final musicViewModel = Provider.of<MusicViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
+    final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
+    final AppLogger _logger = AppLogger();
 
-    // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestData();
+    try {
+      // First, fetch the mood from Firebase
+      await moodViewModel.fetchLatestData();
 
-    // Only proceed if we have a mood (regardless of when it was recorded)
-    if (moodViewModel.currentMood != null) {
-      // Analyze emotion based on the current mood
-      await moodViewModel.analyzeEmotion();
+      // Only proceed if we have a mood
+      if (moodViewModel.currentMood != null) {
+        // Analyze emotion based on the current mood
+        final analysisSuccess = await moodViewModel.analyzeEmotion();
 
-      // Then fetch music recommendations based on analysis
-      await musicViewModel.fetchRecommendedTracks(
-        moodViewModel.musicGenres,
-        moodViewModel.recommendedMood,
-      );
+        if (analysisSuccess) {
+          // Record the recommendation action
+          await RecordEntry.insertTimestampToCollection("recommender");
+
+          // Then fetch music recommendations based on analysis
+          await musicViewModel.fetchRecommendedTracks(
+            moodViewModel.musicGenres,
+            moodViewModel.recommendedMood,
+          );
+
+          // Show progress toast after successful load
+          if (musicViewModel.tracks.isNotEmpty) {
+            progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading music data: $e');
+      _logger.info('Failed to load music recommendations');
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
     }
   }
 
