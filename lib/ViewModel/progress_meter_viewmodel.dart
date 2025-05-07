@@ -410,8 +410,8 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Check if user has enough points
   bool hasEnoughPoints() {
     // For testing we're returning true, in production you'd use:
-    // return userPoints >= totalPoints;
-    return true;
+    return userPoints >= totalPoints;
+    // return true;
   }
   
   // Check if any record type is loading
