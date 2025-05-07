@@ -20,9 +20,8 @@ class MoodViewModel extends ChangeNotifier {
   MoodViewModel({
     GeminiService? geminiService,
     FirebaseService? firebaseMoodService,
-  }) :
-        _geminiService = geminiService ?? GeminiService(),
-        _firebaseMoodService = firebaseMoodService ?? FirebaseService();
+  }) : _geminiService = geminiService ?? GeminiService(),
+       _firebaseMoodService = firebaseMoodService ?? FirebaseService();
 
   UserMood? get currentMood => _currentMood;
   DiaryEntry? get latestDiaryEntry => _latestDiaryEntry;
@@ -41,12 +40,16 @@ class MoodViewModel extends ChangeNotifier {
       _logger.info('Starting to fetch latest mood...');
 
       final latestMood = await _firebaseMoodService.fetchLatestMood();
-      _logger.info('Received mood from Firebase: ${latestMood?.toString() ?? "null"}');
+      _logger.info(
+        'Received mood from Firebase: ${latestMood?.toString() ?? "null"}',
+      );
 
       if (latestMood != null) {
         _currentMood = latestMood;
         _lastMoodDate = latestMood.timestamp;
-        _logger.info('Mood successfully loaded from Firebase: ${latestMood.timestamp}');
+        _logger.info(
+          'Mood successfully loaded from Firebase: ${latestMood.timestamp}',
+        );
       } else {
         _currentMood = null;
         _lastMoodDate = null;
@@ -149,4 +152,24 @@ class MoodViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<List<UserMood>> fetchAllMoods() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      
+      final moods = await _firebaseMoodService.fetchAllMoods();
+      
+      _isLoading = false;
+      notifyListeners();
+      return moods;
+    } catch (e) {
+      _logger.error('Error in fetchAllMoods: $e');
+      _isLoading = false;
+      _errorMessage = 'Failed to fetch moods: ${e.toString()}';
+      notifyListeners();
+      throw Exception('Failed to fetch moods: $e');
+    }
+  }
 }
+
