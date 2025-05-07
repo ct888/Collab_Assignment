@@ -97,9 +97,20 @@ class _ProgressMeterState extends State<ProgressMeter> {
       children: [
         Row(
           children: [
+            // Back button
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF3F414E)),
+              onPressed: () => Navigator.pop(context),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey[200],
+                shape: const CircleBorder(),
+                padding: EdgeInsets.all(iconSize * 0.2), // Adjust padding for the icon size
+              ),
+            ),
             const Spacer(),
             _buildAppTitle(context),
             const Spacer(),
+            SizedBox(width: iconSize * 0.4),
           ],
         ),
         SizedBox(height: size.height * 0.02),
