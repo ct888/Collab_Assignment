@@ -20,15 +20,17 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late List<Widget> _pages;
 
-  final List<Widget> _pages = [
-    BOA(),
-    MoodDashboardPage(),
-    RecommenderScreen(userId: "User123"),
-    BOA(),
-    ProgressMeter(),
-  ];
-
-  
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      BOA(),
+      MoodDashboardPage(),
+      RecommenderScreen(userId: widget.userId),
+      TopNavWrapper(currentUserId: widget.userId),
+      //(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
