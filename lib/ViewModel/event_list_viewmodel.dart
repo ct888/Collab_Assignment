@@ -20,6 +20,8 @@ class EventListViewModel with ChangeNotifier {
   String? _error;
   bool _shouldNavigateBack = false;
   bool _shouldShowErrorSnackbar = false;
+  bool _hasShownRecommenderToast = false;
+  bool _isDisposed = false;  // Add a flag to track if the ViewModel is disposed
   
   // Add new properties for mood and diary data
   UserMood? _currentMood;
@@ -30,6 +32,7 @@ class EventListViewModel with ChangeNotifier {
   UserMood? get currentMood => _currentMood;
   DiaryEntry? get latestDiaryEntry => _latestDiaryEntry;
   DateTime? get lastMoodDate => _lastMoodDate;
+  bool get hasShownRecommenderToast => _hasShownRecommenderToast;
  
   EventListViewModel(){
     _fetchUserId();
@@ -45,31 +48,49 @@ class EventListViewModel with ChangeNotifier {
     try {
       _setLoading(true);
       userId = await _firebaseService.getUserID();
+      if (_isDisposed) return;  // Check if disposed before continuing
       _setLoading(false);
-      notifyListeners(); // Notify listeners when userId is fetched
       
       // Once we have the userId, fetch the latest mood and diary data
       if (userId != null && userId!.isNotEmpty) {
         await fetchLatestData();
       }
     } catch (e) {
-      _setError('Failed to fetch user ID: $e');
+      if (!_isDisposed) {  // Only set error if not disposed
+        _setError('Failed to fetch user ID: $e');
+      }
     }
+  }
+
+  void markRecommenderToastAsShown() {
+    if (_isDisposed) return;  // Check if disposed
+    _hasShownRecommenderToast = true;
+    notifyListeners();
+  }
+
+  void resetRecommenderToastFlag() {
+    if (_isDisposed) return;  // Check if disposed
+    _hasShownRecommenderToast = false;
+    notifyListeners();
   }
 
   // Call this after showing the snackbar to reset the flag
   void errorSnackbarShown() {
+    if (_isDisposed) return;  // Check if disposed
     _shouldShowErrorSnackbar = false;
     notifyListeners();
   }
 
   // Call this after navigating back
   void navigationHandled() {
+    if (_isDisposed) return;  // Check if disposed
     _shouldNavigateBack = false;
     notifyListeners();
   }
 
   Future<void> fetchLatestData() async {
+    if (_isDisposed) return;  // Check if disposed
+
     // Always reset loading state at start
     _isLoading = true;
     _error = null;
@@ -80,6 +101,9 @@ class EventListViewModel with ChangeNotifier {
 
       final latestMood = await _firebaseService.fetchLatestMood();
       final latestDiary = await _firebaseService.fetchLatestDiary();
+      
+      if (_isDisposed) return;  // Check if disposed after async operation
+      
       _logger.info('Received mood from Firebase: ${latestMood?.toString() ?? "null"}');
 
       if (latestMood != null || latestDiary != null) {
@@ -104,33 +128,33 @@ class EventListViewModel with ChangeNotifier {
         _logger.info('No mood or diary record found in Firebase');
       }
     } catch (e) {
+      if (_isDisposed) return;  // Check if disposed
       _error = 'Failed to fetch mood and diary data: ${e.toString()}';
       _logger.error('Error in fetchLatestData', e);
     } finally {
       // Ensure loading is always false when complete
-      _isLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {  // Check if disposed
+        _isLoading = false;
+        notifyListeners();
 
-      _logger.info('''
+        _logger.info('''
       Fetch completed:
       Current Mood: ${_currentMood?.toString() ?? "null"}
       Current Diary: ${_latestDiaryEntry?.content ?? "null"}
       Loading: $_isLoading
     ''');
+      }
     }
   }
  
   Future<void> fetchEvents(Location location) async {
+    if (_isDisposed) return;  // Check if disposed
+    
     try {
       _setLoading(true);
       _error = null;
       _shouldNavigateBack = false;
       _shouldShowErrorSnackbar = false;
-      
-      // Make sure we have the latest mood and diary data
-      //if (_currentMood == null && _latestDiaryEntry == null) {
-      //  await fetchLatestData();
-     // }
       
       // Get events with personalized recommendations if mood data is available
       if (_currentMood != null || _latestDiaryEntry != null) {
@@ -144,9 +168,14 @@ class EventListViewModel with ChangeNotifier {
         _events = await _geminiService.getNearbyEvents(location);
       }
      
+      if (_isDisposed) return;  // Check if disposed after async operation
+      
       // Check which events are favorites
       if (userId != null && userId!.isNotEmpty) {
         final favoriteEvents = await _firebaseService.getFavoriteEvents(userId!);
+        
+        if (_isDisposed) return;  // Check if disposed after another async operation
+        
         for (var event in _events) {
           event.isFavorite = favoriteEvents.any((favEvent) => favEvent.id == event.id);
         }
@@ -154,12 +183,16 @@ class EventListViewModel with ChangeNotifier {
      
       _setLoading(false);
     } catch (e) {
-      _handleError('Failed to fetch events: $e', shouldNavigate: true);
+      if (!_isDisposed) {  // Only handle error if not disposed
+        _handleError('Failed to fetch events: $e', shouldNavigate: true);
+      }
     }
   }
  
   // Add this new method to update a single event's favorite status
   Future<void> updateEventFavoriteStatus(String eventId) async {
+    if (_isDisposed) return;  // Check if disposed
+    
     try {
       if (userId == null || userId!.isEmpty) {
         _logger.warning('Cannot update favorite status: User ID is null or empty');
@@ -167,6 +200,9 @@ class EventListViewModel with ChangeNotifier {
       }
       
       final favoriteEvents = await _firebaseService.getFavoriteEvents(userId!);
+      
+      if (_isDisposed) return;  // Check if disposed after async operation
+      
       final index = _events.indexWhere((event) => event.id == eventId);
      
       if (index != -1) {
@@ -174,6 +210,8 @@ class EventListViewModel with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+      if (_isDisposed) return;  // Check if disposed
+      
       _logger.error('Error updating event favorite status: $e');
       // We don't need to navigate back for this error
       _handleError('Error updating favorites: $e', shouldNavigate: false);
@@ -181,11 +219,14 @@ class EventListViewModel with ChangeNotifier {
   }
  
   void _setLoading(bool loading) {
+    if (_isDisposed) return;  // Check if disposed
     _isLoading = loading;
     notifyListeners();
   }
  
   void _handleError(String errorMessage, {bool shouldNavigate = false}) {
+    if (_isDisposed) return;  // Check if disposed
+    
     _logger.error('Error in EventListViewModel: $errorMessage');
     _error = _getUserFriendlyErrorMessage(errorMessage);
     _isLoading = false;
@@ -213,14 +254,22 @@ class EventListViewModel with ChangeNotifier {
   }
  
   void clearError() {
+    if (_isDisposed) return;  // Check if disposed
     _error = null;
     _shouldShowErrorSnackbar = false;
     notifyListeners();
   }
 
   void _setError(String? errorMessage) {
+    if (_isDisposed) return;  // Check if disposed
     _error = errorMessage;
     _isLoading = false;
     notifyListeners();
+  }
+  
+  @override
+  void dispose() {
+    _isDisposed = true;  // Set the flag before calling super.dispose()
+    super.dispose();
   }
 }

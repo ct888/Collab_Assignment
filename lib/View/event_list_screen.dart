@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 import '../Model/location.dart';
 import '../ViewModel/event_list_viewmodel.dart';
 import 'event_detail_screen.dart';
+import 'package:seek_here/Model/progress_meter_model.dart';
 
 class EventListScreen extends StatelessWidget {
   final Location location;
@@ -16,10 +18,12 @@ class EventListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM dd, yyyy • h:mm a');
+    
     return ChangeNotifierProvider(
       create: (_) => EventListViewModel(),
       child: Consumer<EventListViewModel>(
         builder: (context, viewModel, child) {
+          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
           // Check if we need to navigate back due to error
           if (viewModel.shouldNavigateBack) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,6 +60,15 @@ class EventListScreen extends StatelessWidget {
             });
           }
 
+          if (!viewModel.isLoading && viewModel.events.isNotEmpty && !viewModel.hasShownRecommenderToast) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Set flag before showing toast to prevent multiple executions
+              viewModel.markRecommenderToastAsShown();
+                    _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+                    RecordEntry.insertTimestampToCollection("recommender");
+            });
+          }
+
           return Scaffold(
             body: Stack(
               children: [
@@ -76,7 +89,10 @@ class EventListScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             InkWell(
-                              onTap: () => Navigator.pop(context),
+                              onTap: () {
+                                // Reset the recommender toast flag when navigating back
+                                Navigator.pop(context);
+                              },
                               borderRadius: BorderRadius.circular(20),
                               child: Container(
                                 padding: const EdgeInsets.all(8),
@@ -159,209 +175,234 @@ class EventListScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // Loading indicator or error message
-                      if (viewModel.isLoading)
-                        const Expanded(
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (viewModel.error != null && !viewModel.shouldNavigateBack)
-                        Expanded(
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Error: ${viewModel.error}',
-                                  style: const TextStyle(color: Colors.red),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () => viewModel.fetchEvents(location),
-                                  child: const Text('Try Again'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else if (viewModel.events.isEmpty)
-                        const Expanded(
-                          child: Center(
-                            child: Text(
-                              'No events found nearby. Try a different location or refresh.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      else
-                        // Show event list with original layout but styled cards
-                        Expanded(
-                          child: RefreshIndicator(
-                            onRefresh: () => viewModel.fetchEvents(location),
-                            child: ListView.builder(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              itemCount: viewModel.events.length,
-                              itemBuilder: (context, index) {
-                                final event = viewModel.events[index];
-                                return Card(
-                                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => EventDetailScreen(
-                                            event: event,
-                                          ),
-                                        ),
-                                      ).then((_) {
-                                        // Update the favorites status
-                                        viewModel.updateEventFavoriteStatus(event.id);
-                                      });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              // Event image or placeholder
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: event.imageUrl != null && event.imageUrl!.isNotEmpty
-                                                    ? Image.network(
-                                                        event.imageUrl!,
-                                                        width: 80,
-                                                        height: 80,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (context, error, stackTrace) {
-                                                          return Container(
-                                                            width: 80,
-                                                            height: 80,
-                                                            color: Colors.grey.shade300,
-                                                            child: const Icon(Icons.event, size: 40),
-                                                          );
-                                                        },
-                                                      )
-                                                    : Container(
-                                                        width: 80,
-                                                        height: 80,
-                                                        color: Colors.grey.shade300,
-                                                        child: const Icon(Icons.event, size: 40),
-                                                      ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      event.title,
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      event.organizer,
-                                                      style: const TextStyle(color: Colors.grey),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Row(
-                                                      children: [
-                                                        const Icon(Icons.access_time, size: 16, color: Colors.blue),
-                                                        const SizedBox(width: 4),
-                                                        Expanded(
-                                                          child: Text(
-                                                            dateFormat.format(event.startDate),
-                                                            style: const TextStyle(fontSize: 14),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              if (event.isFavorite)
-                                                const Icon(Icons.favorite, color: Colors.red),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.location_on, size: 16, color: Colors.red),
-                                              const SizedBox(width: 4),
-                                              Expanded(
-                                                child: Text(
-                                                  event.location.address ?? 'No address available',
-                                                  style: const TextStyle(fontSize: 14),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                event.fee <= 0 ? 'Free' : 'RM ${event.fee.toStringAsFixed(2)}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: event.fee <= 0 ? Colors.green : Colors.black,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => EventDetailScreen(
-                                                        event: event,
-                                                      ),
-                                                    ),
-                                                  ).then((_) {
-                                                    // Update the favorites status
-                                                    viewModel.updateEventFavoriteStatus(event.id);
-                                                  });
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  foregroundColor: Colors.white,
-                                                  backgroundColor: const Color(0xFF8E97FD),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(20),
-                                                  ),
-                                                  minimumSize: const Size(70, 32),
-                                                ),
-                                                child: const Text('VIEW'),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
+                      // Main content area - Loading, Error, or Event List
+                      Expanded(
+                        child: _buildMainContent(context, viewModel, dateFormat, location),
+                      ),
                     ],
                   ),
                 ),
               ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  // Extract the content building to a separate method for clarity
+  Widget _buildMainContent(BuildContext context, EventListViewModel viewModel, DateFormat dateFormat, Location location) {
+    // First render state: Show loading indicator when actively loading
+    if (viewModel.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Finding events near you...', style: TextStyle(color: Colors.black54)),
+          ],
+        ),
+      );
+    }
+    
+    // Second render state: Show error with retry button (if not navigating back)
+    if (viewModel.error != null && !viewModel.shouldNavigateBack) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Error: ${viewModel.error}',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => viewModel.fetchEvents(location),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Third render state: Events are empty but we're not loading (no events found)
+    if (viewModel.events.isEmpty) {
+      // This is a real empty state AFTER loading is complete
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'No events found nearby.\nTry a different location or refresh.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Fourth render state: Show events list when available
+    return RefreshIndicator(
+      onRefresh: () => viewModel.fetchEvents(location),
+      child: ListView.builder(
+        padding: const EdgeInsets.only(bottom: 20),
+        itemCount: viewModel.events.length,
+        itemBuilder: (context, index) {
+          final event = viewModel.events[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EventDetailScreen(
+                      event: event,
+                    ),
+                  ),
+                ).then((_) {
+                  // Update the favorites status
+                  viewModel.updateEventFavoriteStatus(event.id);
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Event image or placeholder
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: event.imageUrl != null && event.imageUrl!.isNotEmpty
+                              ? Image.network(
+                                  event.imageUrl!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(Icons.event, size: 40),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 80,
+                                  height: 80,
+                                  color: Colors.grey.shade300,
+                                  child: const Icon(Icons.event, size: 40),
+                                ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                event.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                event.organizer,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.access_time, size: 16, color: Colors.blue),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      dateFormat.format(event.startDate),
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (event.isFavorite)
+                          const Icon(Icons.favorite, color: Colors.red),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 16, color: Colors.red),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event.location.address ?? 'No address available',
+                            style: const TextStyle(fontSize: 14),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          event.fee <= 0 ? 'Free' : 'RM ${event.fee.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: event.fee <= 0 ? Colors.green : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EventDetailScreen(
+                                  event: event,
+                                ),
+                              ),
+                            ).then((_) {
+                              // Update the favorites status
+                              viewModel.updateEventFavoriteStatus(event.id);
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF8E97FD),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            minimumSize: const Size(70, 32),
+                          ),
+                          child: const Text('VIEW'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },
