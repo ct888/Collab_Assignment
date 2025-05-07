@@ -5,6 +5,7 @@ import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/Model/openai_service.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
+import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
 class BOAAnswer extends StatefulWidget {
   final String preference;
@@ -26,7 +27,9 @@ class _BOAAnswerState extends State<BOAAnswer> {
   }
 
   void _addToProgressMeter() async {
+    ProgressMeterViewModel _progressMeterVM = ProgressMeterViewModel();
     RecordEntry.insertTimestampToCollection("quote");
+    _progressMeterVM.showProgressUpdateToast(context, "quote");
   }
 
   Future<void> _getAnswer() async {
