@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+String uid = FirebaseAuth.instance.currentUser!.uid;
+
 // MoodData class for managing mood statistics
 class MoodData {
   final String name;
@@ -56,11 +58,13 @@ class RecordEntry {
   final DateTime timestamp;
   final String recordType; // 'mood', 'journal', 'meditation', etc.
   final Map<String, dynamic> data; // Flexible data structure to store different record types
+  final String userId;
 
   RecordEntry({
     required this.timestamp,
     required this.recordType,
     required this.data,
+    required this.userId,
   });
 
   // Convert a record entry to a map for storage
@@ -69,16 +73,8 @@ class RecordEntry {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'recordType': recordType,
       'data': data,
+      'userId': userId,
     };
-  }
-
-  // Create a record entry from a map
-  factory RecordEntry.fromMap(Map<String, dynamic> map) {
-    return RecordEntry(
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
-      recordType: map['recordType'],
-      data: map['data'],
-    );
   }
 
   // Get points value based on record type
@@ -111,6 +107,7 @@ class RecordEntry {
       timestamp: date,
       recordType: type,
       data: docData,
+      userId: docData['userId'] ?? uid,
     );
   }
   
@@ -143,26 +140,23 @@ class RecordEntry {
       activity: activityText,
       timestamp: timestamp,
       pointsAdded: points,
+      userId: userId,
     );
   }
 
   // Method to insert timestamp data into specified Firebase collection
   static Future<void> insertTimestampToCollection(String tableName) async {
     try {
-      // Get the current user ID
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        throw Exception('No user is currently logged in');
-      }
-      
+      // Use the global uid variable directly
       final data = {
         'date': Timestamp.now(),
+        'userId': uid,
       };
       
       // Insert into the specified collection under the user's document
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(currentUser.uid)
+          .doc(uid)
           .collection(tableName)
           .add(data);
     } catch (e) {
@@ -176,11 +170,13 @@ class UserActivity {
   final String activity;
   final DateTime timestamp;
   final int pointsAdded;
+  final String userId;
 
   UserActivity({
     required this.activity,
     required this.timestamp,
     required this.pointsAdded,
+    required this.userId,
   });
 
   // Convert an activity to a map for storage
@@ -189,25 +185,11 @@ class UserActivity {
       'activity': activity,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'pointsAdded': pointsAdded,
+      'userId': userId,
     };
   }
 
-  // Create an activity from a map
-  factory UserActivity.fromMap(Map<String, dynamic> map) {
-    return UserActivity(
-      activity: map['activity'],
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
-      pointsAdded: map['pointsAdded'],
-    );
-  }
-
-  // Sort activities by timestamp (newest first)
-  static List<UserActivity> sortByTimestamp(List<UserActivity> activities) {
-    activities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return activities;
-  }
-
-  // Factory to create from Firestore data with better error handling
+  // Factory to create from Firestore data
   factory UserActivity.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>? ?? {};
     
@@ -221,6 +203,7 @@ class UserActivity {
       activity: data['activity'] ?? 'Unknown activity',
       timestamp: date,
       pointsAdded: (data['pointsAdded'] ?? 0),
+      userId: data['userId'] ?? uid,
     );
   }
 
@@ -246,7 +229,8 @@ class UserActivity {
     return UserActivity(
       activity: standardizeActivityName(rawActivity),
       timestamp: timestamp,
-      pointsAdded: pointsAdded
+      pointsAdded: pointsAdded,
+      userId: uid,
     );
   }
 }

@@ -210,7 +210,8 @@ class _RecapReport2State extends State<RecapReport2> {
                         ElevatedButton(
                           onPressed: () {
                             // Navigate back to ProgressMeter (popping both RecapReport2 and RecapReport1)
-                            Navigator.of(context).popUntil((route) => route.isFirst);
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFBBB5F5),

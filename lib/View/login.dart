@@ -36,8 +36,13 @@ class _LogInState extends State<LogIn> {
     setState(() => _isLoading = true);
 
     try {
-      final String email = _emailController.text.trim();
-      final String password = _passwordController.text;
+      String email = _emailController.text.trim();
+      String password = _passwordController.text;
+
+      if (email.isEmpty && password.isEmpty) {
+        email = 'wrongEmail';
+        password = 'wrongPassword';
+      }
 
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
@@ -64,8 +69,10 @@ class _LogInState extends State<LogIn> {
       String message;
       if (e.code == 'user-not-found') {
         message = 'No user found with this email.';
-      } else if (e.code == 'wrong-password') {
-        message = 'Incorrect password.';
+      } else if (e.code == 'invalid-credential') {
+        message = 'Incorrect email or password.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Incorrect email format.';
       } else {
         message = 'Login Failed: ${e.message}';
       }
@@ -74,6 +81,7 @@ class _LogInState extends State<LogIn> {
         SnackBar(
           content: Text(message, style: GoogleFonts.aDLaMDisplay()),
           backgroundColor: Colors.red,
+          duration: Duration(milliseconds: 1500),
         ),
       );
     } catch (e) {
