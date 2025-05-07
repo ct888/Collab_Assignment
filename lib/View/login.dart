@@ -54,6 +54,8 @@ class _LogInState extends State<LogIn> {
         ),
       );
 
+      await Future.delayed(const Duration(milliseconds: 800));
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainScreen()),

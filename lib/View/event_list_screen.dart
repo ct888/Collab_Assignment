@@ -1,18 +1,15 @@
-// views/event_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../Model/location.dart';
-import '../ViewModel/utils/event_list_viewmodel.dart';
+import '../ViewModel/event_list_viewmodel.dart';
 import 'event_detail_screen.dart';
 
 class EventListScreen extends StatelessWidget {
-  final String userId;
   final Location location;
 
   const EventListScreen({
     Key? key,
-    required this.userId,
     required this.location,
   }) : super(key: key);
 
@@ -20,9 +17,38 @@ class EventListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM dd, yyyy • h:mm a');
     return ChangeNotifierProvider(
-      create: (_) => EventListViewModel(userId: userId),
+      create: (_) => EventListViewModel(),
       child: Consumer<EventListViewModel>(
         builder: (context, viewModel, child) {
+          // Check if we need to navigate back due to error
+          if (viewModel.shouldNavigateBack) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              viewModel.navigationHandled();
+              Navigator.pop(context);
+            });
+          }
+          
+          // Show error snackbar if needed
+          if (viewModel.shouldShowErrorSnackbar && viewModel.error != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(viewModel.error!),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 4),
+                  action: SnackBarAction(
+                    label: 'Dismiss',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                  ),
+                ),
+              );
+              viewModel.errorSnackbarShown();
+            });
+          }
+          
           // Fetch events when the screen is first loaded
           if (viewModel.events.isEmpty && !viewModel.isLoading) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -138,7 +164,7 @@ class EventListScreen extends StatelessWidget {
                         const Expanded(
                           child: Center(child: CircularProgressIndicator()),
                         )
-                      else if (viewModel.error != null)
+                      else if (viewModel.error != null && !viewModel.shouldNavigateBack)
                         Expanded(
                           child: Center(
                             child: Column(
@@ -189,16 +215,12 @@ class EventListScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => EventDetailScreen(
-                                            userId: userId,
                                             event: event,
                                           ),
                                         ),
                                       ).then((_) {
-                                        // Instead of refreshing all events, just update the favorites status if needed
-                                        final index = viewModel.events.indexWhere((e) => e.id == event.id);
-                                        if (index != -1) {
-                                          viewModel.events[index].isFavorite = event.isFavorite;
-                                        }
+                                        // Update the favorites status
+                                        viewModel.updateEventFavoriteStatus(event.id);
                                       });
                                     },
                                     child: Padding(
@@ -307,11 +329,13 @@ class EventListScreen extends StatelessWidget {
                                                     context,
                                                     MaterialPageRoute(
                                                       builder: (context) => EventDetailScreen(
-                                                        userId: userId,
                                                         event: event,
                                                       ),
                                                     ),
-                                                  );
+                                                  ).then((_) {
+                                                    // Update the favorites status
+                                                    viewModel.updateEventFavoriteStatus(event.id);
+                                                  });
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                   foregroundColor: Colors.white,
@@ -351,7 +375,7 @@ class WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Top-left wave
     Paint topWavePaint = Paint()
-      ..color = Color(0xFF8E97FD).withOpacity(0.4) // Matching color from 2nd image
+      ..color = Color(0xFF8E97FD).withOpacity(0.4)
       ..style = PaintingStyle.fill;
 
     Path topWavePath = Path();

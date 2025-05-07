@@ -88,7 +88,7 @@ class RecommenderScreen extends StatelessWidget {
                           MaterialPageRoute(
                             builder:
                                 (context) =>
-                                    EventRecommenderScreen(userId: userId),
+                                    EventRecommenderScreen(),
                           ),
                         );
                       },
