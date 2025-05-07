@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ac6b3bc-6084-452b-b545-4d4867a893d4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/video_home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/video_home_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/videoViewModel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ViewModel/videoViewModel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/recommendation_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/recommendation_list.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
