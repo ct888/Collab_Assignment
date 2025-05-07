@@ -1,37 +1,93 @@
-/*import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/diaryDraftEdit_viewmodel.dart';
-import '/widgets/confirmation_dialog.dart';
+import '../widgets/confirmation_dialog.dart';
 import '../view/utils/wave_painter.dart';
+import '../model/diary_entry.dart';
+import '../service/database_service.dart';
+import '../ViewModel/diaryDraftEdit_viewmodel.dart';
 
 class DiaryDraftEditScreen extends StatelessWidget {
-  final String draftContent; // 接受草稿内容作为参数
+  final DiaryEntry draft;
 
-  const DiaryDraftEditScreen({super.key, required this.draftContent});
+  const DiaryDraftEditScreen({Key? key, required this.draft}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => DiaryDraftEditViewModel(),
-      child: const DiaryDraftEditView(),
+      child: DiaryDraftEditView(draft: draft),
     );
   }
 }
 
-class DiaryDraftEditView extends StatelessWidget {
-  const DiaryDraftEditView({Key? key}) : super(key: key);
+class DiaryDraftEditView extends StatefulWidget {
+  final DiaryEntry draft;
+
+  const DiaryDraftEditView({Key? key, required this.draft}) : super(key: key);
+
+  @override
+  State<DiaryDraftEditView> createState() => _DiaryDraftEditViewState();
+}
+
+class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
+  late TextEditingController _contentController;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DiaryDraftEditViewModel>(context);
 
-    // 在页面加载时加载草稿内容
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final draftContent = ModalRoute.of(context)?.settings.arguments as String?;
-      if (draftContent != null) {
-        viewModel.loadDraftContent(draftContent); // 加载草稿内容
-      }
-    });
+    // Initialize data on first build
+    if (!_isInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.draft.id != null) {
+          viewModel.loadDraftById(widget.draft.id!);
+          _contentController.text = widget.draft.content ?? '';
+          viewModel.setVisibility(widget.draft.publicVisibility ?? false);
+          viewModel.setDataTracking(widget.draft.dataTracking ?? false);
+        }
+        
+        setState(() {
+          _isInitialized = true;
+        });
+      });
+    }
+
+    if (viewModel.errorMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+        viewModel.clearMessages();
+      });
+    }
+
+    if (viewModel.successMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.successMessage!),
+            backgroundColor: Colors.green,
+          ),
+        );
+        viewModel.clearMessages();
+      });
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6FA),
@@ -53,7 +109,7 @@ class DiaryDraftEditView extends StatelessWidget {
                       CircleAvatar(
                         backgroundColor: Colors.grey.shade300,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.black),
+                          icon: const Icon(Icons.arrow_back, color: Colors.black),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ),
@@ -133,7 +189,7 @@ class DiaryDraftEditView extends StatelessWidget {
 
                             // Diary 输入框
                             TextField(
-                              controller: TextEditingController(text: viewModel.currentContent),
+                              controller: _contentController,
                               maxLines: 8,
                               decoration: InputDecoration(
                                 hintText: "Start editing your diary here...",
@@ -151,7 +207,6 @@ class DiaryDraftEditView extends StatelessWidget {
                             ),
                             const SizedBox(height: 20),
 
-                            // Switch (公开与否)
                             _buildSwitchRow(
                               label: "Public Visibility",
                               value: viewModel.publicVisibility,
@@ -183,7 +238,7 @@ class DiaryDraftEditView extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed:
                               (viewModel.isSaving) ? null : () async {
-                                await showBeautifulConfirmationDialog(
+                                await showConfirmationDialog(
                                   context: context,
                                   title: "Cancel Edit",
                                   icon: Icons.cancel,
@@ -219,8 +274,13 @@ class DiaryDraftEditView extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed:
                               (viewModel.isSaving) ? null : () async {
-                                await viewModel.saveDraft(); // 保存草稿
-                                Navigator.of(context).pop(); // 保存成功后返回
+                                // 更新草稿内容
+                                viewModel.updateContent(_contentController.text);
+                                // 保存草稿
+                                final result = await viewModel.saveDraft();
+                                if (result) {
+                                  Navigator.of(context).pop(true); // 保存成功后返回，并传递true表示更新成功
+                                }
                               },
                           icon: viewModel.isSaving
                               ? const SizedBox(
@@ -292,4 +352,3 @@ class DiaryDraftEditView extends StatelessWidget {
     return days[now.weekday - 1];
   }
 }
-*/

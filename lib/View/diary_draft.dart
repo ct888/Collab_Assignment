@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../view/diary_draft.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:seek_here/Model/appimages.dart';
+import '/widgets/confirmation_dialog.dart';
 
 class DiaryDraftScreen extends StatelessWidget {
   final String currentUserId;
@@ -246,9 +247,13 @@ class _DiaryDraftContent extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
           child: Column(
             children: [
-              Row(
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2 - 24,
                     child: ElevatedButton.icon(
                       onPressed:
                           singleSelection
@@ -266,90 +271,116 @@ class _DiaryDraftContent extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2 - 24,
                     child: ElevatedButton.icon(
                       onPressed:
                           hasSelection
                               ? () async {
-                                bool confirmed = await showDialog(
+                                await showConfirmationDialog(
                                   context: context,
-                                  builder:
-                                      (context) => AlertDialog(
-                                        title: const Text("Delete Drafts"),
-                                        content: const Text(
-                                          "Are you sure you want to delete the selected drafts?",
+                                  title: "Delete Drafts",
+                                  message:
+                                      "Are you sure you want to delete the selected drafts?",
+                                  icon: Icons.delete,
+                                  onConfirm: () async {
+                                    try {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (BuildContext context) {
+                                          return const Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        },
+                                      );
+
+                                      await viewModel.deleteSelectedDrafts();
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Draft(s) deleted successfully.",
+                                          ),
+                                          backgroundColor: Colors.green,
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.of(
-                                                  context,
-                                                ).pop(false),
-                                            child: const Text("Cancel"),
+                                      );
+                                    } catch (e) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "Failed to delete draft(s): ${e.toString()}",
                                           ),
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.of(
-                                                  context,
-                                                ).pop(true),
-                                            child: const Text(
-                                              "Delete",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  },
                                 );
-
-                                if (confirmed) {
-                                  try {
-                                    // 显示加载中对话框
-                                    showDialog(
-                                      context: context,
-                                      barrierDismissible: false,
-                                      builder: (BuildContext context) {
-                                        return const Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      },
-                                    );
-
-                                    // 执行删除（无返回值）
-                                    await viewModel.deleteSelectedDrafts();
-
-                                    Navigator.pop(context);
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Draft(s) deleted successfully.",
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    // 关闭加载框
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "Failed to delete draft(s): ${e.toString()}",
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
                               }
                               : null,
-
                       icon: const Icon(Icons.delete),
                       label: const Text('Delete Drafts'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent.shade100,
+                        backgroundColor: deleteColor,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2 - 24,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          hasSelection
+                              ? () async {
+                                await showConfirmationDialog(
+                                  context: context,
+                                  title: "Share Drafts",
+                                  message:
+                                      "Are you sure you want to share the selected drafts?",
+                                  icon: Icons.share,
+                                  onConfirm: () async {
+                                    try {
+                                      await viewModel.uploadSelectedDrafts();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Draft(s) shared successfully.",
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "Failed to share draft(s): ${e.toString()}",
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              }
+                              : null,
+                      icon: const Icon(Icons.share),
+                      label: const Text('Share Drafts'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent.shade100,
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -359,58 +390,6 @@ class _DiaryDraftContent extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed:
-                      hasSelection
-                          ? () async {
-                            bool confirmed = await showDialog(
-                              context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    title: const Text("Upload Drafts"),
-                                    content: const Text(
-                                      "Are you sure you want to upload the selected drafts?",
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed:
-                                            () => Navigator.of(
-                                              context,
-                                            ).pop(false),
-                                        child: const Text("Cancel"),
-                                      ),
-                                      TextButton(
-                                        onPressed:
-                                            () =>
-                                                Navigator.of(context).pop(true),
-                                        child: const Text(
-                                          "Upload",
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                            );
-                            if (confirmed) {
-                              viewModel.uploadSelectedDrafts();
-                            }
-                          }
-                          : null,
-                  icon: const Icon(Icons.share),
-                  label: const Text("Share"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent.shade100,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
               ),
             ],
           ),

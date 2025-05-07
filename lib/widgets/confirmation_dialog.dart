@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Future<void> showBeautifulConfirmationDialog({
+Future<void> showConfirmationDialog({
   required BuildContext context,
   required String title,
   required String message,

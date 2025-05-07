@@ -29,7 +29,7 @@ class DiaryWriteView extends StatelessWidget {
     // Show confirmation dialog for success or error messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (viewModel.errorMessage != null) {
-        showBeautifulConfirmationDialog(
+        showConfirmationDialog(
           context: context,
           title: "Error",
           icon: Icons.error_outline,
@@ -39,7 +39,7 @@ class DiaryWriteView extends StatelessWidget {
       }
 
       if (viewModel.successMessage != null) {
-        showBeautifulConfirmationDialog(
+        showConfirmationDialog(
           context: context,
           title: "Success",
           icon: Icons.check_circle_outline,
@@ -338,7 +338,7 @@ class DiaryWriteView extends StatelessWidget {
                                       viewModel.isImageUploading)
                                   ? null
                                   : () async {
-                                    await showBeautifulConfirmationDialog(
+                                    await showConfirmationDialog(
                                       context: context,
                                       title: "Save Draft",
                                       icon: Icons.cloud_upload,
@@ -379,7 +379,7 @@ class DiaryWriteView extends StatelessWidget {
                                       viewModel.isImageUploading)
                                   ? null
                                   : () async {
-                                    await showBeautifulConfirmationDialog(
+                                    await showConfirmationDialog(
                                       context: context,
                                       title: "Upload Entry",
                                       icon: Icons.cloud_upload,

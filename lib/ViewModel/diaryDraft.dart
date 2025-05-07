@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/diary_entry.dart';
 import '../service/database_service.dart';
 import '../service/storage_service.dart';
+import '../view/draftEdit.dart';  // 导入我们创建的编辑屏幕
 
 class DiaryDraftViewModel extends ChangeNotifier {
   List<DiaryEntry> entries = [];
@@ -115,17 +116,31 @@ class DiaryDraftViewModel extends ChangeNotifier {
     }
   }
 
-  void editSelectedDraft(BuildContext context) {
+  // 更新编辑草稿的方法
+  void editSelectedDraft(BuildContext context) async {
     if (_selectedDrafts.length != 1) return;
 
     final draftId = _selectedDrafts.first;
     final draft = entries.firstWhere((entry) => entry.id == draftId);
 
-    // Navigate to edit screen
-    // This would be implemented with your navigation logic
-    // After editing, you might want to reset selection
+    // 导航到编辑屏幕
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DiaryDraftEditScreen(draft: draft),
+      ),
+    );
+
+    // 如果编辑成功，刷新草稿列表
+    if (result == true) {
+      await loadDrafts();
+    }
+
+    // 在编辑后重置选择模式
     _selectedDrafts.clear();
-    _isSelectionMode = false;
+    if (_isSelectionMode) {
+      toggleSelectionMode();
+    }
     notifyListeners();
   }
 
@@ -134,11 +149,26 @@ class DiaryDraftViewModel extends ChangeNotifier {
       for (String draftId in _selectedDrafts) {
         final draft = entries.firstWhere((entry) => entry.id == draftId);
 
-        // Convert draft to published entry
-        //     await DatabaseService().convertDraftToEntry(draft);
-
-        // Remove from drafts
-        await deleteDraft(draftId);
+        // 转换草稿为已发布条目
+        // 更新isDraft字段为false，并设置为公开条目
+        final publishedEntry = DiaryEntry(
+          id: draft.id,
+          userId: draft.userId,
+          content: draft.content,
+          date: draft.date,
+          publicVisibility: true, // 设置为公开
+          dataTracking: draft.dataTracking,
+          isDraft: false, // 不再是草稿
+          imageUrl: draft.imageUrl,
+          likedUsers: draft.likedUsers,
+          likes: draft.likes,
+        );
+        
+        // 更新数据库
+        await FirebaseFirestore.instance
+            .collection(DatabaseService().collectionName)
+            .doc(draft.id)
+            .update(publishedEntry.toMap());
       }
 
       _selectedDrafts.clear();
@@ -146,7 +176,7 @@ class DiaryDraftViewModel extends ChangeNotifier {
         toggleSelectionMode();
       }
 
-      loadDrafts(); // Refresh the list
+      loadDrafts(); // 刷新列表
     } catch (e) {
       errorMessage = e.toString();
       notifyListeners();

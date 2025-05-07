@@ -1,102 +1,169 @@
-/*import 'dart:io';
-
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../service/database_service.dart';
-import '../service/storage_service.dart';
 import '../model/diary_entry.dart';
 
+class DiaryDraftEditViewModel extends ChangeNotifier {
+  final DatabaseService _databaseService = DatabaseService();
 
-class DiaryEditViewModel extends ChangeNotifier {
-  final String diaryId;
-  final FirestoreService firestoreService;
-  
-  DiaryEditViewModel({
-    required this.diaryId,
-    required this.firestoreService,
-  });
-
-  TextEditingController contentController = TextEditingController();
-  bool isUploading = false;
-  bool isImageUploading = false;
-  List<File> imageFiles = [];
-
+  String currentContent = '';
+  bool publicVisibility = false;
+  bool dataTracking = false;
+  bool isSaving = false;
+  String? draftId;
   String? errorMessage;
   String? successMessage;
 
-  // Initialize the ViewModel by loading the diary entry
-  Future<void> loadDiaryEntry() async {
-    try {
-      final diaryEntry = await firestoreService.getDiaryEntry(diaryId);
-      contentController.text = diaryEntry.content ?? '';
-      // Add logic for loading images if they exist
-    } catch (e) {
-      errorMessage = 'Error loading diary entry: $e';
-      notifyListeners();
-    }
+  // 加载草稿内容
+  void loadDraftContent(String content) {
+    currentContent = content;
+    notifyListeners();
   }
 
-  // Method to save the edited diary entry
-  Future<void> saveDiaryEntry() async {
-    if (contentController.text.isEmpty) {
-      errorMessage = 'Content cannot be empty.';
-      notifyListeners();
-      return;
-    }
-
-    isUploading = true;
-    notifyListeners();
-
+  // 通过ID加载草稿
+  Future<void> loadDraftById(String id) async {
     try {
-      await firestoreService.updateDiaryEntry(
-        diaryId,
-        contentController.text,
-        imageFiles,
-      );
+      draftId = id;
 
-      successMessage = 'Diary entry updated successfully!';
-      notifyListeners();
-    } catch (e) {
-      errorMessage = 'Error saving diary entry: $e';
-      notifyListeners();
-    } finally {
-      isUploading = false;
-      notifyListeners();
-    }
-  }
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection(_databaseService.collectionName)
+              .doc(id)
+              .get();
 
-  // Method for image picking
-  Future<void> pickImage({required ImageSource source}) async {
-    isImageUploading = true;
-    notifyListeners();
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        final draft = DiaryEntry.fromMap(data);
 
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: source);
-
-      if (pickedFile != null) {
-        imageFiles.add(File(pickedFile.path));
+        currentContent = draft.content ?? '';
+        publicVisibility = draft.publicVisibility ?? false;
+        dataTracking = draft.dataTracking ?? false;
+        notifyListeners();
+      } else {
+        errorMessage = 'Draft not found';
+        notifyListeners();
       }
     } catch (e) {
-      errorMessage = 'Error picking image: $e';
-    } finally {
-      isImageUploading = false;
+      errorMessage = 'Error loading draft: $e';
       notifyListeners();
     }
   }
 
-  // Remove selected image
-  void removeImage(int index) {
-    imageFiles.removeAt(index);
+  // 更新内容
+  void updateContent(String newContent) {
+    currentContent = newContent;
     notifyListeners();
   }
 
-  // Clear error and success messages
+  // 设置可见性
+  void setVisibility(bool value) {
+    publicVisibility = value;
+    notifyListeners();
+  }
+
+  // 设置数据追踪
+  void setDataTracking(bool value) {
+    dataTracking = value;
+    notifyListeners();
+  }
+
+  // 保存草稿
+  Future<bool> saveDraft() async {
+    if (currentContent.isEmpty) {
+      errorMessage = 'Content cannot be empty';
+      notifyListeners();
+      return false;
+    }
+
+    isSaving = true;
+    notifyListeners();
+
+    try {
+      if (draftId == null) {
+        errorMessage = 'Draft ID is null';
+        isSaving = false;
+        notifyListeners();
+        return false;
+      }
+
+      // 获取现有草稿数据
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection(_databaseService.collectionName)
+              .doc(draftId)
+              .get();
+
+      if (!snapshot.exists) {
+        errorMessage = 'Draft not found';
+        isSaving = false;
+        notifyListeners();
+        return false;
+      }
+
+      final existingData = snapshot.data() as Map<String, dynamic>;
+      final existingDraft = DiaryEntry.fromMap(existingData);
+
+      // 创建更新后的草稿对象
+      final updatedDraft = DiaryEntry(
+        id: draftId ?? 'default_id', 
+        userId: existingDraft.userId,
+        content: currentContent,
+        date: DateTime.now(),
+        publicVisibility: publicVisibility,
+        dataTracking: dataTracking,
+        isDraft: true,
+        imageUrl: existingDraft.imageUrl, 
+        likedUsers: existingDraft.likedUsers,
+        likes: existingDraft.likes,
+      );
+
+      // 更新数据库
+      await FirebaseFirestore.instance
+          .collection(_databaseService.collectionName)
+          .doc(draftId)
+          .update(updatedDraft.toMap());
+
+      successMessage = 'Draft saved successfully!';
+      notifyListeners();
+      return true;
+    } catch (e) {
+      errorMessage = 'Error saving draft: $e';
+      notifyListeners();
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  // 删除草稿
+  Future<bool> deleteDraft() async {
+    if (draftId == null) {
+      return true; 
+    }
+
+    isSaving = true;
+    notifyListeners();
+
+    try {
+      await _databaseService.deleteDraft(draftId!);
+      successMessage = 'Draft deleted successfully!';
+      notifyListeners();
+      return true;
+    } catch (e) {
+      errorMessage = 'Error deleting draft: $e';
+      notifyListeners();
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  // 清除消息
   void clearMessages() {
     errorMessage = null;
     successMessage = null;
     notifyListeners();
   }
 }
-*/
