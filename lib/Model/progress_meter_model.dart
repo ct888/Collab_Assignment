@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-String uid = FirebaseAuth.instance.currentUser!.uid;
+String getCurrentUserId() {
+  return FirebaseAuth.instance.currentUser?.uid ?? '';
+}
 
 // MoodData class for managing mood statistics
 class MoodData {
@@ -107,7 +109,7 @@ class RecordEntry {
       timestamp: date,
       recordType: type,
       data: docData,
-      userId: docData['userId'] ?? uid,
+      userId: docData['userId'] ?? getCurrentUserId(),
     );
   }
   
@@ -147,10 +149,12 @@ class RecordEntry {
   // Method to insert timestamp data into specified Firebase collection
   static Future<void> insertTimestampToCollection(String tableName) async {
     try {
-      // Use the global uid variable directly
+      final currentUid = getCurrentUserId();
+      if (currentUid.isEmpty) return;
+      
       final data = {
         'date': Timestamp.now(),
-        'userId': uid,
+        'userId': currentUid,
       };
       
       // Insert into the specified collection under the user's document
@@ -202,7 +206,7 @@ class UserActivity {
       activity: data['activity'] ?? 'Unknown activity',
       timestamp: date,
       pointsAdded: (data['pointsAdded'] ?? 0),
-      userId: data['userId'] ?? uid,
+      userId: data['userId'] ?? getCurrentUserId(),
     );
   }
 
@@ -229,7 +233,7 @@ class UserActivity {
       activity: standardizeActivityName(rawActivity),
       timestamp: timestamp,
       pointsAdded: pointsAdded,
-      userId: uid,
+      userId: getCurrentUserId(),
     );
   }
 }
