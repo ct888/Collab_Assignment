@@ -44,17 +44,22 @@ class _LogInState extends State<LogIn> {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login successful!', style:GoogleFonts.aDLaMDisplay()),
+          content: Text('Login successful!', style: GoogleFonts.aDLaMDisplay()),
           backgroundColor: Colors.green,
         ),
       );
 
       await Future.delayed(const Duration(milliseconds: 800));
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => MainScreen(userId: user.uid)),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'user-not-found') {

@@ -7,84 +7,67 @@ class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String collectionName = 'diary_entries';
 
-  // Hardcoded user ID for testing
-  final String testUserId = "test_user_126";
-
   // Upload diary entry (either draft or published)
   Future<void> uploadDiary(DiaryEntry entry) async {
-    // For testing, print the entry details
     print('Uploading entry: ID=${entry.id}, isDraft=${entry.isDraft}');
-    
-    await _firestore
-        .collection(collectionName)
-        .doc(entry.id)
-        .set(entry.toMap());
+    await _firestore.collection(collectionName).doc(entry.id).set(entry.toMap());
   }
 
-  // Get user's diary entries
+  // Get user's diary entries (with optional isDraft filter)
   Future<List<DiaryEntry>> getUserEntries(String userId, {bool? isDraft}) async {
-    // Use hardcoded user ID for testing
-    userId = testUserId;
-    
-    Query query = _firestore.collection(collectionName).where('userId', isEqualTo: userId);
-    
+    Query query = _firestore
+        .collection(collectionName)
+        .where('userId', isEqualTo: userId);
+
     if (isDraft != null) {
       query = query.where('isDraft', isEqualTo: isDraft);
     }
-    
+
     final snapshot = await query.get();
-    
-    // For testing, print the number of entries found
-    print('Found ${snapshot.docs.length} entries for user $userId (isDraft=${isDraft})');
-    
+
+    print('Found ${snapshot.docs.length} entries for user $userId (isDraft=$isDraft)');
+
     return snapshot.docs
         .map((doc) => DiaryEntry.fromMap(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
+  // Count the user's drafts
   Future<int> getDraftCount(String userId) async {
-    // Use hardcoded user ID for testing
-    userId = testUserId;
-    
     final snapshot = await _firestore
         .collection(collectionName)
         .where('userId', isEqualTo: userId)
         .where('isDraft', isEqualTo: true)
         .get();
+
     print('Current draft count for user $userId: ${snapshot.docs.length}');
-    
+
     return snapshot.docs.length;
   }
-
-  // Delete a draft
+  
   Future<void> deleteDraft(String entryId) async {
     print('Deleting draft: $entryId');
-    
-    await _firestore
-        .collection(collectionName)
-        .doc(entryId)
-        .delete();
+    await _firestore.collection(collectionName).doc(entryId).delete();
   }
 
+  // Delete a draft entry
+  // Delete entry and associated images
   Future<void> deleteEntry(String entryId) async {
     print('Deleting entry: $entryId');
-  
+
     try {
-      // Fetch the diary entry before deletion to access image URLs
       final entryDoc = await _firestore.collection(collectionName).doc(entryId).get();
       if (entryDoc.exists) {
         final entryData = entryDoc.data() as Map<String, dynamic>;
-        final entry = DiaryEntry.fromMap(entryData);
+        final entry = DiaryEntry.fromMap(entryData, docId: entryDoc.id);
 
-        // Delete associated images if available
         if (entry.imageUrl != null && entry.imageUrl!.isNotEmpty) {
           List<String> imageUrls = entry.imageUrl!.split(',');
           for (String imageUrl in imageUrls) {
             await StorageService().deleteImage(imageUrl.trim());
           }
         }
-        
-        // Now delete the entry from Firestore
+
         await _firestore.collection(collectionName).doc(entryId).delete();
         print('Entry deleted successfully');
       } else {
@@ -95,60 +78,50 @@ class DatabaseService {
     }
   }
 
+  // Get public entries (non-drafts)
   Future<List<DiaryEntry>> getPublicDiaryEntries() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('diary_entries')
+    final snapshot = await _firestore
+        .collection(collectionName)
         .where('publicVisibility', isEqualTo: true)
         .where('isDraft', isEqualTo: false)
         .orderBy('date', descending: true)
         .get();
 
     return snapshot.docs
-        .map((doc) => DiaryEntry.fromMap(doc.data() as Map<String, dynamic>))
+        .map((doc) => DiaryEntry.fromMap(doc.data() as Map<String, dynamic>, docId: doc.id))
         .toList();
   }
 
-  // Like or unlike an entry
+  // Like or unlike a diary entry (transaction safe)
   Future<void> likeEntry(String entryId, String userId) async {
+    final entryRef = _firestore.collection(collectionName).doc(entryId);
+
     try {
-      final entryRef = _firestore.collection(collectionName).doc(entryId);
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(entryRef);
+        if (!snapshot.exists) throw Exception('Entry not found');
 
-      // Fetch the diary entry
-      final entryDoc = await entryRef.get();
-      if (!entryDoc.exists) {
-        print('Entry not found');
-        return;
-      }
+        final data = snapshot.data() as Map<String, dynamic>;
+        final likedUsers = List<String>.from(data['likedUsers'] ?? []);
 
-      final entryData = entryDoc.data() as Map<String, dynamic>;
-      final entry = DiaryEntry.fromMap(entryData);
-
-      // If likedUsers is present, toggle the like status
-      if (entryData.containsKey('likedUsers')) {
-        final likedUsers = List<String>.from(entryData['likedUsers']);
         if (likedUsers.contains(userId)) {
-          // User has already liked, remove like
-          likedUsers.remove(userId);
+          likedUsers.remove(userId); // Unlike
         } else {
-          // User has not liked, add like
-          likedUsers.add(userId);
+          likedUsers.add(userId); // Like
         }
 
-        await entryRef.update({
+        transaction.update(entryRef, {
           'likedUsers': likedUsers,
           'likes': likedUsers.length,
         });
-      } else {
-        // If no likedUsers, initialize it
-        await entryRef.update({
-          'likedUsers': [userId],
-          'likes': 1,
-        });
-      }
+      });
 
-      print('Like action successful');
+      print('Like toggled successfully');
     } catch (e) {
       print("Error liking entry: $e");
     }
   }
-}
+
+  // Like or unlike an entry
+  }
+

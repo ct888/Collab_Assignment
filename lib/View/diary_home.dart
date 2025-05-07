@@ -5,11 +5,14 @@ import '../model/diary_entry.dart';
 import 'dairy_write_screen.dart';
 import 'diaryDetail.dart';
 import '../viewmodel/diaryDetai_viewmodel.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:seek_here/Model/appimages.dart';
 
 class DiaryHomeScreen extends StatelessWidget {
   final String currentUserId;
 
-  const DiaryHomeScreen({Key? key, required this.currentUserId}) : super(key: key);
+  const DiaryHomeScreen({Key? key, required this.currentUserId})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,13 @@ class DiaryHomeScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: _DiaryHomeContent(),
+          child: WillPopScope(
+            onWillPop: () async {
+              // Handle back button press to keep top navigation intact.
+              return true; // Allow pop
+            },
+            child: _DiaryHomeContent(),
+          ),
         ),
       ),
     );
@@ -46,7 +55,10 @@ class _DiaryHomeContent extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Error: ${viewModel.errorMessage}', style: const TextStyle(color: Colors.red)),
+                Text(
+                  'Error: ${viewModel.errorMessage}',
+                  style: const TextStyle(color: Colors.red),
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => viewModel.loadEntries(),
@@ -71,148 +83,185 @@ class _DiaryHomeContent extends StatelessWidget {
 
     final entriesByMonth = viewModel.getEntriesByMonth();
 
-    return Stack(
-      children: [
-        Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
           children: [
-            _buildHeader(context),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildSearchField(context),
-                    _buildVisibilityToggle(context),
-                    entriesByMonth.isEmpty
-                        ? _buildEmptyState()
-                        : _buildEntriesList(context, entriesByMonth),
-                    // Added padding at bottom to prevent FAB overlap
-                    const SizedBox(height: 80),
-                  ],
-                ),
+            Positioned(
+              top: 0,
+              left: -2,
+              child: SvgPicture.asset(AppImages.bgCloud),
+            ),
+
+            GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Column(
+                children: [
+                  _buildSearchField(context),
+                  _buildVisibilityToggle(context),
+                  entriesByMonth.isEmpty
+                      ? _buildEmptyState()
+                      : Expanded(
+                        child: SingleChildScrollView(
+                          child: _buildEntriesList(context, entriesByMonth),
+                        ),
+                      ),
+                  const SizedBox(height: 80),
+                ],
               ),
             ),
+
+            _buildFAB(context),
           ],
         ),
-        _buildFAB(context),
-      ],
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.grey.shade300,
-            child: IconButton(
-              icon: Icon(Icons.menu, color: Colors.black),
-              onPressed: () {
-                // Open drawer or navigation menu
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'My Diary',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-          ),
-          CircleAvatar(
-            backgroundColor: Colors.grey.shade300,
-            child: IconButton(
-              icon: Icon(Icons.edit_note_outlined, color: Colors.black),
-              onPressed: () {
-                // Navigate to drafts screen
-                // You'll need to implement the navigation based on your app's structure
-                // Navigator.of(context).push(MaterialPageRoute(builder: (context) => DiaryDraftScreen(currentUserId: Provider.of<DiaryHomeViewModel>(context, listen: false).currentUserId ?? '')));
-              },
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildSearchField(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        onChanged: (query) {
-          Provider.of<DiaryHomeViewModel>(context, listen: false).searchEntries(query);
-        },
-        decoration: InputDecoration(
-          hintText: 'Search diary entries...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: TextField(
+          onChanged: (query) {
+            Provider.of<DiaryHomeViewModel>(
+              context,
+              listen: false,
+            ).searchEntries(query);
+          },
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'Search diary...',
+            hintStyle: TextStyle(color: Colors.grey[600]),
+            prefixIcon: const Icon(Icons.search, size: 20),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 16,
+            ),
+          ),
         ),
       ),
     );
   }
+Widget _buildVisibilityToggle(BuildContext context) {
+  final viewModel = Provider.of<DiaryHomeViewModel>(context);
 
-  Widget _buildVisibilityToggle(BuildContext context) {
-    final viewModel = Provider.of<DiaryHomeViewModel>(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text('Filter by visibility:'),
-          DropdownButton<int>(
-            value: viewModel.filterOption,
-            onChanged: (value) {
-              if (value != null) {
-                viewModel.setFilterOption(value);
-              }
-            },
-            items: const [
-              DropdownMenuItem<int>(
-                value: 0,
-                child: Text('Show All'),
-              ),
-              DropdownMenuItem<int>(
-                value: 1,
-                child: Text('Public Entries'),
-              ),
-              DropdownMenuItem<int>(
-                value: 2,
-                child: Text('Private Entries'),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Filter by visibility:',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.51), // "almost" transparent
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 6,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-Widget _buildFAB(BuildContext context) {
-  return Positioned(
-    bottom: 20,
-    right: 20,
-    child: FloatingActionButton(
-      backgroundColor: Color(0xFFB2A4FF),
-      onPressed: () async {
-        final currentUserId = Provider.of<DiaryHomeViewModel>(context, listen: false).currentUserId ?? '';
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DiaryWriteScreen(currentUserId: currentUserId),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              value: viewModel.filterOption,
+              onChanged: (value) {
+                if (value != null) {
+                  viewModel.setFilterOption(value);
+                }
+              },
+              items: const [
+                DropdownMenuItem<int>(
+                  value: 0,
+                  child: Text(
+                    'Show All',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DropdownMenuItem<int>(
+                  value: 1,
+                  child: Text(
+                    'Public Entries',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                DropdownMenuItem<int>(
+                  value: 2,
+                  child: Text(
+                    'Private Entries',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+              icon: const Icon(
+                Icons.arrow_drop_down,
+                size: 24,
+                color: Color.fromARGB(255, 100, 130, 250),
+              ),
+              style: const TextStyle(fontSize: 13, color: Colors.black),
+            ),
           ),
-        );
-        Provider.of<DiaryHomeViewModel>(context, listen: false).loadEntries();
-      },
-      child: const Icon(Icons.add),
+        ),
+      ],
     ),
   );
 }
 
+
+
+
+
+  Widget _buildFAB(BuildContext context) {
+    return Positioned(
+      bottom: 20,
+      right: 20,
+      child: FloatingActionButton(
+        backgroundColor: Color.fromARGB(255, 72, 87, 247).withOpacity(0.7),
+        onPressed: () async {
+          final currentUserId =
+              Provider.of<DiaryHomeViewModel>(
+                context,
+                listen: false,
+              ).currentUserId ??
+              '';
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => DiaryWriteScreen(currentUserId: currentUserId),
+            ),
+          );
+          Provider.of<DiaryHomeViewModel>(context, listen: false).loadEntries();
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 
   Widget _buildEmptyState() {
     return Center(
@@ -235,7 +284,10 @@ Widget _buildFAB(BuildContext context) {
     );
   }
 
-  Widget _buildEntriesList(BuildContext context, Map<String, List<DiaryEntry>> entriesByMonth) {
+  Widget _buildEntriesList(
+    BuildContext context,
+    Map<String, List<DiaryEntry>> entriesByMonth,
+  ) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -243,7 +295,7 @@ Widget _buildFAB(BuildContext context) {
       itemBuilder: (context, index) {
         final month = entriesByMonth.keys.elementAt(index);
         final entries = entriesByMonth[month]!;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -258,8 +310,8 @@ Widget _buildFAB(BuildContext context) {
   Widget _sectionTitle(String title) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      color: Colors.deepPurpleAccent.shade100,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2),
+      color: const Color.fromARGB(255, 160, 168, 250).withOpacity(0.7),
       child: Text(
         title,
         style: const TextStyle(
@@ -273,8 +325,8 @@ Widget _buildFAB(BuildContext context) {
 
   Widget _diaryCard(BuildContext context, DiaryEntry entry) {
     final date = entry.date;
-    // Fix weekday calculation - weekday is 1-7 in Dart where 1 is Monday
-    final day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
+    final day =
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
 
     String? firstImageUrl;
     if (entry.imageUrl != null && entry.imageUrl!.isNotEmpty) {
@@ -283,56 +335,67 @@ Widget _buildFAB(BuildContext context) {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 4,
+      elevation: 6, // Slightly elevated for depth
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: const Color.fromARGB(255, 240, 240, 245), // Soft background color
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final shouldReload = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider(
-                create: (_) => DiaryDetailViewModel(),
-                child: DiaryDetailScreen(entry: entry),
-              ),
+              builder: (context) => DiaryDetailScreen(entry: entry),
             ),
           );
+
+          if (shouldReload == true) {
+            await Provider.of<DiaryHomeViewModel>(
+              context,
+              listen: false,
+            ).loadEntries();
+          }
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+       child: Padding(
+          padding: EdgeInsets.all(16),
           child: Row(
-            // Fixed flex overflow by constraining the row
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Date column
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(day, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(day, style: TextStyle(fontWeight: FontWeight.bold)),
                   Text("${date.day}/${date.month}"),
                 ],
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
+
+              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       entry.content,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (entry.publicVisibility) 
-                      const Row(
+                    if (entry.publicVisibility)
+                      Row(
                         children: [
                           Icon(Icons.public, size: 14, color: Colors.grey),
                           SizedBox(width: 4),
-                          Text('Public', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            'Public',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ],
                       ),
                   ],
                 ),
               ),
+
+              // Image thumbnail if available
               if (firstImageUrl != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
@@ -343,8 +406,6 @@ Widget _buildFAB(BuildContext context) {
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => 
-                        const Icon(Icons.broken_image, size: 60),
                     ),
                   ),
                 ),

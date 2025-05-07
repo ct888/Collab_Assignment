@@ -13,125 +13,179 @@ class BrowseView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<BrowseViewModel>(
       builder: (context, viewModel, child) {
-        if (viewModel.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (viewModel.errorMessage.isNotEmpty) {
-          return Center(child: Text(viewModel.errorMessage, style: TextStyle(color: Colors.red)));
-        }
-
-        final entries = viewModel.publicEntries;
-
-        if (entries.isEmpty) {
-          return const Center(child: Text('No public diary entries yet.'));
-        }
-
-        return ListView.builder(
-          itemCount: entries.length + (viewModel.hasMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index < entries.length) {
-              final entry = entries[index];
-              return _buildDiaryCard(context, entry, viewModel);
-            } else {
-              viewModel.loadMoreEntries();
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+        return Stack(
+          children: [
+            // Background wave in top-left
+            Positioned(
+              top: 40,
+              left: -50,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8E97FD).withOpacity(0.3),
+                  shape: BoxShape.circle,
                 ),
-              );
-            }
-          },
+              ),
+            ),
+
+            // Background wave in bottom-right
+            Positioned(
+              right: -40,
+              bottom: 70,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8E97FD).withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+
+            // Foreground content
+            if (viewModel.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (viewModel.errorMessage.isNotEmpty)
+              Center(
+                child: Text(
+                  viewModel.errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              )
+            else if (viewModel.publicEntries.isEmpty)
+              const Center(child: Text('No public diary entries yet.'))
+            else
+              ListView.builder(
+                itemCount: viewModel.publicEntries.length + (viewModel.hasMore ? 1 : 0),
+                padding: const EdgeInsets.only(top: 20, bottom: 20),
+                itemBuilder: (context, index) {
+                  if (index < viewModel.publicEntries.length) {
+                    final entry = viewModel.publicEntries[index];
+                    return _buildDiaryCard(context, entry, viewModel);
+                  } else {
+                    viewModel.loadMoreEntries();
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                },
+              ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildDiaryCard(BuildContext context, DiaryEntry entry, BrowseViewModel viewModel) {
-    final date = entry.date;
-    final dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.weekday % 7];
-    final formattedDate = "${date.day}/${date.month}/${date.year}";
-    final formattedTime = "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+ Widget _buildDiaryCard(BuildContext context, DiaryEntry entry, BrowseViewModel viewModel) {
+  final date = entry.date;
+  final day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
 
-    String? firstImageUrl;
-    if (entry.imageUrl != null && entry.imageUrl!.isNotEmpty) {
-      firstImageUrl = entry.imageUrl!.split(',')[0];
-    }
+  final formattedTime = "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
 
-    // Check if the current user has liked this entry
-    final isLiked = entry.likedUsers.contains(currentUserId);
+  String? firstImageUrl;
+  if (entry.imageUrl != null && entry.imageUrl!.isNotEmpty) {
+    firstImageUrl = entry.imageUrl!.split(',')[0];
+  }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () {
-          // Optional: Navigate to detail page
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Date and weekday information
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "$formattedDate ($dayOfWeek) $formattedTime",
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  Text(
-                    "User: ${entry.userId ?? 'Unknown'}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+  final isLiked = entry.likedUsers.contains(currentUserId);
 
-              // Content
-              Text(
-                entry.content,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-
-              // Image
-              if (firstImageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    firstImageUrl,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+  return Card(
+    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12), // Reduced margin
+    elevation: 4, // Reduced elevation
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Reduced border radius
+    color: const Color.fromARGB(255, 240, 240, 245),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(12), // Adjusted border radius
+      onTap: () {
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(12), // Reduced padding
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  day,
+                  style: const TextStyle(
+                    fontSize: 12, // Reduced font size
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-              const SizedBox(height: 8),
-
-              // Like button and like count
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
-                      color: isLiked ? Colors.red : Colors.grey,
-                    ),
-                    onPressed: () async {
-                      await viewModel.toggleLike(entry, currentUserId);
-                    },
+                Text(
+                  '${date.day}',
+                  style: const TextStyle(
+                    fontSize: 12, // Reduced font size
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
-                  Text('${entry.likes} likes'),
+                ),
+              ],
+            ),
+            const SizedBox(width: 12), // Reduced space
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.content,
+                    style: TextStyle(
+                      fontSize: 14, // Reduced font size
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black.withOpacity(0.7),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6), // Reduced space
+                  if (firstImageUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8), // Reduced border radius
+                      child: Image.network(
+                        firstImageUrl!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 100, // Reduced image height
+                      ),
+                    ),
+                  const SizedBox(height: 6), // Reduced space
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.red : Colors.grey,
+                          size: 18, // Reduced icon size
+                        ),
+                        onPressed: () async {
+                          await viewModel.toggleLike(entry, currentUserId);
+                        },
+                      ),
+                      Text('${entry.likes} likes',
+                          style: TextStyle(
+                            fontSize: 12, // Reduced font size
+                            color: Colors.grey[600],
+                          )),
+                      const Spacer(),
+                      Text(
+                        formattedTime,
+                        style: TextStyle(fontSize: 10, color: Colors.grey[500]), // Reduced font size
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

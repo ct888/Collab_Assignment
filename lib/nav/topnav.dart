@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../view/diary_draft.dart';
 import '../view/diary_browse.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/diaryBrowse_viewmodel.dart';
-import '../viewmodel/diaryDraft.dart';
-import '../viewmodel/diary_home_viewmodel.dart';
 import '../view/diary_home.dart';
+import 'package:seek_here/View/utils/logo_widget.dart';
+import 'package:seek_here/View/utils/wh_getter.dart';
+import '../view/diary_draft.dart'; // 保留这个，不要重复 import
 
 class TopNavWrapper extends StatefulWidget {
   final String currentUserId;
@@ -20,41 +20,52 @@ class _TopNavWrapperState extends State<TopNavWrapper> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 2) {
+      // Draft: navigate to new page instead of switching tab
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DiaryDraftScreen(currentUserId: widget.currentUserId),
+        ),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   Widget topNavItem(IconData icon, String label, int index) {
     bool isSelected = _selectedIndex == index;
 
+    Color iconColor = isSelected ? Colors.white : Colors.black87;
+    Color bgColor = isSelected
+        ? const Color.fromARGB(255, 72, 87, 247).withOpacity(0.7)
+        : Colors.grey.shade200;
+
     return GestureDetector(
-      onTap: () {
-        if (label == "Draft") {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => DiaryDraftScreen()),
-          );
-        } else if (label == "My Diary") {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => DiaryHomeScreen(currentUserId: widget.currentUserId)),
-          );
-        } else {
-          _onItemTapped(index);
-        }
-      },
+      onTap: () => _onItemTapped(index),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 30,
-            color: isSelected ? Colors.blueAccent : Colors.black,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: bgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: iconColor,
+            ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             label,
-            style: TextStyle(
-              color: isSelected ? Colors.blueAccent : Colors.black,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -63,18 +74,16 @@ class _TopNavWrapperState extends State<TopNavWrapper> {
   }
 
   Widget get selectedPage {
-    final currentUserId = widget.currentUserId;
-
     switch (_selectedIndex) {
       case 0:
-        return DiaryHomeScreen(currentUserId: currentUserId); // 传递给 DiaryHomeContent
+        return DiaryHomeScreen(currentUserId: widget.currentUserId);
       case 1:
         return ChangeNotifierProvider(
           create: (_) => BrowseViewModel()..loadPublicEntries(),
-          child: BrowseView(currentUserId: currentUserId), // 继续传递给 BrowseView
+          child: BrowseView(currentUserId: widget.currentUserId),
         );
       default:
-        return Center(child: Text('Unknown Page'));
+        return const Center(child: Text('Unknown Page'));
     }
   }
 
@@ -85,40 +94,26 @@ class _TopNavWrapperState extends State<TopNavWrapper> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: WHGetter.sy(context, 10)),
+                child: const LogoWidget(),
+              ),
+            ),
+            const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 100),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.arrow_back, color: Colors.black),
-                  Text(
-                    "Seek Here",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Icon(Icons.search, color: Colors.black),
-                ],
-              ),
-            ),
-            SizedBox(height: 8),
-            // Top Navigation Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
                   topNavItem(Icons.book, "My Diary", 0),
-                  topNavItem(Icons.explore, "Browse", 1),
-                  topNavItem(Icons.edit, "Draft", -1),
+                  topNavItem(Icons.group, "Browse", 1),
+                  topNavItem(Icons.edit, "Draft", 2),
                 ],
               ),
             ),
-            SizedBox(height: 16),
-            // Main content
+            const SizedBox(height: 16),
             Expanded(
               child: selectedPage,
             ),

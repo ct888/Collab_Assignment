@@ -3,14 +3,12 @@ import 'package:provider/provider.dart';
 import '../viewmodel/diarywrite_view_model.dart';
 import '/widgets/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
+import '../view/utils/wave_painter.dart';
 
 class DiaryWriteScreen extends StatelessWidget {
   final String currentUserId;
-  
-  const DiaryWriteScreen({
-    super.key,
-    required this.currentUserId,
-  });
+
+  const DiaryWriteScreen({super.key, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -56,33 +54,9 @@ class DiaryWriteView extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background decorations
-            Positioned(
-              top: -80,
-              left: -50,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(200),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -50,
-              right: -50,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade100,
-                  borderRadius: BorderRadius.circular(200),
-                ),
-              ),
-            ),
-
-            // Main content
+          
+            CustomPaint(size: Size.infinite, painter: WavePainter()),
+            // 主内容
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -91,13 +65,13 @@ class DiaryWriteView extends StatelessWidget {
                   padding: const EdgeInsets.all(12.0),
                   child: Stack(
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back, size: 24),
-                        ),
-                      ),
+                  CircleAvatar(
+            backgroundColor: Colors.grey.shade300,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
                       const Align(
                         alignment: Alignment.center,
                         child: Padding(
@@ -105,8 +79,9 @@ class DiaryWriteView extends StatelessWidget {
                           child: Text(
                             "Diary",
                             style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
                             ),
                           ),
                         ),
@@ -122,21 +97,22 @@ class DiaryWriteView extends StatelessWidget {
                       width: 360,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withOpacity(0.85), // 半透明玻璃感
+                        borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black12,
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Date & Day
+                            // 日期
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -149,32 +125,37 @@ class DiaryWriteView extends StatelessWidget {
                                         fontSize: 14,
                                       ),
                                     ),
-                                    Text(_getDayOfWeek()),
+                                    Text(
+                                      _getDayOfWeek(),
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                const Icon(Icons.calendar_today, size: 18),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 14),
 
-                            const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Write your diary entry:",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                            const Text(
+                              "Write your diary entry:",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 12),
 
-                            // Diary input field
+                            // Diary 输入框
                             TextField(
                               controller: viewModel.contentController,
                               maxLines: 8,
                               decoration: InputDecoration(
-                                hintText: "Start writing here...",
+                                hintText: "Start writing your diary here...",
+                                hintStyle: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -183,22 +164,22 @@ class DiaryWriteView extends StatelessWidget {
                               ),
                               onChanged: viewModel.setContent,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
 
-                            // Visibility & Data tracking switches
+                            // Switch
                             _buildSwitchRow(
                               label: "Public Visibility",
                               value: viewModel.publicVisibility,
                               onChanged: viewModel.setVisibility,
                             ),
                             _buildSwitchRow(
-                              label: "Data Tracking",
+                              label: "Allow Data Tracking",
                               value: viewModel.dataTracking,
                               onChanged: viewModel.setDataTracking,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
 
-                            // Image upload button
+                            // 图片上传按钮
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
@@ -214,71 +195,70 @@ class DiaryWriteView extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                IconButton(
-                                  icon: const Icon(Icons.upload_file),
-                                  onPressed:
-                                      viewModel.isImageUploading
-                                          ? null
-                                          : () async {
-                                            await showDialog(
-                                              context: context,
-                                              builder: (_) {
-                                                return AlertDialog(
-                                                  title: const Text(
-                                                    'Select Image Source',
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () async {
-                                                        await viewModel
-                                                            .pickImage(
-                                                              source:
-                                                                  ImageSource
-                                                                      .camera,
-                                                            );
-                                                        Navigator.of(
-                                                          context,
-                                                        ).pop();
-                                                      },
-                                                      child: const Text(
-                                                        'Take a Photo',
+                                Tooltip(
+                                  message: "Upload images",
+                                  child: IconButton(
+                                    icon: const Icon(Icons.photo_camera),
+                                    color: const Color.fromARGB(255, 117, 131, 254),
+                                    onPressed:
+                                        viewModel.isImageUploading
+                                            ? null
+                                            : () async {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (_) => AlertDialog(
+                                                      title: const Text(
+                                                        'Select Image Source',
                                                       ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () async {
+                                                            await viewModel
+                                                                .pickImage(
+                                                                  source:
+                                                                      ImageSource
+                                                                          .camera,
+                                                                );
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop();
+                                                          },
+                                                          child: const Text(
+                                                            'Take Photo',
+                                                          ),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () async {
+                                                            await viewModel
+                                                                .pickImage(
+                                                                  source:
+                                                                      ImageSource
+                                                                          .gallery,
+                                                                );
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop();
+                                                          },
+                                                          child: const Text(
+                                                            'From Gallery',
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    TextButton(
-                                                      onPressed: () async {
-                                                        await viewModel
-                                                            .pickImage(
-                                                              source:
-                                                                  ImageSource
-                                                                      .gallery,
-                                                            );
-                                                        Navigator.of(
-                                                          context,
-                                                        ).pop();
-                                                      },
-                                                      child: const Text(
-                                                        'Pick from Gallery',
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                  tooltip: "Upload images",
+                                              );
+                                            },
+                                  ),
                                 ),
                               ],
                             ),
 
-                            // Display uploaded images
+                            // 显示上传图片
                             if (viewModel.imageFiles.isNotEmpty) ...[
-                              const SizedBox(height: 12),
-                              const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "Uploaded Images:",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "Uploaded Images:",
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
                               SizedBox(
@@ -289,13 +269,13 @@ class DiaryWriteView extends StatelessWidget {
                                   itemBuilder: (context, index) {
                                     return Padding(
                                       padding: const EdgeInsets.only(
-                                        right: 8.0,
+                                        right: 10.0,
                                       ),
                                       child: Stack(
                                         children: [
                                           ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                              8,
+                                              12,
                                             ),
                                             child: Image.file(
                                               viewModel.imageFiles[index],
@@ -309,7 +289,6 @@ class DiaryWriteView extends StatelessWidget {
                                             right: 5,
                                             child: GestureDetector(
                                               onTap: () {
-                                                // Remove specific image
                                                 viewModel.removeImage(index);
                                               },
                                               child: Container(
@@ -365,7 +344,9 @@ class DiaryWriteView extends StatelessWidget {
                                       icon: Icons.cloud_upload,
                                       message:
                                           "Are you sure you want to save this as a draft? You can only have up to 3 drafts at a time.\n\nCurrent draft count: ${viewModel.currentDraftCount}/3?",
-                                      onConfirm: () => viewModel.saveAsDraft(),
+                                      onConfirm: () {
+                                        viewModel.saveAsDraft();
+                                      },
                                     );
                                   },
                           icon:
@@ -381,7 +362,7 @@ class DiaryWriteView extends StatelessWidget {
                                   : const Icon(Icons.save_alt),
                           label: const Text("Save as Draft"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple.shade100,
+                            backgroundColor: const Color.fromARGB(255, 161, 162, 245),
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -404,7 +385,9 @@ class DiaryWriteView extends StatelessWidget {
                                       icon: Icons.cloud_upload,
                                       message:
                                           "Are you sure you want to Share Your Diary?",
-                                      onConfirm: () => viewModel.uploadDiary(),
+                                      onConfirm: () {
+                                        viewModel.uploadDiary();
+                                      },
                                     );
                                   },
                           icon:
@@ -420,7 +403,7 @@ class DiaryWriteView extends StatelessWidget {
                                   : const Icon(Icons.share_rounded),
                           label: const Text("Share"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent.shade100,
+                            backgroundColor: Colors.blueAccent.shade100,
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),

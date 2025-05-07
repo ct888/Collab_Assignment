@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/diary_entry.dart';
 import '../service/database_service.dart';
-import '../view/dairy_write_screen.dart'; // Make sure this screen exists and accepts a DiaryEntry
 import '../service/storage_service.dart';
 
 class DiaryDraftViewModel extends ChangeNotifier {
@@ -14,9 +12,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
   String? currentUserId;
   String searchQuery = '';
   int filterOption = 0; // 0 for all entries, 1 for public, 2 for private
-
-  final String testUserId = "test_user_123"; // Hardcoded user ID for testing
-
   bool _isSelectionMode = false;
   bool get isSelectionMode => _isSelectionMode;
 
@@ -25,7 +20,7 @@ class DiaryDraftViewModel extends ChangeNotifier {
 
   List<DiaryEntry> get drafts => entries;
 
-  DiaryDraftViewModel() {
+  DiaryDraftViewModel({required this.currentUserId}) {
     loadDrafts();
   }
 
@@ -34,9 +29,7 @@ class DiaryDraftViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      currentUserId = testUserId;
-
-      if (currentUserId == null) {
+      if (currentUserId == null || currentUserId!.isEmpty) {
         entries = [];
         draftEntries = [];
         isLoading = false;
@@ -44,7 +37,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
         return;
       }
 
-      // Load user entries based on visibility
       entries = await DatabaseService().getUserEntries(
         currentUserId!,
         isDraft: true,
@@ -91,7 +83,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<void> deleteDraft(String entryId) async {
     try {
       final entry = entries.firstWhere((entry) => entry.id == entryId);
@@ -108,7 +99,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   Future<void> deleteSelectedDrafts() async {
     try {
@@ -133,7 +123,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
 
     // Navigate to edit screen
     // This would be implemented with your navigation logic
-
     // After editing, you might want to reset selection
     _selectedDrafts.clear();
     _isSelectionMode = false;
@@ -146,7 +135,7 @@ class DiaryDraftViewModel extends ChangeNotifier {
         final draft = entries.firstWhere((entry) => entry.id == draftId);
 
         // Convert draft to published entry
- //     await DatabaseService().convertDraftToEntry(draft);
+        //     await DatabaseService().convertDraftToEntry(draft);
 
         // Remove from drafts
         await deleteDraft(draftId);
@@ -163,7 +152,6 @@ class DiaryDraftViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   List<DiaryEntry> getSharedEntries() => draftEntries;
 }

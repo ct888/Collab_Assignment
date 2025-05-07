@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
 class DiaryEntry {
   final String id;
   final DateTime date;
@@ -25,7 +28,8 @@ class DiaryEntry {
 
   Map<String, dynamic> toMap() {
     return {
-      'date': date.toIso8601String(),
+      'id': id,
+      'date': Timestamp.fromDate(date),
       'content': content,
       'imageUrl': imageUrl,
       'publicVisibility': publicVisibility,
@@ -38,12 +42,12 @@ class DiaryEntry {
     };
   }
 
-  factory DiaryEntry.fromMap(Map<String, dynamic> map) {
+  factory DiaryEntry.fromMap(Map<String, dynamic> map, {String? docId}) {
     return DiaryEntry(
-      id: map['id'] ?? '', // 避免 null 错误
-      date: DateTime.parse(map['date']),
+      id: docId ?? map['id'] ?? '',
+    date: (map['date'] as Timestamp).toDate(), // Convert back from Timestamp
       content: map['content'] ?? '',
-      imageUrl: map['imageUrl'], // 不用 ?? '', 因为 imageUrl 是可空
+      imageUrl: map['imageUrl'],
       publicVisibility: map['publicVisibility'] ?? false,
       dataTracking: map['dataTracking'] ?? false,
       isDraft: map['isDraft'] ?? false,
@@ -53,3 +57,5 @@ class DiaryEntry {
     );
   }
 }
+
+

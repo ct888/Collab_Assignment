@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "Collab_Assignment",
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}

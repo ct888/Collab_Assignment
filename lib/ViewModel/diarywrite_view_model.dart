@@ -218,6 +218,7 @@ class DiaryViewModel extends ChangeNotifier {
       dataTracking = false;
       successMessage = "Diary uploaded successfully!";
       notifyListeners();
+      
     } catch (e) {
       errorMessage = "Upload failed: $e";
       notifyListeners();

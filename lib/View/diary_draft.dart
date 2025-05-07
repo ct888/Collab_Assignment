@@ -3,13 +3,29 @@ import '../model/diary_entry.dart';
 import '../viewmodel/diaryDraft.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../view/diary_draft.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:seek_here/Model/appimages.dart';
 
 class DiaryDraftScreen extends StatelessWidget {
+  final String currentUserId;
+
+  const DiaryDraftScreen({Key? key, required this.currentUserId})
+    : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => DiaryDraftViewModel(),
-      child: _DiaryDraftContent(),
+      create: (_) => DiaryDraftViewModel(currentUserId: currentUserId),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: WillPopScope(
+            onWillPop: () async => true,
+            child: _DiaryDraftContent(),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -19,21 +35,33 @@ class _DiaryDraftContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(child: _buildDraftsList()),
-            _buildActionButtons(),
-          ],
-        ),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 60,
+            left: -2,
+            child: SvgPicture.asset(AppImages.bgCloud), // 添加背景图
+          ),
+          Column(
+            children: [
+              _buildHeader(context),
+              Expanded(child: _buildDraftsList()),
+              _buildActionButtons(),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        8,
+      ), // Normal padding for the whole Row
       child: Row(
         children: [
           CircleAvatar(
@@ -45,11 +73,14 @@ class _DiaryDraftContent extends StatelessWidget {
           ),
           Expanded(
             child: Center(
-              child: Text(
-                'Drafts',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+              child: Padding(
+                // Only adjust the "Drafts" text padding here
+                padding: const EdgeInsets.only(
+                  top: 50,
+                ), // This moves the "Drafts" text down
+                child: Text(
+                  'Drafts',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               ),
             ),
@@ -99,14 +130,22 @@ class _DiaryDraftContent extends StatelessWidget {
         return ListView.builder(
           itemCount: viewModel.entries.length,
           itemBuilder: (context, index) {
-            return _buildDraftCard(context, viewModel.entries[index], viewModel);
+            return _buildDraftCard(
+              context,
+              viewModel.entries[index],
+              viewModel,
+            );
           },
         );
       },
     );
   }
 
-  Widget _buildDraftCard(BuildContext context, DiaryEntry draft, DiaryDraftViewModel viewModel) {
+  Widget _buildDraftCard(
+    BuildContext context,
+    DiaryEntry draft,
+    DiaryDraftViewModel viewModel,
+  ) {
     bool isSelected = viewModel.selectedDrafts.contains(draft.id);
 
     String dayName = DateFormat('EEE').format(draft.date);
@@ -115,12 +154,7 @@ class _DiaryDraftContent extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (viewModel.isSelectionMode) {
-          viewModel.toggleDraftSelection(draft.id);
-        } else {
-        //  viewModel.clearSelection();
-          viewModel.toggleDraftSelection(draft.id);
-        }       
+        viewModel.toggleDraftSelection(draft.id);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -145,8 +179,17 @@ class _DiaryDraftContent extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(dayName.toUpperCase(), style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(dayNum, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(
+                      dayName.toUpperCase(),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      dayNum,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -190,8 +233,14 @@ class _DiaryDraftContent extends StatelessWidget {
         bool hasSelection = viewModel.selectedDrafts.isNotEmpty;
         bool singleSelection = viewModel.selectedDrafts.length == 1;
 
-        Color editColor = singleSelection ? Color(0xFFB2A4FF) : Colors.grey.withOpacity(0.3);
-        Color deleteColor = hasSelection ? Color(0xFFF87171) : Colors.grey.withOpacity(0.3);
+        Color editColor =
+            singleSelection
+                ? const Color(0xFFB2A4FF)
+                : Colors.grey.withOpacity(0.3);
+        Color deleteColor =
+            hasSelection
+                ? const Color(0xFFF87171)
+                : Colors.grey.withOpacity(0.3);
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -200,73 +249,166 @@ class _DiaryDraftContent extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: singleSelection
-                          ? () => viewModel.editSelectedDraft(context)
-                          : null,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          singleSelection
+                              ? () => viewModel.editSelectedDraft(context)
+                              : null,
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Draft'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: editColor,
-                        padding: EdgeInsets.symmetric(vertical: 12),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.edit, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Edit', style: TextStyle(color: Colors.white)),
-                        ],
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: hasSelection
-                          ? () => viewModel.deleteSelectedDrafts()
-                          : null,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          hasSelection
+                              ? () async {
+                                bool confirmed = await showDialog(
+                                  context: context,
+                                  builder:
+                                      (context) => AlertDialog(
+                                        title: const Text("Delete Drafts"),
+                                        content: const Text(
+                                          "Are you sure you want to delete the selected drafts?",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed:
+                                                () => Navigator.of(
+                                                  context,
+                                                ).pop(false),
+                                            child: const Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed:
+                                                () => Navigator.of(
+                                                  context,
+                                                ).pop(true),
+                                            child: const Text(
+                                              "Delete",
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                );
+
+                                if (confirmed) {
+                                  try {
+                                    // 显示加载中对话框
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext context) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      },
+                                    );
+
+                                    // 执行删除（无返回值）
+                                    await viewModel.deleteSelectedDrafts();
+
+                                    Navigator.pop(context);
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Draft(s) deleted successfully.",
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    // 关闭加载框
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Failed to delete draft(s): ${e.toString()}",
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                              : null,
+
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Delete Drafts'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: deleteColor,
-                        padding: EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.redAccent.shade100,
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.delete, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Delete', style: TextStyle(color: Colors.white)),
-                        ],
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: hasSelection
-                      ? () => viewModel.uploadSelectedDrafts()
-                      : null,
+                child: ElevatedButton.icon(
+                  onPressed:
+                      hasSelection
+                          ? () async {
+                            bool confirmed = await showDialog(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    title: const Text("Upload Drafts"),
+                                    content: const Text(
+                                      "Are you sure you want to upload the selected drafts?",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(
+                                              context,
+                                            ).pop(false),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () =>
+                                                Navigator.of(context).pop(true),
+                                        child: const Text(
+                                          "Upload",
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                            if (confirmed) {
+                              viewModel.uploadSelectedDrafts();
+                            }
+                          }
+                          : null,
+                  icon: const Icon(Icons.share),
+                  label: const Text("Share"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: deleteColor,
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: Colors.blueAccent.shade100,
+                    foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.upload, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('Upload', style: TextStyle(color: Colors.white)),
-                    ],
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),

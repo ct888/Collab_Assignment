@@ -5,29 +5,35 @@ import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/progress_meter_view.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
+import 'package:seek_here/nav/topnav.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final String userId; // Accept userId from previous screen
+
+  const MainScreen({super.key, required this.userId});
+
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late List<Widget> _pages;
 
-  final List<Widget> _pages = [
-    BOA(),
-    MoodDashboardPage(),
-    RecommenderScreen(userId: "User123"),
-    BOA(),
-    ProgressMeter(),
-  ];
-
-  
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      BOA(),
+      MoodDashboardPage(),
+      RecommenderScreen(userId: widget.userId),
+      TopNavWrapper(currentUserId: widget.userId),
+      ProgressMeter(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: CustomColors.white,
       body: _pages[_currentIndex],
