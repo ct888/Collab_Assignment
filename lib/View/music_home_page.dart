@@ -20,6 +20,7 @@ class MusicPlayerScreen extends StatefulWidget {
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   bool showAnalysis = false;
   bool _isInitialLoading = true;
+  bool _musicListLoaded = false; // Track if music list was loaded successfully
 
   @override
   void initState() {
@@ -37,7 +38,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Future<void> _loadData() async {
     final musicViewModel = Provider.of<MusicViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
-    final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
     final AppLogger _logger = AppLogger();
 
     try {
@@ -50,19 +50,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
         final analysisSuccess = await moodViewModel.analyzeEmotion();
 
         if (analysisSuccess) {
-          // Record the recommendation action
-          await RecordEntry.insertTimestampToCollection("recommender");
-
           // Then fetch music recommendations based on analysis
           await musicViewModel.fetchRecommendedTracks(
             moodViewModel.musicGenres,
             moodViewModel.recommendedMood,
           );
-
-          // Show progress toast after successful load
-          if (musicViewModel.tracks.isNotEmpty) {
-            progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
-          }
         }
       }
     } catch (e) {
@@ -219,6 +211,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       MusicViewModel musicViewModel,
       MoodViewModel moodViewModel
       ) {
+
+    // Check if we need to update progress meter when music list is loaded
+    if (!_musicListLoaded && !musicViewModel.isLoading && musicViewModel.tracks.isNotEmpty) {
+      // Use post-frame callback to ensure the list is rendered before showing toast
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Set flag to prevent repeated calls
+          setState(() {
+            _musicListLoaded = true;
+          });
+
+          // Add the requested code for progress tracking
+          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          RecordEntry.insertTimestampToCollection("recommender");
+        }
+      });
+    }
+
     return Column(
       children: [
         // Show emotion analysis

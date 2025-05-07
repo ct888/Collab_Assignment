@@ -5,47 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ac6b3bc-6084-452b-b545-4d4867a893d4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.dart_tool/dartpad/web_plugin_registrant.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.dart_tool/package_config.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/.gradle/8.10.2/checksums/checksums.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/ViewModel/event_list_viewmodel.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/service/gemini_service.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/linux/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/linux/flutter/generated_plugins.cmake" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/windows/flutter/generated_plugins.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/package_config_subset" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_config_subset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/android/.gradle/8.10.2/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/local.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Flutter/Generated.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/Generated.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Flutter/flutter_export_environment.sh" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/flutter_export_environment.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Model/apikey.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Model/apikey.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Service/firebase_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/service/firebase_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Service/gemini_service.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Service/location_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/service/location_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/BOA_answer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/BOA_answer.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/account_setting.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/account_setting.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/event_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/event_detail_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/event_list_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/event_list_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/event_recommender_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/event_recommender_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/favorite_event_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/favorite_event_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/mainscreen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/mainscreen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/recommender_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/recommender_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/utils/navbar_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/utils/navbar_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/progress_meter_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ViewModel/progress_meter_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/utils/event_detail_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ViewModel/event_detail_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/utils/event_list_viewmodel.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/utils/event_recommender_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ViewModel/event_recommender_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/ViewModel/utils/favorite_event_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/ViewModel/favorite_event_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macos/Flutter/ephemeral/Flutter-Generated.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/ephemeral/Flutter-Generated.xcconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macos/Flutter/ephemeral/flutter_export_environment.sh" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/ephemeral/flutter_export_environment.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/View/music_home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/music_home_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/View/video_home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/video_home_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +79,7 @@
     "cidr.known.project.marker": "true",
     "com.google.services.firebase.aqiPopupShown": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "Merging KYYAP",
+    "git-widget-placeholder": "KYYAP",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/KY YAP/OneDrive/Documents/Collab_Assignment",

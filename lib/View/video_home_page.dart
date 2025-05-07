@@ -21,6 +21,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final ScrollController scrollController = ScrollController();
   bool _isInitialLoading = true;
   bool showAnalysis = false;
+  bool _videoListLoaded = false; // Track if the video list was loaded successfully
 
   @override
   void initState() {
@@ -47,7 +48,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Future<void> _loadData({bool refresh = true}) async {
     final videoViewModel = Provider.of<VideoViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
-    final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
     final AppLogger _logger = AppLogger();
 
     try {
@@ -60,20 +60,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         final analysisSuccess = await moodViewModel.analyzeEmotion();
 
         if (analysisSuccess) {
-          // Record the recommendation action
-          await RecordEntry.insertTimestampToCollection("recommender");
-
           // Then fetch video recommendations based on analysis
           await videoViewModel.fetchRecommendedVideos(
             moodViewModel.videoCategories,
             moodViewModel.recommendedMood,
             refresh: refresh,
           );
-
-          // Show progress toast after successful load
-          if (videoViewModel.videos.isNotEmpty) {
-            progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
-          }
         }
       }
     } catch (e) {
@@ -249,6 +241,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       VideoViewModel videoViewModel,
       MoodViewModel moodViewModel
       ) {
+    // Check if we need to update progress meter when video list is loaded
+    if (!_videoListLoaded && !videoViewModel.isLoading && videoViewModel.videos.isNotEmpty) {
+      // Use post-frame callback to ensure the list is rendered before showing toast
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Set flag to prevent repeated calls
+          setState(() {
+            _videoListLoaded = true;
+          });
+
+          // Add the requested code for progress tracking
+          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          RecordEntry.insertTimestampToCollection("recommender");
+        }
+      });
+    }
+
     return Column(
       children: [
         // Show emotion analysis
