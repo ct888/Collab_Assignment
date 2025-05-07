@@ -15,21 +15,20 @@ class _ProgressMeterState extends State<ProgressMeter> {
   @override
   void initState() {
     super.initState();
-    // Create and initialize the view model
+    // Get the singleton instance
     viewModel = ProgressMeterViewModel();
   }
   
   @override
   void dispose() {
-    viewModel.dispose();
+    // Don't call dispose on the singleton
     super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Initialize the view model with context after widget is mounted
-    viewModel.initialize(context);
+    viewModel.reinitialize(context);
   }
 
   @override
@@ -250,7 +249,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
               child: Consumer<ProgressMeterViewModel>(
                 builder: (context, viewModel, child) {
                   return CircularProgressIndicator(
-                    value: (viewModel.userPoints / viewModel.totalPoints).clamp(0.0, 1.0), // Ensure value is between 0 and 1
+                    value: (viewModel.userPoints / ProgressMeterViewModel.totalPoints).clamp(0.0, 1.0), // Ensure value is between 0 and 1
                     backgroundColor: const Color(0xFFD0D2FF),
                     valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8E97FD)),
                     strokeWidth: strokeWidth,
@@ -284,7 +283,7 @@ class _ProgressMeterState extends State<ProgressMeter> {
                 Consumer<ProgressMeterViewModel>(
                   builder: (context, viewModel, child) {
                     return Text(
-                      '${viewModel.userPoints} of ${viewModel.totalPoints}', // Use userPoints instead of points
+                      '${viewModel.userPoints} of ${ProgressMeterViewModel.totalPoints}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: const Color(0xFF262626),
