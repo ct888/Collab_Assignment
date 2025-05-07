@@ -5,6 +5,7 @@ class DiaryEntry {
   final String id;
   final DateTime date;
   final String content;
+<<<<<<< HEAD
   final String? imageUrl;
   final bool publicVisibility;
   final bool dataTracking;
@@ -12,11 +13,18 @@ class DiaryEntry {
   final String userId;
   List<String> likedUsers;
   int likes;
+=======
+  final DateTime timestamp;
+  final bool dataTracking;
+  final bool isDraft;
+  final String userID;
+>>>>>>> main
 
   DiaryEntry({
     required this.id,
     required this.date,
     required this.content,
+<<<<<<< HEAD
     this.imageUrl,
     this.publicVisibility = false,
     this.dataTracking = false,
@@ -27,10 +35,33 @@ class DiaryEntry {
   });
 
   Map<String, dynamic> toMap() {
+=======
+    required this.timestamp,
+    required this.dataTracking,
+    required this.isDraft,
+    required this.userID,
+  });
+
+  factory DiaryEntry.fromJson(Map<String, dynamic> json) {
+    return DiaryEntry(
+      id: json['id'] ?? '',
+      content: json['content'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+      dataTracking: json['dataTracking'] ?? false,
+      isDraft: json['isDraft'] ?? false,
+      userID: json['userID'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+>>>>>>> main
     return {
       'id': id,
       'date': Timestamp.fromDate(date),
       'content': content,
+<<<<<<< HEAD
       'imageUrl': imageUrl,
       'publicVisibility': publicVisibility,
       'dataTracking': dataTracking,
@@ -39,6 +70,12 @@ class DiaryEntry {
       'likes': likes,
       'likedUsers': likedUsers,
       'createdAt': DateTime.now().millisecondsSinceEpoch,
+=======
+      'timestamp': timestamp.toIso8601String(),
+      'dataTracking': dataTracking,
+      'isDraft': isDraft,
+      'userID': userID,
+>>>>>>> main
     };
   }
 

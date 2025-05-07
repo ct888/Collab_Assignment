@@ -149,11 +149,18 @@ class ProgressMeterViewModel extends ChangeNotifier {
     
     try {
       final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+      
+      final currentUid = user.uid;
       
       // MODIFIED QUERY - Remove where() clause
       final activitiesRef = FirebaseFirestore.instance
           .collection('users')
-          .doc(user!.uid)
+          .doc(currentUid)
           .collection('activities')
           .orderBy('timestamp', descending: true);
       
@@ -165,7 +172,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
             userActivities = querySnapshot.docs
                 .where((doc) {
                   Map<String, dynamic> data = doc.data();
-                  return data['userId'] == uid;
+                  return data['userId'] == currentUid;
                 })
                 .map((doc) {
                   Map<String, dynamic> data = doc.data();
@@ -263,6 +270,12 @@ class ProgressMeterViewModel extends ChangeNotifier {
     updateState([], true);
     
     try {
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUid == null) {
+        updateState([], false);
+        return;
+      }
+      
       // Get all records - MODIFIED QUERY
       // Option 1: Get all records and filter in code
       final collectionRef = FirebaseFirestore.instance
@@ -277,43 +290,37 @@ class ProgressMeterViewModel extends ChangeNotifier {
             final data = querySnapshot.docs
                 .where((doc) {
                   Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
-                  return docData['userId'] == uid;
+                  return docData['userId'] == currentUid;
                 })
                 .map((doc) => RecordEntry.fromFirestore(doc, recordType))
                 .toList();
             updateState(data, false);
           } else {
-            // Try user-specific collection if root collection is empty
-            final user = FirebaseAuth.instance.currentUser;
-            if (user != null) {
-              // For user-specific collection, also modify the query
-              FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .collection(collectionName)
-                  .orderBy(orderByField, descending: true)
-                  .get()
-                  .then((snapshot) {
-                if (snapshot.docs.isNotEmpty) {
-                  // Filter by userId in code
-                  final data = snapshot.docs
-                      .where((doc) {
-                        Map<String, dynamic> docData = doc.data();
-                        return docData['userId'] == uid;
-                      })
-                      .map((doc) => RecordEntry.fromFirestore(doc, recordType))
-                      .toList();
-                  updateState(data, false);
-                } else {
-                  updateState([], false);
-                }
-              }).catchError((error) {
-                debugPrint('Error getting $collectionName: $error');
+            // For user-specific collection, also modify the query
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(currentUid)
+                .collection(collectionName)
+                .orderBy(orderByField, descending: true)
+                .get()
+                .then((snapshot) {
+              if (snapshot.docs.isNotEmpty) {
+                // Filter by userId in code
+                final data = snapshot.docs
+                    .where((doc) {
+                      Map<String, dynamic> docData = doc.data();
+                      return docData['userId'] == currentUid;
+                    })
+                    .map((doc) => RecordEntry.fromFirestore(doc, recordType))
+                    .toList();
+                updateState(data, false);
+              } else {
                 updateState([], false);
-              });
-            } else {
+              }
+            }).catchError((error) {
+              debugPrint('Error getting $collectionName: $error');
               updateState([], false);
-            }
+            });
           }
         },
         onError: (error) {
@@ -410,8 +417,8 @@ class ProgressMeterViewModel extends ChangeNotifier {
   // Check if user has enough points
   bool hasEnoughPoints() {
     // For testing we're returning true, in production you'd use:
-    // return userPoints >= totalPoints;
-    return true;
+    return userPoints >= totalPoints;
+    // return true;
   }
   
   // Check if any record type is loading

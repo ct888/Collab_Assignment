@@ -5,23 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ac6b3bc-6084-452b-b545-4d4867a893d4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/assets/bg/bg-cloud.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/View/BaseLayout.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/View/mainscreen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/View/utils/navbar_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/View/utils/ui_animation.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/constants/api_constants.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/icon/Icon-book-opened.svg" beforeDir="false" afterPath="$PROJECT_DIR$/assets/icon/Icon-book-opened.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Model/appimages.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Model/appimages.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/Model/openai_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Model/openai_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/BOA.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/BOA.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/login.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/login.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/utils/button_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/utils/button_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/View/utils/wh_getter.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/utils/wh_getter.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/View/music_home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/music_home_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/View/video_home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/View/video_home_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +79,7 @@
     "cidr.known.project.marker": "true",
     "com.google.services.firebase.aqiPopupShown": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "Merging KYYAP",
+    "git-widget-placeholder": "KYYAP",
     "io.flutter.reload.alreadyRun": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/KY YAP/OneDrive/Documents/Collab_Assignment",

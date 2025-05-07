@@ -6,6 +6,10 @@ import 'package:seek_here/ViewModel/musicViewModel.dart';
 import 'package:seek_here/widgets/music_player_widget.dart';
 import 'package:seek_here/widgets/recommendation_list.dart';
 
+import '../Model/progress_meter_model.dart';
+import '../ViewModel/progress_meter_viewmodel.dart';
+import '../utils/logger.dart';
+
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({Key? key}) : super(key: key);
 
@@ -16,6 +20,7 @@ class MusicPlayerScreen extends StatefulWidget {
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   bool showAnalysis = false;
   bool _isInitialLoading = true;
+  bool _musicListLoaded = false; // Track if music list was loaded successfully
 
   @override
   void initState() {
@@ -33,20 +38,33 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Future<void> _loadData() async {
     final musicViewModel = Provider.of<MusicViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
+    final AppLogger _logger = AppLogger();
 
-    // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestMood();
+    try {
+      // First, fetch the mood from Firebase
+      await moodViewModel.fetchLatestData();
 
-    // Only proceed if we have a mood (regardless of when it was recorded)
-    if (moodViewModel.currentMood != null) {
-      // Analyze emotion based on the current mood
-      await moodViewModel.analyzeEmotion();
+      // Only proceed if we have a mood
+      if (moodViewModel.currentMood != null) {
+        // Analyze emotion based on the current mood
+        final analysisSuccess = await moodViewModel.analyzeEmotion();
 
-      // Then fetch music recommendations based on analysis
-      await musicViewModel.fetchRecommendedTracks(
-        moodViewModel.musicGenres,
-        moodViewModel.recommendedMood,
-      );
+        if (analysisSuccess) {
+          // Then fetch music recommendations based on analysis
+          await musicViewModel.fetchRecommendedTracks(
+            moodViewModel.musicGenres,
+            moodViewModel.recommendedMood,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading music data: $e');
+      _logger.info('Failed to load music recommendations');
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
     }
   }
 
@@ -193,6 +211,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       MusicViewModel musicViewModel,
       MoodViewModel moodViewModel
       ) {
+
+    // Check if we need to update progress meter when music list is loaded
+    if (!_musicListLoaded && !musicViewModel.isLoading && musicViewModel.tracks.isNotEmpty) {
+      // Use post-frame callback to ensure the list is rendered before showing toast
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Set flag to prevent repeated calls
+          setState(() {
+            _musicListLoaded = true;
+          });
+
+          // Add the requested code for progress tracking
+          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          RecordEntry.insertTimestampToCollection("recommender");
+        }
+      });
+    }
+
     return Column(
       children: [
         // Show emotion analysis
@@ -266,7 +303,84 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             ),
           )
               : musicViewModel.tracks.isEmpty
-              ? const Center(child: Text('No music found'))
+              ? Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Empty state illustration
+                  Icon(
+                    Icons.music_note,
+                    size: 80,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 20),
+                  // Clear, informative heading
+                  const Text(
+                    'No music available',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Helpful explanation text
+                  const Text(
+                    'We couldn\'t find any music tracks that match your current mood.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Primary action button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        _isInitialLoading = true;
+                      });
+                      await _loadData();
+                      setState(() {
+                        _isInitialLoading = false;
+                      });
+                    },
+                    child: const Text(
+                      'Refresh',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Secondary action - update mood
+                  TextButton.icon(
+                    icon: const Icon(Icons.mood),
+                    label: const Text('Update your mood'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MoodSelectionPage(userId: '',)),
+                      ).then((_) async {
+                        setState(() {
+                          _isInitialLoading = true;
+                        });
+                        await _loadData();
+                        setState(() {
+                          _isInitialLoading = false;
+                        });
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          )
               : MusicRecommendationGrid(
             tracks: musicViewModel.tracks,
             onTrackSelected: (track) {

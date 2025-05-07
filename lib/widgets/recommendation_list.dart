@@ -8,7 +8,7 @@ class VideoRecommendationList extends StatelessWidget {
   final Function(VideoItem) onVideoSelected;
   final ScrollController scrollController;
   final bool isLoadingMore;
-  final bool hasReachedEnd;  // Add this new parameter to indicate if we've reached the end
+  final bool hasReachedEnd;  // Parameter to indicate if we've reached the end
 
   const VideoRecommendationList({
     super.key,
@@ -16,7 +16,7 @@ class VideoRecommendationList extends StatelessWidget {
     required this.onVideoSelected,
     required this.scrollController,
     this.isLoadingMore = false,
-    this.hasReachedEnd = false,  // Default is false
+    this.hasReachedEnd = false,
   });
 
   @override
@@ -35,7 +35,8 @@ class VideoRecommendationList extends StatelessWidget {
           child: ListView.builder(
             controller: scrollController,
             padding: const EdgeInsets.all(8.0),
-            itemCount: videos.length + (isLoadingMore || hasReachedEnd ? 1 : 0),
+            // Always add an extra item for either loading indicator or end message
+            itemCount: videos.length + 1,
             itemBuilder: (context, index) {
               // Show video items
               if (index < videos.length) {
@@ -43,22 +44,32 @@ class VideoRecommendationList extends StatelessWidget {
                 return VideoCard(video: video, onTap: () => onVideoSelected(video));
               }
 
-              // Show loading indicator or end message at the bottom
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: isLoadingMore
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                    "You've reached the end",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+              // Show loading indicator, end message, or empty space
+              if (isLoadingMore) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              } else if (hasReachedEnd) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      "You've reached the end",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-              );
+                );
+              } else {
+                // Return an empty container when not loading and not reached end
+                return Container(height: 0);
+              }
             },
           ),
         ),
@@ -113,8 +124,8 @@ class VideoCard extends StatelessWidget {
                         child: Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / 
-                                    loadingProgress.expectedTotalBytes!
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
                                 : null,
                           ),
                         ),
@@ -247,24 +258,35 @@ class VideoCard extends StatelessWidget {
     );
   }
 
-  Color _getEmotionColor(String emotionCategory) {
-    switch (emotionCategory.toLowerCase()) {
+  Color _getEmotionColor(String emotion) {
+    // Convert to lowercase for case-insensitive matching
+    final emotionLower = emotion.toLowerCase();
+
+    switch (emotionLower) {
       case 'happy':
-        return Colors.amber;
-      case 'calm':
-        return Colors.blue;
-      case 'sad':
-        return Colors.indigo;
-      case 'anxious':
-        return Colors.purple;
+        return Colors.yellow.shade400;
+      case 'bored':
+        return Colors.grey.shade500;
+      case 'love':
+        return Colors.pink.shade400;
+      case 'surprised':
+        return Colors.orange.shade400;
       case 'angry':
-        return Colors.red;
-      case 'stressed':
-        return Colors.orange;
-      case 'motivated':
-        return Colors.green;
+        return Colors.red.shade600;
+      case 'sad':
+        return Colors.blue.shade800;
+      case 'hopeless':
+        return Colors.grey.shade700;
+      case 'jealous':
+        return Colors.green.shade800;
+      case 'anxious':
+        return Colors.purple.shade600;
+      case 'overwhelmed':
+        return Colors.deepOrange.shade400;
+      case 'confused':
+        return Colors.brown.shade500;
       default:
-        return Colors.blueGrey;
+        return Colors.blueGrey; // Default color for unknown emotions
     }
   }
 }
@@ -517,7 +539,14 @@ class _MusicRecommendationGridState extends State<MusicRecommendationGrid> {
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Text("You've reached the end"),
+                                child: Text(
+                                  "You've reached the end",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
                             )
                           : const SizedBox(height: 16),

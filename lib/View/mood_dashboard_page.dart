@@ -73,6 +73,29 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
     }
   }
 
+  // First, let's add a method to check if the user has reached their daily limit
+Future<bool> _hasReachedDailyLimit() async {
+  // Get today's date at midnight for comparison
+  final today = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
+  
+  // Filter moods recorded today
+  final todaysMoods = _allMoods.where((mood) {
+    final moodDate = DateTime(
+      mood.timestamp.year,
+      mood.timestamp.month,
+      mood.timestamp.day,
+    );
+    return moodDate.isAtSameMomentAs(today);
+  }).toList();
+  
+  // Check if we've reached the limit
+  return todaysMoods.length >= 3;
+}
+
   // Process the fetched moods for the current week view
   void _processWeeklyMoods() {
     // Calculate the start of the week (Sunday)
@@ -440,36 +463,71 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           const SizedBox(height: 30),
 
           // Record daily mood button
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MoodSelectionPage(userId: ''),
-                  ),
-                ).then((_) {
-                  // Refresh data when coming back from mood selection
-                  _fetchAllMoods();
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: CustomColors.blue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: Text(
-                'Record my daily mood',
-                style: GoogleFonts.aDLaMDisplay(),
+          // Next, let's modify the "Record daily mood" button handler
+Center(
+  child: ElevatedButton(
+    onPressed: () async {
+      // Check if the user has reached their daily limit
+      final hasReachedLimit = await _hasReachedDailyLimit();
+      
+      if (hasReachedLimit) {
+        // Show a dialog informing the user they've reached the limit
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              'Daily Limit Exceeded',
+              style: GoogleFonts.aDLaMDisplay(
+                fontWeight: FontWeight.bold,
               ),
             ),
+            content: Text(
+              'You\'ve already recorded your mood 3 times today. Please try again tomorrow.',
+              style: GoogleFonts.aDLaMDisplay(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'OK',
+                  style: GoogleFonts.aDLaMDisplay(
+                    color: CustomColors.blue,
+                  ),
+                ),
+              ),
+            ],
           ),
+        );
+      } else {
+        // If under the limit, proceed to the mood selection page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MoodSelectionPage(userId: ''),
+          ),
+        ).then((_) {
+          // Refresh data when coming back from mood selection
+          _fetchAllMoods();
+        });
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: CustomColors.blue,
+      foregroundColor: Colors.white,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 30,
+        vertical: 15,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(25),
+      ),
+    ),
+    child: Text(
+      'Record my daily mood',
+      style: GoogleFonts.aDLaMDisplay(),
+    ),
+  ),
+),
 
           const SizedBox(height: 20),
         ],

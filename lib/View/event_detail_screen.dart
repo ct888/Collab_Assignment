@@ -5,15 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../Model/event.dart';
-import '../ViewModel/utils/event_detail_viewmodel.dart';
+import '../ViewModel/event_detail_viewmodel.dart';
 
 class EventDetailScreen extends StatefulWidget {
-  final String userId;
   final Event event;
 
   const EventDetailScreen({
     Key? key,
-    required this.userId,
     required this.event,
   }) : super(key: key);
 
@@ -36,7 +34,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => EventDetailViewModel(
-        userId: widget.userId,
         event: widget.event,
       ),
       child: Consumer<EventDetailViewModel>(

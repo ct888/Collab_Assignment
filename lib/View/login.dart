@@ -56,6 +56,7 @@ class _LogInState extends State<LogIn> {
 
       await Future.delayed(const Duration(milliseconds: 800));
 
+<<<<<<< HEAD
       final userId = FirebaseAuth.instance.currentUser!.uid;
 
       final user = FirebaseAuth.instance.currentUser;
@@ -65,6 +66,12 @@ class _LogInState extends State<LogIn> {
           MaterialPageRoute(builder: (_) => MainScreen(userId: user.uid)),
         );
       }
+=======
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+>>>>>>> main
     } on FirebaseAuthException catch (e) {
       String message;
       if (e.code == 'user-not-found') {

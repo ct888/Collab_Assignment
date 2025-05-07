@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
+import 'package:seek_here/View/progress_meter_view.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
 import 'package:seek_here/nav/topnav.dart';
 import 'package:seek_here/View/progress_meter_view.dart';
@@ -17,6 +19,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+<<<<<<< HEAD
   int _currentIndex = 0;
   late List<Widget> _pages;
 
@@ -31,6 +34,17 @@ class _MainScreenState extends State<MainScreen> {
       ProgressMeter()
     ];
   }
+=======
+  int _currentIndex = 2;
+
+  final List<Widget> _pages = [
+    BOA(),
+    RecommenderScreen(userId: FirebaseAuth.instance.currentUser!.uid),
+    MoodDashboardPage(),
+    BOA(),
+    AccountSetting(),
+  ];
+>>>>>>> main
 
   @override
   Widget build(BuildContext context) {
