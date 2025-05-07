@@ -49,8 +49,6 @@ class _LogInState extends State<LogIn> {
         ),
       );
 
-      await Future.delayed(const Duration(milliseconds: 800));
-
       final userId = FirebaseAuth.instance.currentUser!.uid;
 
       final user = FirebaseAuth.instance.currentUser;
