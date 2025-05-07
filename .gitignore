@@ -8,10 +8,6 @@
 .history
 
 # Add here for more
-/lib/Model/apikey.dart
-/lib/main.dart
-/lib/Model/openai_service.dart
-
 
 # Flutter repo-specific
 /bin/cache/
@@ -131,4 +127,7 @@ android/.gradle/8.10.2/checksums/checksums.lock
 android/.gradle/8.10.2/fileHashes/fileHashes.lock
 android/.gradle/8.10.2/fileHashes/resourceHashesCache.bin
 android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
-lib/Model/openai_service.dart
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/Generated.xcconfig
+macos/Flutter/ephemeral/flutter_export_environment.sh
+macos/Flutter/ephemeral/Flutter-Generated.xcconfig
