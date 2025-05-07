@@ -35,7 +35,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
 
     // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestMood();
+    await moodViewModel.fetchLatestData();
 
     // Only proceed if we have a mood (regardless of when it was recorded)
     if (moodViewModel.currentMood != null) {
@@ -266,7 +266,84 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             ),
           )
               : musicViewModel.tracks.isEmpty
-              ? const Center(child: Text('No music found'))
+              ? Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Empty state illustration
+                  Icon(
+                    Icons.music_note,
+                    size: 80,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 20),
+                  // Clear, informative heading
+                  const Text(
+                    'No music available',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Helpful explanation text
+                  const Text(
+                    'We couldn\'t find any music tracks that match your current mood.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Primary action button
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        _isInitialLoading = true;
+                      });
+                      await _loadData();
+                      setState(() {
+                        _isInitialLoading = false;
+                      });
+                    },
+                    child: const Text(
+                      'Refresh',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Secondary action - update mood
+                  TextButton.icon(
+                    icon: const Icon(Icons.mood),
+                    label: const Text('Update your mood'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MoodSelectionPage(userId: '',)),
+                      ).then((_) async {
+                        setState(() {
+                          _isInitialLoading = true;
+                        });
+                        await _loadData();
+                        setState(() {
+                          _isInitialLoading = false;
+                        });
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          )
               : MusicRecommendationGrid(
             tracks: musicViewModel.tracks,
             onTrackSelected: (track) {

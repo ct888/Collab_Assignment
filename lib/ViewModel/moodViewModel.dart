@@ -30,7 +30,7 @@ class MoodViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   DateTime? get lastMoodDate => _lastMoodDate;
 
-  Future<void> fetchLatestMood() async {
+  Future<void> fetchLatestData() async {
     // Always reset loading state at start
     _isLoading = true;
     _errorMessage = null;
@@ -40,18 +40,23 @@ class MoodViewModel extends ChangeNotifier {
       _logger.info('Starting to fetch latest mood...');
 
       final latestMood = await _firebaseMoodService.fetchLatestMood();
-      _logger.info(
-        'Received mood from Firebase: ${latestMood?.toString() ?? "null"}',
-      );
+      final latestDiary = await _firebaseMoodService.fetchLatestDiary();
+      _logger.info('Received mood from Firebase: ${latestMood?.toString() ?? "null"}');
 
-      if (latestMood != null) {
+      if (latestMood != null || latestDiary != null) {
         _currentMood = latestMood;
-        _lastMoodDate = latestMood.timestamp;
-        _logger.info(
-          'Mood successfully loaded from Firebase: ${latestMood.timestamp}',
-        );
+        _latestDiaryEntry = latestDiary;
+        _logger.info('''
+    Mood Details:
+    Type: ${_currentMood?.moodType}
+    Notes: ${_currentMood?.notes.join(', ')}
+    Date: ${_currentMood?.timestamp}
+    Diary Details:
+    Content: ${_latestDiaryEntry?.content}
+  ''');
       } else {
         _currentMood = null;
+        _latestDiaryEntry = null;
         _lastMoodDate = null;
         _logger.info('No mood record found in Firebase');
       }
