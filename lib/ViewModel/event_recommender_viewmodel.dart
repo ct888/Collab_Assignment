@@ -16,20 +16,20 @@ class EventRecommenderViewModel with ChangeNotifier {
   List<SavedPlace> _savedPlaces = [];
   bool _isLoading = false;
   String? _error;
+  bool _isDisposed = false;
 
-    EventRecommenderViewModel() {
+  EventRecommenderViewModel() {
     _initializeViewModel();
   }
 
-    // Initialize in proper sequence
+  // Initialize in proper sequence
   Future<void> _initializeViewModel() async {
     await _fetchUserId();
-    if (userId != null) {
-    _initializeLocation();
-    _loadSavedPlaces();
+    if (userId != null && !_isDisposed) {
+      _initializeLocation();
+      _loadSavedPlaces();
     }
   }
-
  
   Location? get currentLocation => _currentLocation;
   List<SavedPlace> get savedPlaces => _savedPlaces;
@@ -39,23 +39,27 @@ class EventRecommenderViewModel with ChangeNotifier {
   bool _shouldShowErrorSnackbar = false;
   bool get shouldShowErrorSnackbar => _shouldShowErrorSnackbar;
 
-      Future<void> _fetchUserId() async {
+  Future<void> _fetchUserId() async {
     try {
       _setLoading(true);
       userId = await _firebaseService.getUserID();
-      _setLoading(false);
-      notifyListeners(); // Notify listeners when userId is fetched
+      if (!_isDisposed) {
+        _setLoading(false);
+        notifyListeners(); // Notify listeners when userId is fetched
+      }
     } catch (e) {
       _setError('Failed to fetch user ID: $e');
     }
   }
   
-    void errorSnackbarShown() {
+  void errorSnackbarShown() {
     _shouldShowErrorSnackbar = false;
   }
 
-    void _setUserFriendlyError(String technicalError) {
+  void _setUserFriendlyError(String technicalError) {
     // Map common error patterns to user-friendly messages
+    if (_isDisposed) return;
+    
     if (technicalError.contains('Could not find location')) {
       _error = 'Could not find location for this address. Please try again with a more specific address.';
     } else if (technicalError.contains('Permission denied')) {
@@ -68,19 +72,25 @@ class EventRecommenderViewModel with ChangeNotifier {
       // Generic user-friendly message for other errors
       _error = 'Something went wrong. Please try again later.';
     }
-        // Log the technical error for debugging
+    
+    // Log the technical error for debugging
     print('Technical error: $technicalError');
     
     _isLoading = false;
     _shouldShowErrorSnackbar = true;
-    notifyListeners();
+    
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
  
   Future<void> _initializeLocation() async {
     try {
       _setLoading(true);
       _currentLocation = await _locationService.getCurrentLocation();
-      _setLoading(false);
+      if (!_isDisposed) {
+        _setLoading(false);
+      }
     } catch (e) {
       _setUserFriendlyError('Could not get current location: $e');
     }
@@ -90,7 +100,9 @@ class EventRecommenderViewModel with ChangeNotifier {
     try {
       _setLoading(true);
       _savedPlaces = await _firebaseService.getSavedPlaces(userId.toString());
-      _setLoading(false);
+      if (!_isDisposed) {
+        _setLoading(false);
+      }
     } catch (e) {
       _setUserFriendlyError('Failed to load saved places: $e');
     }
@@ -101,17 +113,17 @@ class EventRecommenderViewModel with ChangeNotifier {
       debugPrint('9');
       _setLoading(true);
       _currentLocation = await _locationService.getLocationFromAddress(address);
-      _error = null; 
-      _setLoading(false);
-      notifyListeners();
+      if (!_isDisposed) {
+        _error = null; 
+        _setLoading(false);
+        notifyListeners();
+      }
     } catch (e) {
       debugPrint('8');
-       _setUserFriendlyError('Could not find location for this address: $e');
+      _setUserFriendlyError('Could not find location for this address: $e');
     }
   }
 
-
- 
   Future<void> updateLocationByCoordinates(LatLng position) async {
     try {
       _setLoading(true);
@@ -119,7 +131,9 @@ class EventRecommenderViewModel with ChangeNotifier {
         position.latitude,
         position.longitude
       );
-     
+      
+      if (_isDisposed) return;
+      
       _currentLocation = Location(
         latitude: position.latitude,
         longitude: position.longitude,
@@ -149,8 +163,10 @@ class EventRecommenderViewModel with ChangeNotifier {
       );
      
       await _firebaseService.savePlace(savedPlace);
-      _savedPlaces.add(savedPlace);
-      notifyListeners();
+      if (!_isDisposed) {
+        _savedPlaces.add(savedPlace);
+        notifyListeners();
+      }
     } catch (e) {
       _setUserFriendlyError('Failed to save place: $e');
     }
@@ -159,37 +175,53 @@ class EventRecommenderViewModel with ChangeNotifier {
   Future<void> deleteSavedPlace(String placeId) async {
     try {
       await _firebaseService.deletePlace(placeId);
-      _savedPlaces.removeWhere((place) => place.id == placeId);
-      notifyListeners();
+      if (!_isDisposed) {
+        _savedPlaces.removeWhere((place) => place.id == placeId);
+        notifyListeners();
+      }
     } catch (e) {
       _setUserFriendlyError('Failed to delete place: $e');
     }
   }
 
   Future<void> refreshCurrentLocation() async {
-  try {
-    _setLoading(true);
-    _currentLocation = await _locationService.getCurrentLocation();
-    _error = null;
-    _setLoading(false);
-  } catch (e) {
-    _setUserFriendlyError('Could not get current location: $e');
+    try {
+      _setLoading(true);
+      _currentLocation = await _locationService.getCurrentLocation();
+      if (!_isDisposed) {
+        _error = null;
+        _setLoading(false);
+      }
+    } catch (e) {
+      _setUserFriendlyError('Could not get current location: $e');
+    }
   }
-}
  
   void _setLoading(bool loading) {
+    if (_isDisposed) return;
+    
     _isLoading = loading;
     notifyListeners();
   }
  
   void clearError() {
+    if (_isDisposed) return;
+    
     _error = null;
     notifyListeners();
   }
 
-      void _setError(String? errorMessage) {
+  void _setError(String? errorMessage) {
+    if (_isDisposed) return;
+    
     _error = errorMessage;
     _isLoading = false;
     notifyListeners();
+  }
+  
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 }
