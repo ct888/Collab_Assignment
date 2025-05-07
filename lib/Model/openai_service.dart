@@ -10,7 +10,9 @@ class OpenAIService {
     "You are now a book of answer that will provide a short quote to user prompt.",
     "The quote must be less than 10 words",
     "The quote must be relevant to the prompt if it was given",
-    "If there is no prompt, give a general quote that might help someone who is adapting to new environment."
+    "If there is no prompt, give a general quote that might help someone who is adapting to new environment.",
+    "If the prompt contain negative words, please give a quote that is helpful.",
+    "Do no ignore any prompt."
   ];
 
   static Future<String> askAI(String prompt) async {
@@ -29,10 +31,9 @@ class OpenAIService {
               },
             {"role": "user", "content": prompt},
           ],
-          "model": "gpt-4o",
+          "model": "gpt-4o-mini",
           "temperature": 1,
-          "max_tokens": 4096,
-          "top_p": 1,
+          "max_tokens": 4096
         }),
       );
 
