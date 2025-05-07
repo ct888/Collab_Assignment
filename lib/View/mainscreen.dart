@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:seek_here/View/account_setting.dart';
 import 'package:seek_here/View/boa.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/navbar_widget.dart';
 import 'package:seek_here/nav/topnav.dart';
+import 'package:seek_here/View/progress_meter_view.dart';
 
 class MainScreen extends StatefulWidget {
   final String userId; // Accept userId from previous screen
@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
       MoodDashboardPage(),
       RecommenderScreen(userId: widget.userId),
       TopNavWrapper(currentUserId: widget.userId),
-      //(),
+      ProgressMeter()
     ];
   }
 

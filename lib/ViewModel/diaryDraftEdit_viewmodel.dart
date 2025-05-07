@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../service/database_service.dart';
 import '../model/diary_entry.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 
 class DiaryDraftEditViewModel extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
@@ -68,7 +72,7 @@ class DiaryDraftEditViewModel extends ChangeNotifier {
   }
 
   // 保存草稿
-  Future<bool> saveDraft() async {
+  /*Future<bool> saveDraft() async {
     if (currentContent.isEmpty) {
       errorMessage = 'Content cannot be empty';
       notifyListeners();
@@ -135,6 +139,7 @@ class DiaryDraftEditViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+  */
 
   // 删除草稿
   Future<bool> deleteDraft() async {
@@ -166,4 +171,79 @@ class DiaryDraftEditViewModel extends ChangeNotifier {
     successMessage = null;
     notifyListeners();
   }
+
+  Future<bool> saveDraft({File? imageFile}) async {
+  if (currentContent.isEmpty) {
+    errorMessage = 'Content cannot be empty';
+    notifyListeners();
+    return false;
+  }
+
+  isSaving = true;
+  notifyListeners();
+
+  try {
+    if (draftId == null) {
+      errorMessage = 'Draft ID is null';
+      isSaving = false;
+      notifyListeners();
+      return false;
+    }
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection(_databaseService.collectionName)
+        .doc(draftId)
+        .get();
+
+    if (!snapshot.exists) {
+      errorMessage = 'Draft not found';
+      isSaving = false;
+      notifyListeners();
+      return false;
+    }
+
+    final existingData = snapshot.data() as Map<String, dynamic>;
+    final existingDraft = DiaryEntry.fromMap(existingData);
+    String? newImageUrl = existingDraft.imageUrl;
+
+    // 如果有新的图片，上传到 Firebase Storage
+    if (imageFile != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('diary_images/${draftId}_${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      final uploadTask = await storageRef.putFile(imageFile);
+      newImageUrl = await uploadTask.ref.getDownloadURL();
+    }
+
+    final updatedDraft = DiaryEntry(
+      id: draftId!,
+      userId: existingDraft.userId,
+      content: currentContent,
+      date: DateTime.now(),
+      publicVisibility: publicVisibility,
+      dataTracking: dataTracking,
+      isDraft: true,
+      imageUrl: newImageUrl,
+      likedUsers: existingDraft.likedUsers,
+      likes: existingDraft.likes,
+    );
+
+    await FirebaseFirestore.instance
+        .collection(_databaseService.collectionName)
+        .doc(draftId)
+        .update(updatedDraft.toMap());
+
+    successMessage = 'Draft saved successfully!';
+    notifyListeners();
+    return true;
+  } catch (e) {
+    errorMessage = 'Error saving draft: $e';
+    notifyListeners();
+    return false;
+  } finally {
+    isSaving = false;
+    notifyListeners();
+  }
+}
 }

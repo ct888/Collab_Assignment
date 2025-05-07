@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../widgets/confirmation_dialog.dart';
 import '../view/utils/wave_painter.dart';
@@ -31,6 +34,9 @@ class DiaryDraftEditView extends StatefulWidget {
 
 class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
   late TextEditingController _contentController;
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImageFile;
+  String? _existingImageUrl;
   bool _isInitialized = false;
 
   @override
@@ -45,11 +51,27 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImageFile = File(pickedFile.path);
+        _existingImageUrl = null; // 清除旧图
+      });
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _selectedImageFile = null;
+      _existingImageUrl = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DiaryDraftEditViewModel>(context);
 
-    // Initialize data on first build
     if (!_isInitialized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.draft.id != null) {
@@ -57,8 +79,8 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
           _contentController.text = widget.draft.content ?? '';
           viewModel.setVisibility(widget.draft.publicVisibility ?? false);
           viewModel.setDataTracking(widget.draft.dataTracking ?? false);
+          _existingImageUrl = widget.draft.imageUrl;
         }
-        
         setState(() {
           _isInitialized = true;
         });
@@ -94,14 +116,10 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
       body: SafeArea(
         child: Stack(
           children: [
-            // 背景波浪
             CustomPaint(size: Size.infinite, painter: WavePainter()),
-            
-            // 主内容
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // App bar
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Stack(
@@ -131,14 +149,13 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                   ),
                 ),
 
-                // Diary Card (草稿编辑卡)
                 Expanded(
                   child: Center(
                     child: Container(
                       width: 360,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85), // 半透明玻璃感
+                        color: Colors.white.withOpacity(0.85),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
@@ -153,7 +170,6 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // 日期
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -187,7 +203,6 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Diary 输入框
                             TextField(
                               controller: _contentController,
                               maxLines: 8,
@@ -203,9 +218,60 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
                               ),
-                              onChanged: viewModel.updateContent, // 更新内容
+                              onChanged: viewModel.updateContent,
                             ),
                             const SizedBox(height: 20),
+
+                            Row(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () => _pickImage(ImageSource.camera),
+                                  icon: const Icon(Icons.camera_alt),
+                                  label: const Text("Camera"),
+                                ),
+                                const SizedBox(width: 12),
+                                ElevatedButton.icon(
+                                  onPressed: () => _pickImage(ImageSource.gallery),
+                                  icon: const Icon(Icons.photo),
+                                  label: const Text("Gallery"),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            if (_selectedImageFile != null || _existingImageUrl != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Attached Image:",
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: _selectedImageFile != null
+                                            ? Image.file(_selectedImageFile!, height: 180)
+                                            : Image.network(_existingImageUrl!, height: 180),
+                                      ),
+                                      Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.white70,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, size: 20),
+                                            onPressed: _removeImage,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                              ),
 
                             _buildSwitchRow(
                               label: "Public Visibility",
@@ -225,29 +291,26 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                   ),
                 ),
 
-                // Action buttons
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed:
-                              (viewModel.isSaving) ? null : () async {
-                                await showConfirmationDialog(
-                                  context: context,
-                                  title: "Cancel Edit",
-                                  icon: Icons.cancel,
-                                  message: "Are you sure you want to cancel editing? Unsaved changes will be lost.",
-                                  onConfirm: () {
-                                    Navigator.of(context).pop(); // 取消编辑
-                                  },
-                                );
-                              },
+                          onPressed: viewModel.isSaving
+                              ? null
+                              : () async {
+                                  await showConfirmationDialog(
+                                    context: context,
+                                    title: "Cancel Edit",
+                                    icon: Icons.cancel,
+                                    message: "Are you sure you want to cancel editing? Unsaved changes will be lost.",
+                                    onConfirm: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  );
+                                },
                           icon: viewModel.isSaving
                               ? const SizedBox(
                                   width: 20,
@@ -272,16 +335,17 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed:
-                              (viewModel.isSaving) ? null : () async {
-                                // 更新草稿内容
-                                viewModel.updateContent(_contentController.text);
-                                // 保存草稿
-                                final result = await viewModel.saveDraft();
-                                if (result) {
-                                  Navigator.of(context).pop(true); // 保存成功后返回，并传递true表示更新成功
-                                }
-                              },
+                          onPressed: viewModel.isSaving
+                              ? null
+                              : () async {
+                                  viewModel.updateContent(_contentController.text);
+                                  final result = await viewModel.saveDraft(
+                                    imageFile: _selectedImageFile,
+                                  );
+                                  if (result) {
+                                    Navigator.of(context).pop(true);
+                                  }
+                                },
                           icon: viewModel.isSaving
                               ? const SizedBox(
                                   width: 20,
@@ -314,7 +378,6 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
     );
   }
 
-  // Utility function to build Switch rows
   Widget _buildSwitchRow({
     required String label,
     required bool value,

@@ -7,6 +7,7 @@ import '../view/diary_draft.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:seek_here/Model/appimages.dart';
 import '/widgets/confirmation_dialog.dart';
+import '../viewmodel/progress_meter_viewmodel.dart';
 
 class DiaryDraftScreen extends StatelessWidget {
   final String currentUserId;
@@ -233,6 +234,8 @@ class _DiaryDraftContent extends StatelessWidget {
       builder: (context, viewModel, child) {
         bool hasSelection = viewModel.selectedDrafts.isNotEmpty;
         bool singleSelection = viewModel.selectedDrafts.length == 1;
+        final ProgressMeterViewModel _progressMeterViewModel =
+            ProgressMeterViewModel();
 
         Color editColor =
             singleSelection
@@ -351,6 +354,11 @@ class _DiaryDraftContent extends StatelessWidget {
                                   onConfirm: () async {
                                     try {
                                       await viewModel.uploadSelectedDrafts();
+                                      _progressMeterViewModel
+                                          .showProgressUpdateToast(
+                                            context,
+                                            'diary',
+                                          );
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(

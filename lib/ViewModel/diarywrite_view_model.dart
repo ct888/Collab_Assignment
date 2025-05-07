@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../model/diary_entry.dart';
 import '../service/database_service.dart';
@@ -17,6 +15,8 @@ class DiaryViewModel extends ChangeNotifier {
 
   String? errorMessage;
   String? successMessage;
+  String? successMessage1;
+
 
   bool publicVisibility = false;
   bool dataTracking = false;
@@ -64,7 +64,7 @@ class DiaryViewModel extends ChangeNotifier {
     imageFiles.clear();
     notifyListeners();
   }
-  
+
   // Remove a specific image by index
   void removeImage(int index) {
     if (index >= 0 && index < imageFiles.length) {
@@ -76,6 +76,7 @@ class DiaryViewModel extends ChangeNotifier {
   void clearMessages() {
     errorMessage = null;
     successMessage = null;
+    successMessage1 = null;
     notifyListeners();
   }
 
@@ -114,7 +115,8 @@ class DiaryViewModel extends ChangeNotifier {
     try {
       final draftCount = await _databaseService.getDraftCount(currentUserId);
       if (draftCount >= 3) {
-        errorMessage = "You can only save up to 3 drafts. Current count: $draftCount";
+        errorMessage =
+            "You can only save up to 3 drafts. Current count: $draftCount";
         isUploading = false;
         notifyListeners();
         return;
@@ -129,7 +131,8 @@ class DiaryViewModel extends ChangeNotifier {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         date: DateTime.now(),
         content: contentController.text,
-        imageUrl: imageUrl, // You can store image URLs here as comma-separated or in a list
+        imageUrl:
+            imageUrl, // You can store image URLs here as comma-separated or in a list
         publicVisibility: publicVisibility,
         dataTracking: dataTracking,
         isDraft: true,
@@ -144,7 +147,8 @@ class DiaryViewModel extends ChangeNotifier {
 
       contentController.clear();
       imageFiles.clear(); // Clear the image list after saving
-      successMessage = "Draft saved successfully. Current draft count: $currentDraftCount";
+      successMessage =
+          "Draft saved successfully. Current draft count: $currentDraftCount";
       notifyListeners();
     } catch (e) {
       errorMessage = "Failed to save draft: $e";
@@ -156,7 +160,7 @@ class DiaryViewModel extends ChangeNotifier {
   }
 
   // --- Upload images ---
-  Future <String?> _uploadImages(String userId) async {
+  Future<String?> _uploadImages(String userId) async {
     try {
       isImageUploading = true;
       notifyListeners();
@@ -201,7 +205,8 @@ class DiaryViewModel extends ChangeNotifier {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         date: DateTime.now(),
         content: contentController.text,
-        imageUrl: imageUrl, // You can store multiple image URLs here as comma-separated or in a list
+        imageUrl:
+            imageUrl, // You can store multiple image URLs here as comma-separated or in a list
         publicVisibility: publicVisibility,
         dataTracking: dataTracking,
         isDraft: false,
@@ -211,14 +216,15 @@ class DiaryViewModel extends ChangeNotifier {
       );
 
       await _databaseService.uploadDiary(entry);
+      
+  
 
       contentController.clear();
       imageFiles.clear(); // Clear the image list after uploading
       publicVisibility = false;
       dataTracking = false;
-      successMessage = "Diary uploaded successfully!";
+      successMessage1 = "Diary uploaded successfully!";
       notifyListeners();
-      
     } catch (e) {
       errorMessage = "Upload failed: $e";
       notifyListeners();

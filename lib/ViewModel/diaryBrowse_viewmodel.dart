@@ -89,7 +89,7 @@ class BrowseViewModel extends ChangeNotifier {
     }
   }
 
- Future<void> toggleLike(DiaryEntry entry, String userId) async {
+ /*Future<void> toggleLike(DiaryEntry entry, String userId) async {
   try {
     final entryRef = _firestore.collection('diary_entries').doc(entry.id);
     final likesRef = entryRef.collection('likes').doc(userId);
@@ -112,6 +112,43 @@ class BrowseViewModel extends ChangeNotifier {
     print('Error toggling like: $e');
   }
 }
+*/
+
+
+Future<void> toggleLike(DiaryEntry entry, String userId) async {
+  try {
+    final entryRef = _firestore.collection('diary_entries').doc(entry.id);
+    final likesRef = entryRef.collection('likes').doc(userId);
+
+    final docSnapshot = await likesRef.get();
+    bool isAlreadyLiked = docSnapshot.exists;
+
+    if (isAlreadyLiked) {
+      // Unlike
+      await likesRef.delete();
+      await removeUserFromLikedUsers(entry, userId); // Remove user from likedUsers
+      entry.likes--; // Decrease the like count locally
+      entry.likedUsers.remove(userId); // Remove the user from likedUsers list
+    } else {
+      // Like
+      await likesRef.set({'likedAt': FieldValue.serverTimestamp()});
+      await addUserToLikedUsers(entry, userId); // Add user to likedUsers
+      entry.likes++; // Increase the like count locally
+      entry.likedUsers.add(userId); // Add the user to likedUsers list
+    }
+
+    await updateLikesCount(entry); // Optionally update Firestore like count
+
+    // Refresh the diary entry
+    await refreshEntryLikes(entry);
+
+    // Update UI immediately by notifying listeners
+    notifyListeners();
+  } catch (e) {
+    print('Error toggling like: $e');
+  }
+}
+
 
 Future<void> addUserToLikedUsers(DiaryEntry entry, String userId) async {
   try {

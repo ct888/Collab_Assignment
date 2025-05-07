@@ -4,6 +4,7 @@ import '../viewmodel/diarywrite_view_model.dart';
 import '/widgets/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import '../view/utils/wave_painter.dart';
+import '../ViewModel/progress_meter_viewmodel.dart'; // Added import for ProgressMeterViewModel
 
 class DiaryWriteScreen extends StatelessWidget {
   final String currentUserId;
@@ -25,6 +26,8 @@ class DiaryWriteView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DiaryViewModel>(context);
+    final progressMeterViewModel =
+        ProgressMeterViewModel(); // Initialize ProgressMeterViewModel
 
     // Show confirmation dialog for success or error messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -44,7 +47,21 @@ class DiaryWriteView extends StatelessWidget {
           title: "Success",
           icon: Icons.check_circle_outline,
           message: viewModel.successMessage!,
-          onConfirm: () => viewModel.clearMessages(),
+          onConfirm: () {
+            viewModel.clearMessages();
+          },
+        );
+      }
+      if (viewModel.successMessage1 != null) {
+        showConfirmationDialog(
+          context: context,
+          title: "Success",
+          icon: Icons.check_circle_outline,
+          message: viewModel.successMessage!,
+          onConfirm: () {
+            viewModel.clearMessages();
+            progressMeterViewModel.showProgressUpdateToast(context, 'diary');
+          },
         );
       }
     });
@@ -54,7 +71,6 @@ class DiaryWriteView extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-          
             CustomPaint(size: Size.infinite, painter: WavePainter()),
             // 主内容
             Column(
@@ -65,13 +81,13 @@ class DiaryWriteView extends StatelessWidget {
                   padding: const EdgeInsets.all(12.0),
                   child: Stack(
                     children: [
-                  CircleAvatar(
-            backgroundColor: Colors.grey.shade300,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
+                      CircleAvatar(
+                        backgroundColor: Colors.grey.shade300,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.black),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
                       const Align(
                         alignment: Alignment.center,
                         child: Padding(
@@ -199,7 +215,12 @@ class DiaryWriteView extends StatelessWidget {
                                   message: "Upload images",
                                   child: IconButton(
                                     icon: const Icon(Icons.photo_camera),
-                                    color: const Color.fromARGB(255, 117, 131, 254),
+                                    color: const Color.fromARGB(
+                                      255,
+                                      117,
+                                      131,
+                                      254,
+                                    ),
                                     onPressed:
                                         viewModel.isImageUploading
                                             ? null
@@ -346,6 +367,7 @@ class DiaryWriteView extends StatelessWidget {
                                           "Are you sure you want to save this as a draft? You can only have up to 3 drafts at a time.\n\nCurrent draft count: ${viewModel.currentDraftCount}/3?",
                                       onConfirm: () {
                                         viewModel.saveAsDraft();
+                                        // We don't add progress update for drafts as they're not completed entries
                                       },
                                     );
                                   },
@@ -362,7 +384,12 @@ class DiaryWriteView extends StatelessWidget {
                                   : const Icon(Icons.save_alt),
                           label: const Text("Save as Draft"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 161, 162, 245),
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              161,
+                              162,
+                              245,
+                            ),
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -387,6 +414,9 @@ class DiaryWriteView extends StatelessWidget {
                                           "Are you sure you want to Share Your Diary?",
                                       onConfirm: () {
                                         viewModel.uploadDiary();
+                                        // Add progress meter update after successful diary submission
+
+                                        // Progress meter update will be shown after successful upload via the success message handler
                                       },
                                     );
                                   },

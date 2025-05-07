@@ -53,7 +53,7 @@ class DiaryDraftViewModel extends ChangeNotifier {
       draftEntries =
           sharedSnapshot.docs
               .map(
-                (doc) => DiaryEntry.fromMap(doc.data() as Map<String, dynamic>),
+                (doc) => DiaryEntry.fromMap(doc.data()),
               )
               .where((entry) => entry.userId != currentUserId)
               .toList();
