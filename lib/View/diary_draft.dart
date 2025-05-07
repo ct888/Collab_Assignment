@@ -70,7 +70,7 @@ class _DiaryDraftContent extends StatelessWidget {
             backgroundColor: Colors.grey.shade300,
             child: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pop(context,true),
             ),
           ),
           Expanded(

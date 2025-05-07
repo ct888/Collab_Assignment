@@ -76,7 +76,7 @@ class DiaryViewModel extends ChangeNotifier {
   void clearMessages() {
     errorMessage = null;
     successMessage = null;
-    successMessage1 = null;
+    //successMessage1 = null;
     notifyListeners();
   }
 
@@ -223,7 +223,7 @@ class DiaryViewModel extends ChangeNotifier {
       imageFiles.clear(); // Clear the image list after uploading
       publicVisibility = false;
       dataTracking = false;
-      successMessage1 = "Diary uploaded successfully!";
+      successMessage = "Diary uploaded successfully!";
       notifyListeners();
     } catch (e) {
       errorMessage = "Upload failed: $e";

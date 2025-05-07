@@ -49,10 +49,12 @@ class DiaryWriteView extends StatelessWidget {
           message: viewModel.successMessage!,
           onConfirm: () {
             viewModel.clearMessages();
+            progressMeterViewModel.showProgressUpdateToast(context, 'diary');
+
           },
         );
       }
-      if (viewModel.successMessage1 != null) {
+   /*   if (viewModel.successMessage1 != null) {
         showConfirmationDialog(
           context: context,
           title: "Success",
@@ -64,6 +66,7 @@ class DiaryWriteView extends StatelessWidget {
           },
         );
       }
+      */
     });
 
     return Scaffold(

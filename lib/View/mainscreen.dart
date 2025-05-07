@@ -19,7 +19,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-<<<<<<< HEAD
+
   int _currentIndex = 0;
   late List<Widget> _pages;
 
@@ -34,17 +34,7 @@ class _MainScreenState extends State<MainScreen> {
       ProgressMeter()
     ];
   }
-=======
-  int _currentIndex = 2;
 
-  final List<Widget> _pages = [
-    BOA(),
-    RecommenderScreen(userId: FirebaseAuth.instance.currentUser!.uid),
-    MoodDashboardPage(),
-    BOA(),
-    AccountSetting(),
-  ];
->>>>>>> main
 
   @override
   Widget build(BuildContext context) {

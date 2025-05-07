@@ -243,10 +243,12 @@ Future<String> getUserID() async {
         return DiaryEntry(
           id: doc.id,
           content: data["content"] ?? '',
-          timestamp: timestamp.toDate(),
+          date: timestamp.toDate(),
           dataTracking: data["dataTracking"] ?? false,
           isDraft: data["isDraft"] ?? false,
-          userID: data["userId"] ?? userId, // Use provided userId as fallback
+          userId: data["userId"] ?? userId, 
+          likedUsers: List<String>.from(data['likedUsers'] ?? []),
+          // Use provided userId as fallback
         );
       }
       return null;

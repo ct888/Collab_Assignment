@@ -5,10 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
   cloud_firestore
-<<<<<<< HEAD
   file_selector_windows
-=======
->>>>>>> main
   firebase_auth
   firebase_core
   firebase_storage

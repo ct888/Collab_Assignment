@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seek_here/Model/mood.dart';
 import '../Model/diary_entry.dart';
 import '../utils/logger.dart';
@@ -92,10 +91,14 @@ class FirebaseService {
         return DiaryEntry(
           id: doc.id,
           content: data["content"] ?? '',
-          timestamp: timestamp.toDate(),
+          date: timestamp.toDate(),
           dataTracking: data["dataTracking"] ?? false,
           isDraft: data["isDraft"] ?? false,
-          userID: data["userId"] ?? userId, // Use provided userId as fallback
+          userId: data["userId"] ?? userId, 
+          likedUsers: List<String>.from(data['likedUsers'] ?? []),
+          publicVisibility: data["publicVisibility"] ?? false,  
+          
+          // Use provided userId as fallback
         );
       }
       return null;
