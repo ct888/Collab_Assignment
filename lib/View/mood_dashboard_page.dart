@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/Model/mood.dart'; // Import UserMood model
-import 'package:flutter/foundation.dart'; // For print debugging
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
@@ -59,9 +58,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
       // Get all moods using the MoodViewModel
       final moods = await _moodViewModel.fetchAllMoods();
 
-      // Sort all moods by timestamp in descending order (most recent first)
-      moods.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
       setState(() {
         _allMoods = moods;
         _isLoading = false;
@@ -89,56 +85,37 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
       const Duration(days: 6, hours: 23, minutes: 59, seconds: 59),
     );
 
-    // Map to store the latest mood for each day
+    // Map to store the most recent mood for each day of the week
     Map<String, UserMood> weeklyMoods = {};
 
-    // Group moods by date string
+    // Group moods by date
     Map<String, List<UserMood>> moodsByDate = {};
-
-    if (kDebugMode) {
-      print('Processing weekly moods from ${_allMoods.length} total moods');
-      print('Start of week: $startOfWeek, End of week: $endOfWeek');
-    }
 
     // Filter moods that fall within the current week
     for (var mood in _allMoods) {
       if (mood.timestamp.isAfter(
-            startOfWeek.subtract(const Duration(days: 0)),
+            startOfWeek.subtract(const Duration(days: 1)),
           ) &&
-          mood.timestamp.isBefore(endOfWeek.add(const Duration(days: 0)))) {
+          mood.timestamp.isBefore(endOfWeek.add(const Duration(days: 1)))) {
         final String dateString = DateFormat(
           'yyyy-MM-dd',
         ).format(mood.timestamp);
 
-        // Initialize list if this date doesn't exist yet
         if (!moodsByDate.containsKey(dateString)) {
           moodsByDate[dateString] = [];
         }
-
-        // Add the mood to this date's list
         moodsByDate[dateString]!.add(mood);
-
-        if (kDebugMode) {
-          print(
-            'Found mood for $dateString: ${mood.moodType} (${mood.timestamp})',
-          );
-        }
       }
     }
 
-    // For each date, find the most recent mood entry
-    moodsByDate.forEach((dateString, moodsList) {
-      // Sort the moods by timestamp in descending order (most recent first)
-      moodsList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    // For each date, find the most recent mood
+    moodsByDate.forEach((dateString, moods) {
+      // Sort moods by timestamp (most recent first)
+      moods.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-      // Add the most recent mood for this date to the weekly moods map
-      if (moodsList.isNotEmpty) {
-        weeklyMoods[dateString] = moodsList.first;
-        if (kDebugMode) {
-          print(
-            'Selected latest mood for $dateString: ${moodsList.first.moodType} (${moodsList.first.timestamp})',
-          );
-        }
+      // Take the most recent mood for this date
+      if (moods.isNotEmpty) {
+        weeklyMoods[dateString] = moods.first;
       }
     });
 
@@ -545,31 +522,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
         final List<String> reasons =
             hasData ? _weeklyMoods[dateString]!.notes : [];
 
-        // Determine the background color based on mood (if custom styling is desired)
-        Color cardColor = Colors.white;
-        if (hasData) {
-          // You can customize these colors based on your app's design
-          switch (mood.toLowerCase()) {
-            case 'happy':
-              cardColor = Colors.yellow.shade50;
-              break;
-            case 'sad':
-              cardColor = Colors.blue.shade50;
-              break;
-            case 'angry':
-              cardColor = Colors.red.shade50;
-              break;
-            case 'anxious':
-              cardColor = Colors.purple.shade50;
-              break;
-            case 'relaxed':
-              cardColor = Colors.green.shade50;
-              break;
-            default:
-              cardColor = Colors.white;
-          }
-        }
-
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -579,7 +531,7 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
           },
           child: Container(
             decoration: BoxDecoration(
-              color: cardColor,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -593,51 +545,33 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _weekDays[dayDate.weekday % 7],
-                      style: GoogleFonts.aDLaMDisplay(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormat('d').format(dayDate),
-                      style: GoogleFonts.aDLaMDisplay(
-                        fontSize: 12,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
+                Text(
+                  DateFormat('MMM d, yyyy').format(dayDate),
+                  style: GoogleFonts.aDLaMDisplay(
+                    fontSize: 10,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  hasData ? 'Mood: $mood' : 'No mood',
+                  'Mood: ${mood}',
                   style: GoogleFonts.aDLaMDisplay(
                     fontSize: 12,
-                    color: Colors.black87,
-                    fontWeight: hasData ? FontWeight.w500 : FontWeight.normal,
+                    color: Colors.black,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 5),
                 if (hasData && reasons.isNotEmpty)
                   Expanded(
                     child: Text(
-                      reasons.length == 1
-                          ? reasons.first
-                          : '${reasons.length} reasons',
+                      'Reason: ${reasons.join(", ")}',
                       style: GoogleFonts.aDLaMDisplay(
                         fontSize: 10,
-                        color: Colors.black54,
+                        color: Colors.black,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
-                      textAlign: TextAlign.center,
                     ),
                   ),
               ],
