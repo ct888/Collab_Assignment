@@ -199,7 +199,7 @@ class DiaryViewModel extends ChangeNotifier {
       return;
     }
 
-    _isDraft = true;
+    _isDraft = false;
     isUploading = true;
     notifyListeners();
 
