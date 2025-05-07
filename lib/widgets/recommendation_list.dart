@@ -539,7 +539,14 @@ class _MusicRecommendationGridState extends State<MusicRecommendationGrid> {
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Text("You've reached the end"),
+                                child: Text(
+                                  "You've reached the end",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
                             )
                           : const SizedBox(height: 16),

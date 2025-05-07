@@ -6,6 +6,10 @@ import 'package:seek_here/ViewModel/videoViewModel.dart';
 import 'package:seek_here/widgets/recommendation_list.dart';
 import 'package:seek_here/widgets/video_player_widget.dart';
 
+import '../Model/progress_meter_model.dart';
+import '../ViewModel/progress_meter_viewmodel.dart';
+import '../utils/logger.dart';
+
 class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({Key? key}) : super(key: key);
 
@@ -17,6 +21,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final ScrollController scrollController = ScrollController();
   bool _isInitialLoading = true;
   bool showAnalysis = false;
+  bool _videoListLoaded = false; // Track if the video list was loaded successfully
 
   @override
   void initState() {
@@ -40,23 +45,37 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   // Improved method to load data that can be called whenever needed
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool refresh = true}) async {
     final videoViewModel = Provider.of<VideoViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
+    final AppLogger _logger = AppLogger();
 
-    // First, fetch the mood from Firebase
-    await moodViewModel.fetchLatestData();
+    try {
+      // First, fetch the mood from Firebase
+      await moodViewModel.fetchLatestData();
 
-    // Only proceed if we have a mood (regardless of when it was recorded)
-    if (moodViewModel.currentMood != null) {
-      // Analyze emotion based on the current mood
-      await moodViewModel.analyzeEmotion();
+      // Only proceed if we have a mood
+      if (moodViewModel.currentMood != null) {
+        // Analyze emotion based on the current mood
+        final analysisSuccess = await moodViewModel.analyzeEmotion();
 
-      // Then fetch video recommendations based on analysis
-      await videoViewModel.fetchRecommendedVideos(
-        moodViewModel.videoCategories,
-        moodViewModel.recommendedMood,
-      );
+        if (analysisSuccess) {
+          // Then fetch video recommendations based on analysis
+          await videoViewModel.fetchRecommendedVideos(
+            moodViewModel.videoCategories,
+            moodViewModel.recommendedMood,
+            refresh: refresh,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading data: $e');
+      _logger.info('Failed to load recommendations');
+      rethrow;
+    } finally {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
     }
   }
 
@@ -67,7 +86,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         context,
         listen: false,
       );
-      if (!videoViewModel.isLoading && !videoViewModel.isPaginationLoading) {
+      if (!videoViewModel.isLoading && !videoViewModel.isPaginationLoading && videoViewModel.hasMoreVideos) {
         videoViewModel.loadMoreVideos();
       }
     }
@@ -222,6 +241,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       VideoViewModel videoViewModel,
       MoodViewModel moodViewModel
       ) {
+    // Check if we need to update progress meter when video list is loaded
+    if (!_videoListLoaded && !videoViewModel.isLoading && videoViewModel.videos.isNotEmpty) {
+      // Use post-frame callback to ensure the list is rendered before showing toast
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Set flag to prevent repeated calls
+          setState(() {
+            _videoListLoaded = true;
+          });
+
+          // Add the requested code for progress tracking
+          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          RecordEntry.insertTimestampToCollection("recommender");
+        }
+      });
+    }
+
     return Column(
       children: [
         // Show emotion analysis
@@ -271,7 +308,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         else
           Expanded(
             child:
-            videoViewModel.isLoading
+            videoViewModel.isLoading && videoViewModel.videos.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : videoViewModel.errorMessage != null
                 ? Center(
@@ -381,18 +418,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             )
                 : RefreshIndicator(
               onRefresh: () async {
-                setState(() {
-                  _isInitialLoading = true;
-                });
+                // Use the existing _loadData method with refresh=true (default)
                 await _loadData();
-                setState(() {
-                  _isInitialLoading = false;
-                });
+                return;
               },
               child: VideoRecommendationList(
                 videos: videoViewModel.videos,
                 scrollController: scrollController,
                 isLoadingMore: videoViewModel.isPaginationLoading,
+                // Pass hasReachedEnd parameter based on hasMoreVideos property
+                hasReachedEnd: !videoViewModel.hasMoreVideos && videoViewModel.videos.isNotEmpty,
                 onVideoSelected: (video) {
                   // Ensure any previous video is properly disposed
                   if (videoViewModel.selectedVideo != null) {
