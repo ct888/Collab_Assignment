@@ -275,6 +275,45 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     }
   }
 
+  void _playPreviousVideo() {
+    if (!mounted || _disposed) return;
+    _logger.info('Attempting to play previous video...');
+
+    try {
+      final videoViewModel = Provider.of<VideoViewModel>(
+        context,
+        listen: false,
+      );
+      final currentList = videoViewModel.videos;
+      if (currentList.isEmpty) {
+        _logger.warning('Video list is empty, cannot play previous.');
+        if (mounted && !_disposed) widget.onClose();
+        return;
+      }
+
+      final currentIndex = currentList.indexWhere(
+            (video) => video.videoId == widget.videoId,
+      );
+
+      _logger.info('Current video index: $currentIndex');
+
+      if (currentIndex > 0) {
+        final previousVideo = currentList[currentIndex - 1];
+        _logger.info(
+          'Found previous video: ${previousVideo.videoId} - ${previousVideo.title}',
+        );
+        videoViewModel.selectVideo(previousVideo);
+      } else {
+        _logger.info(
+          'No previous video found or current video is first in list.',
+        );
+        // Optional: Show a toast or brief message
+      }
+    } catch (e, stacktrace) {
+      _logger.error('Error playing previous video: $e\n$stacktrace');
+    }
+  }
+
   void _playNextVideo() {
     if (!mounted || _disposed) return;
     _logger.info('Attempting to play next video...');
@@ -455,13 +494,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       _isDragging = false; // Prevent multiple triggers from one swipe
       _playNextVideo();
     }
-    // Optional: Handle swipe down?
-    // else if (diff < -swipeThreshold) {
-    //   _logger.info('Swipe down detected.');
-    //   _isDragging = false;
-    //   // Action for swipe down (e.g., close player or previous video?)
-    //    if (mounted && !_disposed) widget.onClose();
-    // }
+    // Handle swipe down for previous video
+    else if (diff < -swipeThreshold) {
+      _logger.info(
+        'Swipe down detected (diff: $diff < -$swipeThreshold), playing previous video.',
+      );
+      _isDragging = false;
+      _playPreviousVideo();
+    }
   }
 
   void _handleSwipeEnd(DragEndDetails details) {
@@ -890,26 +930,58 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
   Widget _buildSwipeUpIndicator() {
     return Positioned(
-      bottom: _isFullScreen ? 40 : 80, // Adjust position based on fullscreen
-      right: 20,
+      bottom: _isFullScreen ? 60 : 100, // Increased from 40/80 to 60/100
+      left: 0,
+      right: 0,
       child: IgnorePointer(
-        // Indicator should not block gestures
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min, // Keep row compact
-            children: const [
-              Icon(Icons.swipe_up, color: Colors.white70, size: 18),
-              SizedBox(width: 6),
-              Text(
-                'Swipe up for next', // Shorter text
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ],
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 20), // Additional bottom padding
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left side - Swipe down indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Slightly increased vertical padding
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.swipe_down, color: Colors.white70, size: 18),
+                      SizedBox(width: 6),
+                      Text(
+                        'Previous',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Right side - Swipe up indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Slightly increased vertical padding
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'Next',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(Icons.swipe_up, color: Colors.white70, size: 18),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1205,7 +1277,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
             ),
           ),
 
-          // --- Bottom Controls (Progress, Volume, Fullscreen, Next) ---
+          // --- Bottom Controls (Progress, Fullscreen, Next) ---
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
@@ -1234,33 +1306,29 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Left side: Volume Control
-                        // *** MODIFIED: Pass effectivelyMuted instead of isMuted ***
-                        _buildVolumeControl(
-                          volume.toDouble(),
-                          effectivelyMuted,
-                        ),
+                        // Fullscreen / Exit Fullscreen Button
+                        IconButton(
+                          icon: Icon(
+                            _isFullScreen
+                                ? Icons.fullscreen_exit
+                                : Icons.fullscreen,
+                            color: Colors.white,
+                          ),
+                          onPressed:
+                          _toggleFullScreen, // Always calls toggle
+                          tooltip:
+                          _isFullScreen
+                              ? 'Exit Fullscreen'
+                              : 'Enter Fullscreen', ),
 
                         // Right side: Fullscreen Toggle & Next Button
                         Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Fullscreen / Exit Fullscreen Button
-                            IconButton(
-                              icon: Icon(
-                                _isFullScreen
-                                    ? Icons.fullscreen_exit
-                                    : Icons.fullscreen,
-                                color: Colors.white,
-                              ),
-                              onPressed:
-                                  _toggleFullScreen, // Always calls toggle
-                              tooltip:
-                                  _isFullScreen
-                                      ? 'Exit Fullscreen'
-                                      : 'Enter Fullscreen',
-                            ),
+                            // Left side: Previous Button
+                            _buildPreviousVideoButton(),
 
-                            // Next Video Button (conditionally enabled)
+                            // Right side: Next Button
                             _buildNextVideoButton(),
                           ],
                         ),
@@ -1276,139 +1344,35 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     );
   }
 
-  // *** MODIFIED: Uses effectivelyMuted derived from volume ***
-  Widget _buildVolumeControl(double volume, bool effectivelyMuted) {
-    IconData volumeIcon;
-    // Determine icon based on effectivelyMuted state and volume level
-    if (effectivelyMuted) {
-      volumeIcon = Icons.volume_off;
-    } else if (volume <= 50) {
-      volumeIcon = Icons.volume_down;
-    } else {
-      volumeIcon = Icons.volume_up;
-    }
+  Widget _buildPreviousVideoButton() {
+    return Consumer<VideoViewModel>(
+      builder: (context, videoViewModel, child) {
+        final currentList = videoViewModel.videos;
+        final currentIndex = currentList.indexWhere(
+              (video) => video.videoId == widget.videoId,
+        );
+        // Determine if there is a previous video
+        final bool hasPreviousVideo = currentIndex > 0;
 
-    return Row(
-      children: [
-        IconButton(
-          icon: Icon(volumeIcon, color: Colors.white),
-          onPressed:
-              _isPlayerReady
-                  ? () {
-                    // Toggle mute state using controller methods
-                    if (effectivelyMuted) {
-                      _controller?.unMute();
-                      // Set volume to a default level when unmuting from 0
-                      // Use the actual current volume from controller if available
-                      final currentVol = _controller?.value.volume ?? 0;
-                      if (currentVol <= 0)
-                        _controller?.setVolume(50); // Set to 50 if was 0
-                    } else {
-                      _controller
-                          ?.mute(); // This should set volume to 0 internally
-                    }
-                    _showControlsTemporarily();
-                  }
-                  : null,
-          tooltip:
-              effectivelyMuted
-                  ? 'Unmute'
-                  : 'Mute', // Tooltip reflects effective state
-        ),
-        // --- Custom Volume Slider ---
-        SizedBox(
-          width: 100,
-          height: 30,
-          child: GestureDetector(
-            onTapDown:
-                (details) => _handleVolumeChange(details.localPosition.dx, 100),
-            onHorizontalDragStart:
-                (details) => _handleVolumeChange(details.localPosition.dx, 100),
-            onHorizontalDragUpdate:
-                (details) => _handleVolumeChange(details.localPosition.dx, 100),
-            child: Container(
-              color: Colors.transparent,
-              child: Center(
-                child: Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [
-                    // Background Track
-                    Container(
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    // Active Track (reflects current volume)
-                    // Use effectivelyMuted here for visual consistency
-                    FractionallySizedBox(
-                      widthFactor:
-                          effectivelyMuted
-                              ? 0.0
-                              : (volume / 100).clamp(0.0, 1.0),
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    // Thumb (position based on volume)
-                    // Use effectivelyMuted here for visual consistency
-                    Positioned(
-                      left:
-                          (effectivelyMuted
-                              ? 0.0
-                              : (volume / 100).clamp(0.0, 1.0) * 100) -
-                          6, // Adjust for thumb radius
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        return TextButton.icon(
+          style: TextButton.styleFrom(
+            foregroundColor: hasPreviousVideo ? Colors.white : Colors.grey[600],
           ),
-        ),
-      ],
+          icon: Icon(
+            Icons.skip_previous,
+            size: 24,
+          ),
+          label: const Text("Previous", style: TextStyle(fontSize: 14)),
+          onPressed:
+          (_isPlayerReady && hasPreviousVideo)
+              ? () {
+            _playPreviousVideo();
+            _showControlsTemporarily();
+          }
+              : null,
+        );
+      },
     );
-  }
-
-  // *** MODIFIED: Handles volume change, considers unmuting ***
-  void _handleVolumeChange(double localDx, double sliderWidth) {
-    if (_isPlayerReady && _controller != null) {
-      final clampedDx = localDx.clamp(0.0, sliderWidth);
-      final percent = (clampedDx / sliderWidth);
-      final newVolume = (percent * 100).round();
-
-      // Check the *current* volume before setting the new one
-      final currentVolume = _controller!.value.volume;
-      final bool wasEffectivelyMuted = currentVolume <= 0;
-
-      // If user drags slider up from zero, unmute first (if needed)
-      if (wasEffectivelyMuted && newVolume > 0) {
-        _controller?.unMute(); // Ensure unmuted state is set
-      }
-
-      // Set the new volume
-      _controller?.setVolume(newVolume);
-
-      // If user drags slider all the way down to 0, explicitly mute
-      // This provides consistent behavior with the mute button
-      if (newVolume <= 0 && !wasEffectivelyMuted) {
-        _controller?.mute();
-      }
-
-      _showControlsTemporarily(); // Keep controls visible while adjusting
-    }
   }
 
   // Extracted Next Video Button Builder
@@ -1557,19 +1521,20 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
   // --- Utility Methods ---
 
-  Color _getEmotionColor(String emotionCategory) {
-    // Using a map for cleaner lookup
+  Color _getEmotionColor(String emotion) {
     const colorMap = {
-      'happy': Colors.amber,
-      'calm': Colors.lightBlueAccent, // Lighter blue for calm
-      'sad': Colors.indigo,
-      'anxious': Colors.deepPurpleAccent, // More distinct purple
-      'angry': Colors.redAccent, // Brighter red
-      'stressed': Colors.orangeAccent, // Brighter orange
-      'motivated': Colors.lightGreen, // Lighter green
-      'general': Colors.blueGrey, // Default category color
+      'happy': Colors.yellow,
+      'bored': Colors.grey,
+      'love': Colors.pink,
+      'surprised': Colors.orange,
+      'angry': Colors.red,
+      'sad': Colors.blue,
+      'hopeless': Colors.grey,
+      'jealous': Colors.green,
+      'anxious': Colors.purple,
+      'overwhelmed': Colors.deepOrange,
+      'confused': Colors.brown,
     };
-    // Return color or default, handling case sensitivity
-    return colorMap[emotionCategory.toLowerCase()] ?? Colors.blueGrey;
+    return colorMap[emotion.toLowerCase()]?.shade400 ?? Colors.blueGrey;
   }
 }

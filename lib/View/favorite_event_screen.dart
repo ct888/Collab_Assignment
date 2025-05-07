@@ -2,22 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../ViewModel/utils/favorite_event_viewmodel.dart';
+import '../ViewModel/favorite_event_viewmodel.dart';
 import '../Model/event.dart';
 import 'event_detail_screen.dart';
 
 class FavoriteEventsScreen extends StatelessWidget {
-  final String userId;
 
   const FavoriteEventsScreen({
     Key? key,
-    required this.userId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => FavoriteEventsViewModel(userId: userId),
+      create: (_) => FavoriteEventsViewModel(),
       child: Consumer<FavoriteEventsViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
@@ -219,13 +217,10 @@ class FavoriteEventsScreen extends StatelessWidget {
         );
       },
                 onDismissed: (direction) {
-                  final eventTitle = event.title;
-                  // Save a reference to the event that was removed
-                  final removedEvent = event;
-                  
                   // Remove from favorites
                   viewModel.removeFromFavorites(event.id);
-
+                },
+/*
                   // Show snackbar with undo option
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -241,6 +236,7 @@ class FavoriteEventsScreen extends StatelessWidget {
                     ),
                   );
                 },
+                */
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         elevation: 0,
@@ -253,7 +249,6 @@ class FavoriteEventsScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => EventDetailScreen(
-                  userId: userId,
                   event: event,
                 ),
               ),
@@ -330,15 +325,6 @@ class FavoriteEventsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                      ),
-                      onPressed: () {
-                        viewModel.removeFromFavorites(event.id);
-                      },
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -374,7 +360,6 @@ class FavoriteEventsScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => EventDetailScreen(
-                              userId: userId,
                               event: event,
                             ),
                           ),
