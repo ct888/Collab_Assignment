@@ -1,6 +1,9 @@
+//Service/firebase_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:seek_here/Model/diary_entry.dart';
+import 'package:seek_here/Model/mood.dart';
 import '../Model/saved_place.dart';
 import '../Model/event.dart';
 import '../utils/logger.dart';
@@ -157,6 +160,99 @@ Future<String> getUserID() async {
     } catch (e) {
       debugPrint('❌ Error removing from favorites: $e');
       rethrow;
+    }
+  }
+
+    Future<UserMood?> fetchLatestMood() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        _logger.warning('No user logged in');
+        return null;
+      }
+      // Get today's date at midnight (start of day)
+      final DateTime today = DateTime.now();
+      final DateTime startOfDay = DateTime(today.year, today.month, today.day);
+
+      final Timestamp startTimestamp = Timestamp.fromDate(startOfDay);
+
+      final QuerySnapshot snapshot =
+          await _firestore
+              .collection('moods')
+              .where('date', isGreaterThanOrEqualTo: startTimestamp)
+              .where('userId', isEqualTo: userId)
+              .orderBy('date', descending: true)
+              .limit(1)
+              .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        final data = doc.data() as Map;
+        final Timestamp timestamp = data['date'] as Timestamp;
+
+        // Convert reasons array to List for notes field
+        List<String> reasonsList = [];
+        if (data['reasons'] != null) {
+          reasonsList = List.from(data['reasons']);
+        }
+
+        return UserMood(
+          id: doc.id,
+          moodType: data['mood'] ?? '',
+          notes: reasonsList,
+          timestamp: timestamp.toDate(),
+          userID: data['userId'] ?? '',
+        );
+      }
+      return null;
+    } catch (e) {
+      _logger.error('Error fetching today\'s latest mood: $e');
+      //throw Exception('Failed to fetch today\'s latest mood: $e');
+    }
+  }
+
+  Future<DiaryEntry?> fetchLatestDiary() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        _logger.warning('No user logged in');
+        return null;
+      }
+      _logger.info('Fetching moods for user: $userId');
+      // Get today's date at midnight (start of day)
+      final DateTime today = DateTime.now();
+      final DateTime startOfDay = DateTime(today.year, today.month, today.day);
+      final Timestamp startTimestamp = Timestamp.fromDate(startOfDay);
+
+      final QuerySnapshot snapshot =
+          await _firestore
+              .collection('diary_entries')
+              .where('userId', isEqualTo: userId)
+              .where('dataTracking', isEqualTo: true)
+              .where('isDraft', isEqualTo: false)
+              .where('date', isGreaterThanOrEqualTo: startTimestamp)
+              .orderBy('date', descending: true)
+              .limit(1)
+              .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        final data = doc.data() as Map<String, dynamic>;
+        final Timestamp timestamp = data['date'] as Timestamp;
+
+        return DiaryEntry(
+          id: doc.id,
+          content: data["content"] ?? '',
+          timestamp: timestamp.toDate(),
+          dataTracking: data["dataTracking"] ?? false,
+          isDraft: data["isDraft"] ?? false,
+          userID: data["userId"] ?? userId, // Use provided userId as fallback
+        );
+      }
+      return null;
+    } catch (e) {
+      _logger.error('Error fetching today\'s latest diary: $e');
+      throw Exception('Failed to fetch today\'s latest diary: $e');
     }
   }
 }
