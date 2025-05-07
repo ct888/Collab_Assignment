@@ -41,18 +41,28 @@ class LocationService {
     );
   }
   
-  Future<Location> getLocationFromAddress(String address) async {
+Future<Location> getLocationFromAddress(String address) async {
+  try {
     List<geo.Location> locations = await geo.locationFromAddress(address);
     if (locations.isEmpty) {
       throw Exception('Could not find location for this address');
     }
     
+    // Get a proper address format from the coordinates
+    String? formattedAddress = await getAddressFromCoordinates(
+      locations[0].latitude,
+      locations[0].longitude
+    );
+    
     return Location(
       latitude: locations[0].latitude,
       longitude: locations[0].longitude,
-      address: address,
+      address: formattedAddress ?? address,
     );
+  } catch (e) {
+    throw Exception('Could not find location for this address: $e');
   }
+}
   
   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
     try {

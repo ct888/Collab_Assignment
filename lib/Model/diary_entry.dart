@@ -2,13 +2,17 @@ class DiaryEntry {
   final String id;
   final String content;
   final DateTime timestamp;
-  final List<String> tags;
+  final bool dataTracking;
+  final bool isDraft;
+  final String userID;
 
   DiaryEntry({
     required this.id,
     required this.content,
     required this.timestamp,
-    this.tags = const [],
+    required this.dataTracking,
+    required this.isDraft,
+    required this.userID,
   });
 
   factory DiaryEntry.fromJson(Map<String, dynamic> json) {
@@ -18,9 +22,9 @@ class DiaryEntry {
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
-      tags: json['tags'] != null
-          ? List<String>.from(json['tags'])
-          : [],
+      dataTracking: json['dataTracking'] ?? false,
+      isDraft: json['isDraft'] ?? false,
+      userID: json['userID'] ?? '',
     );
   }
 
@@ -29,7 +33,9 @@ class DiaryEntry {
       'id': id,
       'content': content,
       'timestamp': timestamp.toIso8601String(),
-      'tags': tags,
+      'dataTracking': dataTracking,
+      'isDraft': isDraft,
+      'userID': userID,
     };
   }
 }

@@ -276,15 +276,6 @@ class _MusicPlayerWidgetState extends State<MusicPlayerWidget> {
 
             // Emotional category indicator
             const SizedBox(height: 12),
-            Center(
-              child: Chip(
-                label: Text(
-                  'Mood: ${widget.track.emotionCategory}',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                backgroundColor: Colors.purple[100],
-              ),
-            ),
           ],
         ),
       ),

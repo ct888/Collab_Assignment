@@ -2,15 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/favorite_event_screen.dart';
-import '../ViewModel/utils/event_recommender_viewmodel.dart';
+import '../ViewModel/event_recommender_viewmodel.dart';
+import '../Viewmodel/progress_meter_viewmodel.dart';
 import 'event_list_screen.dart';
 import '../Model/location.dart';
 
 class EventRecommenderScreen extends StatefulWidget {
-  final String userId;
 
-  const EventRecommenderScreen({Key? key, required this.userId})
+  const EventRecommenderScreen({Key? key})
     : super(key: key);
 
   @override
@@ -21,6 +22,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   GoogleMapController? _mapController;
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _placeNameController = TextEditingController();
+  final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
   //Set<Marker> _markers = {};
   MapType _currentMapType = MapType.normal;
   EventRecommenderViewModel? _viewModel;
@@ -39,7 +41,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
-        final viewModel = EventRecommenderViewModel(userId: widget.userId);
+        final viewModel = EventRecommenderViewModel();
         // Store the viewModel reference and set up the listener
         _viewModel = viewModel;
         viewModel.addListener(_onLocationChanged);
@@ -61,7 +63,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FavoriteEventsScreen(userId: "User123",),
+                        builder: (context) => FavoriteEventsScreen(),
                       ),
                     );
                   },
@@ -139,7 +141,9 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () {
+                  debugPrint('address: ${_addressController.text}');
                   if (_addressController.text.isNotEmpty) {
+                    debugPrint('1234567890');
                     viewModel.updateLocationByAddress(_addressController.text);
                   }
                 },
@@ -185,12 +189,13 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                 ),
                 onPressed: () {
                   if (viewModel.currentLocation != null) {
+                    _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+                    RecordEntry.insertTimestampToCollection("recommender");
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
                             (context) => EventListScreen(
-                              userId: widget.userId,
                               location: viewModel.currentLocation!,
                             ),
                       ),
