@@ -6,12 +6,10 @@ import '../ViewModel/event_list_viewmodel.dart';
 import 'event_detail_screen.dart';
 
 class EventListScreen extends StatelessWidget {
-  final String userId;
   final Location location;
 
   const EventListScreen({
     Key? key,
-    required this.userId,
     required this.location,
   }) : super(key: key);
 
@@ -19,7 +17,7 @@ class EventListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM dd, yyyy • h:mm a');
     return ChangeNotifierProvider(
-      create: (_) => EventListViewModel(userId: userId),
+      create: (_) => EventListViewModel(),
       child: Consumer<EventListViewModel>(
         builder: (context, viewModel, child) {
           // Check if we need to navigate back due to error
@@ -217,7 +215,6 @@ class EventListScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => EventDetailScreen(
-                                            userId: userId,
                                             event: event,
                                           ),
                                         ),
@@ -332,7 +329,6 @@ class EventListScreen extends StatelessWidget {
                                                     context,
                                                     MaterialPageRoute(
                                                       builder: (context) => EventDetailScreen(
-                                                        userId: userId,
                                                         event: event,
                                                       ),
                                                     ),

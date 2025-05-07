@@ -10,17 +10,26 @@ import '../../service/firebase_service.dart';
 class EventRecommenderViewModel with ChangeNotifier {
   final LocationService _locationService = LocationService();
   final FirebaseService _firebaseService = FirebaseService();
-  final String userId;
+  String? userId;
  
   Location? _currentLocation;
   List<SavedPlace> _savedPlaces = [];
   bool _isLoading = false;
   String? _error;
- 
-  EventRecommenderViewModel({required this.userId}) {
+
+    EventRecommenderViewModel() {
+    _initializeViewModel();
+  }
+
+    // Initialize in proper sequence
+  Future<void> _initializeViewModel() async {
+    await _fetchUserId();
+    if (userId != null) {
     _initializeLocation();
     _loadSavedPlaces();
+    }
   }
+
  
   Location? get currentLocation => _currentLocation;
   List<SavedPlace> get savedPlaces => _savedPlaces;
@@ -29,6 +38,17 @@ class EventRecommenderViewModel with ChangeNotifier {
 
   bool _shouldShowErrorSnackbar = false;
   bool get shouldShowErrorSnackbar => _shouldShowErrorSnackbar;
+
+      Future<void> _fetchUserId() async {
+    try {
+      _setLoading(true);
+      userId = await _firebaseService.getUserID();
+      _setLoading(false);
+      notifyListeners(); // Notify listeners when userId is fetched
+    } catch (e) {
+      _setError('Failed to fetch user ID: $e');
+    }
+  }
   
     void errorSnackbarShown() {
     _shouldShowErrorSnackbar = false;
@@ -69,7 +89,7 @@ class EventRecommenderViewModel with ChangeNotifier {
   Future<void> _loadSavedPlaces() async {
     try {
       _setLoading(true);
-      _savedPlaces = await _firebaseService.getSavedPlaces(userId);
+      _savedPlaces = await _firebaseService.getSavedPlaces(userId.toString());
       _setLoading(false);
     } catch (e) {
       _setUserFriendlyError('Failed to load saved places: $e');
@@ -124,7 +144,7 @@ class EventRecommenderViewModel with ChangeNotifier {
         id: const Uuid().v4(),
         name: name,
         location: _currentLocation!,
-        userId: userId,
+        userId: userId.toString(),
         createdAt: DateTime.now(),
       );
      
@@ -164,6 +184,12 @@ class EventRecommenderViewModel with ChangeNotifier {
  
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+      void _setError(String? errorMessage) {
+    _error = errorMessage;
+    _isLoading = false;
     notifyListeners();
   }
 }

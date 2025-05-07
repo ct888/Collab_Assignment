@@ -8,9 +8,8 @@ import 'event_list_screen.dart';
 import '../Model/location.dart';
 
 class EventRecommenderScreen extends StatefulWidget {
-  final String userId;
 
-  const EventRecommenderScreen({Key? key, required this.userId})
+  const EventRecommenderScreen({Key? key})
     : super(key: key);
 
   @override
@@ -39,7 +38,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
-        final viewModel = EventRecommenderViewModel(userId: widget.userId);
+        final viewModel = EventRecommenderViewModel();
         // Store the viewModel reference and set up the listener
         _viewModel = viewModel;
         viewModel.addListener(_onLocationChanged);
@@ -61,7 +60,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FavoriteEventsScreen(userId: "User123",),
+                        builder: (context) => FavoriteEventsScreen(),
                       ),
                     );
                   },
@@ -192,7 +191,6 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
                       MaterialPageRoute(
                         builder:
                             (context) => EventListScreen(
-                              userId: widget.userId,
                               location: viewModel.currentLocation!,
                             ),
                       ),

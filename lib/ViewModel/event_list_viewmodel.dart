@@ -8,7 +8,7 @@ import '../../service/firebase_service.dart';
 class EventListViewModel with ChangeNotifier {
   final GeminiService _geminiService = GeminiService();
   final FirebaseService _firebaseService = FirebaseService();
-  final String userId;
+  String? userId;
  
   List<Event> _events = [];
   bool _isLoading = false;
@@ -16,13 +16,26 @@ class EventListViewModel with ChangeNotifier {
   bool _shouldNavigateBack = false;
   bool _shouldShowErrorSnackbar = false;
  
-  EventListViewModel({required this.userId});
+  EventListViewModel(){
+    _fetchUserId();
+  }
  
   List<Event> get events => _events;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get shouldNavigateBack => _shouldNavigateBack;
   bool get shouldShowErrorSnackbar => _shouldShowErrorSnackbar;
+
+    Future<void> _fetchUserId() async {
+    try {
+      _setLoading(true);
+      userId = await _firebaseService.getUserID();
+      _setLoading(false);
+      notifyListeners(); // Notify listeners when userId is fetched
+    } catch (e) {
+      _setError('Failed to fetch user ID: $e');
+    }
+  }
 
   // Call this after showing the snackbar to reset the flag
   void errorSnackbarShown() {
@@ -46,7 +59,7 @@ class EventListViewModel with ChangeNotifier {
       _events = await _geminiService.getNearbyEvents(location);
      
       // Check which events are favorites
-      final favoriteEvents = await _firebaseService.getFavoriteEvents(userId);
+      final favoriteEvents = await _firebaseService.getFavoriteEvents(userId.toString());
       for (var event in _events) {
         event.isFavorite = favoriteEvents.any((favEvent) => favEvent.id == event.id);
       }
@@ -60,7 +73,7 @@ class EventListViewModel with ChangeNotifier {
   // Add this new method to update a single event's favorite status
   Future<void> updateEventFavoriteStatus(String eventId) async {
     try {
-      final favoriteEvents = await _firebaseService.getFavoriteEvents(userId);
+      final favoriteEvents = await _firebaseService.getFavoriteEvents(userId.toString());
       final index = _events.indexWhere((event) => event.id == eventId);
      
       if (index != -1) {
@@ -109,6 +122,12 @@ class EventListViewModel with ChangeNotifier {
   void clearError() {
     _error = null;
     _shouldShowErrorSnackbar = false;
+    notifyListeners();
+  }
+
+    void _setError(String? errorMessage) {
+    _error = errorMessage;
+    _isLoading = false;
     notifyListeners();
   }
 }

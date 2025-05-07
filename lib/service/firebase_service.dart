@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../Model/saved_place.dart';
 import '../Model/event.dart';
+import '../utils/logger.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AppLogger _logger = AppLogger();
   
   // Saved Places
   Future<List<SavedPlace>> getSavedPlaces(String userId) async {
@@ -28,6 +31,15 @@ class FirebaseService {
   Future<void> deletePlace(String placeId) async {
     await _firestore.collection('saved_places').doc(placeId).delete();
   }
+
+Future<String> getUserID() async {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  if (userId == null) {
+    _logger.warning('No user logged in');
+    return "";
+  }
+  return userId; // Explicitly return the userId if it's not null
+}
   
   // UPDATED: Favorite Events with debugging
   Future<List<Event>> getFavoriteEvents(String userId) async {

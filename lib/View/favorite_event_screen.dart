@@ -7,17 +7,15 @@ import '../Model/event.dart';
 import 'event_detail_screen.dart';
 
 class FavoriteEventsScreen extends StatelessWidget {
-  final String userId;
 
   const FavoriteEventsScreen({
     Key? key,
-    required this.userId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => FavoriteEventsViewModel(userId: userId),
+      create: (_) => FavoriteEventsViewModel(),
       child: Consumer<FavoriteEventsViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
@@ -218,14 +216,11 @@ class FavoriteEventsScreen extends StatelessWidget {
           },
         );
       },
-/*                onDismissed: (direction) {
-                  final eventTitle = event.title;
-                  // Save a reference to the event that was removed
-                  final removedEvent = event;
-                  
+                onDismissed: (direction) {
                   // Remove from favorites
                   viewModel.removeFromFavorites(event.id);
-
+                },
+/*
                   // Show snackbar with undo option
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -254,7 +249,6 @@ class FavoriteEventsScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => EventDetailScreen(
-                  userId: userId,
                   event: event,
                 ),
               ),
@@ -366,7 +360,6 @@ class FavoriteEventsScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => EventDetailScreen(
-                              userId: userId,
                               event: event,
                             ),
                           ),
