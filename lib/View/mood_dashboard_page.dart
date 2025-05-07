@@ -391,7 +391,7 @@ Future<bool> _hasReachedDailyLimit() async {
                   },
                   child: Text(
                     'Your Mood on',
-                    style: TextStyle(
+                    style: GoogleFonts.aDLaMDisplay(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: CustomColors.grayDark,

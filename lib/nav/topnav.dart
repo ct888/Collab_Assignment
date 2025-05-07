@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../view/diary_browse.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/diaryBrowse_viewmodel.dart';
@@ -62,7 +63,7 @@ class _TopNavWrapperState extends State<TopNavWrapper> {
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: GoogleFonts.aDLaMDisplay(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: Colors.black87,

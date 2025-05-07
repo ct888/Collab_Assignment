@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
@@ -102,9 +103,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       appBar:
       videoViewModel.selectedVideo == null
           ? AppBar(
-        title: const Text(
+        title: Text(
           'Recommended Videos',
-          style: TextStyle(
+          style: GoogleFonts.aDLaMDisplay(
             color: Colors.black,
           ),
         ),

@@ -59,7 +59,7 @@ class RecommenderScreen extends StatelessWidget {
                     Align(
                       alignment: Alignment.topCenter,
                       child: Padding(
-                        padding: EdgeInsets.only(top: WHGetter.sy(context, 10)),
+                        padding: EdgeInsets.only(top: 10),
                         child: LogoWidget(),
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
@@ -75,9 +76,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           'Recommended Music',
-          style: TextStyle(color: Colors.black),
+          style: GoogleFonts.aDLaMDisplay(color: Colors.black),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,

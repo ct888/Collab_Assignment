@@ -54,7 +54,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
           // Do NOT call setState here or functions that call setState
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Event Recommender'),
+              title: Text('Event Recommender', style: GoogleFonts.aDLaMDisplay()),
               backgroundColor: Color(0xFF8E97FD),
               actions: [
                 IconButton(
@@ -172,7 +172,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
             children: [
               ElevatedButton.icon(
                 icon: const Icon(Icons.save_alt),
-                label: const Text('Save Place'),
+                label: Text('Save Place', style: GoogleFonts.aDLaMDisplay()),
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color>(
                     const Color.fromARGB(255, 174, 181, 255),
@@ -182,7 +182,7 @@ class _EventRecommenderScreenState extends State<EventRecommenderScreen> {
               ),
               ElevatedButton.icon(
                 icon: const Icon(Icons.event),
-                label: const Text('Find Events'),
+                label: Text('Find Events', style: GoogleFonts.aDLaMDisplay(),),
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color>(
                     const Color.fromARGB(255, 174, 181, 255),
