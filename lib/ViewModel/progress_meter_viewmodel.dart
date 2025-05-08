@@ -87,12 +87,11 @@ class ProgressMeterViewModel extends ChangeNotifier {
   }
   
   // Dispose resources
-  @override
-  void dispose() {
-    // Cancel subscriptions but don't dispose the ChangeNotifier
-    _cleanupSubscriptions();
-    // Don't call super.dispose() since this is a singleton
-  }
+  // @override
+  // void dispose() {
+  //   // Cancel subscriptions but don't dispose the ChangeNotifier
+  //   _cleanupSubscriptions();
+  // }
 
   // New method for cleaning up subscriptions without disposing
   void _cleanupSubscriptions() {
@@ -289,7 +288,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
             // Filter by userId in code rather than in the query
             final data = querySnapshot.docs
                 .where((doc) {
-                  Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
+                  Map<String, dynamic> docData = doc.data();
                   return docData['userId'] == currentUid;
                 })
                 .map((doc) => RecordEntry.fromFirestore(doc, recordType))
