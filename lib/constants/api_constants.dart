@@ -1,6 +1,6 @@
 class ApiConstants {
   // YouTube API
-  static const String youtubeApiKey = 'AIzaSyAR_DARAD_eA_7WBrXg7FAdtr-pzJxah9o';
+  static const String youtubeApiKey = 'AIzaSyB7bVfRW_Sf38AteArGpPceV_QwCmTbilw';
   static const String youtubeBaseUrl = 'https://www.googleapis.com/youtube/v3';
   static const String youtubeSearchEndpoint = '/search';
 
@@ -13,5 +13,5 @@ class ApiConstants {
   static const String spotifyTokenEndpoint = 'https://accounts.spotify.com/api/token';
 
   // Gemini API
-  static const String geminiApiKey = 'AIzaSyAcpjuc54Ol4RwiCm0tTeBzOgQ4_Js0p9Y';
+  static const String geminiApiKey = 'AIzaSyClmpNmZAZ6gQ_s_bRU91vHjSpBp-7zDSY';
 }
