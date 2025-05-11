@@ -61,7 +61,9 @@ class _BoaVMState extends State<BoaVM> {
 
     if (!usedToday) {
       await RecordEntry.insertTimestampToCollection("quote");
-      ProgressMeterViewModel().showProgressUpdateToast(context, "quote");
+      if (mounted) {
+        ProgressMeterViewModel().showProgressUpdateToast(context, "quote");
+      }
     }
   }
 
@@ -101,8 +103,8 @@ class _BoaVMState extends State<BoaVM> {
 
   @override
   Widget build(BuildContext context) {
-    final double h, w;
-    (h, w) = WHGetter.getHeightAndWidth(context);
+    final double h;
+    h = WHGetter.getHeight(context);
 
     return SafeArea(
       child: Scaffold(
