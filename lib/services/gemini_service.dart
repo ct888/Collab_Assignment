@@ -56,23 +56,20 @@ class GeminiService {
     }
 
     return '''
-Analyze the user's emotional state based on their mood details and diary entry. Provide actionable recommendations for video and music content to help them reach a desired emotional state.
+Analyze the user's emotional state based on their mood details and diary entry. Handle non-standard or unexpected mood entries (e.g., food names like "nasi lemak") by interpreting the underlying sentiment using NLP. Provide actionable recommendations for video and music content that either elevate a negative mood, sustain a positive one, or align with the sentiment inferred from diary text.
 
-Based on the analysis, generate specific terms suitable for searching or filtering content on platforms like YouTube (for videos) and Spotify (for music). **IMPORTANT: Place the video search terms/keywords into the "videoCategories" array and the music genres/moods/descriptive styles into the "musicGenres" array in the final JSON output, as per the required format.**
+1. Analyze the mood using sentiment detection, even if the mood is a non-emotion word.
+2. Extract emotional keywords from both reasons and diary text for deeper context.
+3. Based on the analysis, suggest specific video and music recommendations.
+4. For negative or unclear moods, recommend uplifting content.
+5. For positive moods, recommend reinforcing or relaxing content.
 
-User's mood: ${mood.moodType}
-User's reasons about their mood:
-$reasonsText
+User's mood: ${mood.moodType}  
+User's reasons about their mood:  
+$reasonsText  
 $diaryText
 
-Please provide:
-1. An analysis of their emotional state.
-2. A brief description of what the content should accomplish (content goal).
-3. For video content, suggest 3-5 **specific search terms or keywords** that would help find relevant videos on platforms like YouTube (e.g., "funny animal videos", "relaxing nature sounds", "motivational speeches short").
-4. For music content, suggest 3-5 **specific genres, moods, or descriptive music styles** that would help find suitable music on platforms like Spotify (e.g., "Upbeat Pop for energy", "Relaxing Piano Instrumental", "Chillhop study music"). Make these terms descriptive enough to convey the intended vibe/characteristics.
-5. The target emotional state (recommended mood) the content aims to help the user reach.
-
-Format your response STRICTLY in JSON with these EXACT keys and structure:
+Output JSON format:
 {
   "emotionalState": "brief analysis",
   "contentGoal": "brief description of what content should accomplish",
@@ -81,7 +78,7 @@ Format your response STRICTLY in JSON with these EXACT keys and structure:
   "recommendedMood": "target mood"
 }
 
-Ensure the arrays contain 3-5 distinct and specific terms suitable for external API searches.
+Only return the JSON result. Ensure all videoCategories and musicGenres are clear, API-searchable, and emotionally relevant.
 ''';
   }
 
