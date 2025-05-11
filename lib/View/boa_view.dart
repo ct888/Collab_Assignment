@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'package:seek_here/ViewModel/BOA_answer.dart';
+import 'package:seek_here/ViewModel/boa_vm.dart';
 import 'package:seek_here/View/utils/input_widget.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/ui_animation.dart';
@@ -10,14 +10,14 @@ import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/button_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 
-class BOA extends StatefulWidget {
-  const BOA({super.key});
+class BoaView extends StatefulWidget {
+  const BoaView({super.key});
 
   @override
-  State<BOA> createState() => _BOAState();
+  State<BoaView> createState() => _BoaViewState();
 }
 
-class _BOAState extends State<BOA> {
+class _BoaViewState extends State<BoaView> {
   final TextEditingController _preferenceController = TextEditingController();
 
   void _submit(){
@@ -25,7 +25,7 @@ class _BOAState extends State<BOA> {
     
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => BOAAnswer(preference: preference,))
+        MaterialPageRoute(builder: (_) => BoaVM(preference: preference,))
       );
     
   }

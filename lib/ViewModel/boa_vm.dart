@@ -9,16 +9,16 @@ import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
-class BOAAnswer extends StatefulWidget {
+class BoaVM extends StatefulWidget {
   final String preference;
 
-  const BOAAnswer({super.key, required this.preference});
+  const BoaVM({super.key, required this.preference});
 
   @override
-  State<BOAAnswer> createState() => _BOAAnswerState();
+  State<BoaVM> createState() => _BoaVMState();
 }
 
-class _BOAAnswerState extends State<BOAAnswer> {
+class _BoaVMState extends State<BoaVM> {
   String? _response;
   bool _isLoading = true;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
