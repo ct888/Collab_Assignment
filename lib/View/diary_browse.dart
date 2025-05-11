@@ -7,7 +7,7 @@ import '../View/browseView.dart';
 class BrowseView extends StatelessWidget {
   final String currentUserId;
 
-  const BrowseView({Key? key, required this.currentUserId}) : super(key: key);
+  const BrowseView({super.key, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class BrowseView extends StatelessWidget {
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8E97FD).withOpacity(0.3),
+                  color: const Color(0xFF8E97FD).withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -34,7 +34,7 @@ class BrowseView extends StatelessWidget {
                 width: 180,
                 height: 180,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8E97FD).withOpacity(0.3),
+                  color: const Color(0xFF8E97FD).withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -149,7 +149,7 @@ class BrowseView extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -199,7 +199,7 @@ class BrowseView extends StatelessWidget {
                     margin: const EdgeInsets.only(left: 12),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.network(firstImageUrl!, fit: BoxFit.cover),
+                      child: Image.network(firstImageUrl, fit: BoxFit.cover),
                     ),
                   ),
                 ),

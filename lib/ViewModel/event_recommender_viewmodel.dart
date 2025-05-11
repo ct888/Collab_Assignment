@@ -76,9 +76,6 @@ class EventRecommenderViewModel with ChangeNotifier {
       _error = 'Something went wrong. Please try again later.';
     }
     
-    // Log the technical error for debugging
-    print('Technical error: $technicalError');
-    
     _isLoading = false;
     _shouldShowErrorSnackbar = true;
     

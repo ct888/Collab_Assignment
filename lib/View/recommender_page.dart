@@ -4,12 +4,10 @@ import 'package:seek_here/View/video_home_page.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
 import 'package:seek_here/ViewModel/musicViewModel.dart';
 import 'package:seek_here/ViewModel/videoViewModel.dart';
-import 'package:seek_here/utils/bottom_navigation_bar.dart';
-import 'mood_input_screen.dart';
 import 'music_home_page.dart';
 
 class RecommenderScreen extends StatefulWidget {
-  const RecommenderScreen({Key? key}) : super(key: key);
+  const RecommenderScreen({super.key});
 
   @override
   State<RecommenderScreen> createState() => _RecommenderScreenState();
@@ -128,7 +126,7 @@ class _RecommenderScreenState extends State<RecommenderScreen> {
           isSelected
               ? [
             BoxShadow(
-              color: Theme.of(context).primaryColor.withOpacity(0.5),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
               blurRadius: 8,
               spreadRadius: 2,
             ),

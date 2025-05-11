@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:seek_here/View/boa.dart';
+import 'package:seek_here/View/boa_view.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
@@ -26,7 +25,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = [
-      BOA(),
+      BoaView(),
       RecommenderScreen(userId: widget.userId),
       MoodDashboardPage(),
       TopNavWrapper(currentUserId: widget.userId),

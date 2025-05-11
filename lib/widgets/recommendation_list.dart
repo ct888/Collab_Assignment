@@ -172,7 +172,7 @@ class VideoCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -302,7 +302,7 @@ class MusicGridCard extends StatelessWidget {
   final Function() onPlayPressed;
 
   const MusicGridCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.artist,
     required this.duration,
@@ -311,7 +311,7 @@ class MusicGridCard extends StatelessWidget {
     required this.onTap,
     required this.hasPreview,
     required this.onPlayPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -351,7 +351,7 @@ class MusicGridCard extends StatelessWidget {
                         // Play/Open button
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: IconButton(
@@ -432,14 +432,14 @@ class MusicRecommendationGrid extends StatefulWidget {
   final bool hasMoreItems;
 
   const MusicRecommendationGrid({
-    Key? key,
+    super.key,
     required this.tracks,
     required this.onTrackSelected,
     required this.onLoadMore,
     required this.onRefresh,
     this.isLoadingMore = false,
     this.hasMoreItems = true,
-  }) : super(key: key);
+  });
 
   @override
   State<MusicRecommendationGrid> createState() => _MusicRecommendationGridState();

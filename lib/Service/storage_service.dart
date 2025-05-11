@@ -28,19 +28,15 @@ class StorageService {
   Future<void> deleteImage(String imageUrl) async {
     try {
       if (imageUrl.isEmpty) {
-        print('Empty image URL provided, skipping deletion');
         return;
       }
       
-      print('Attempting to delete image: $imageUrl');
       
       // Extract the path from the URL
       final ref = _storage.refFromURL(imageUrl);
-      print('Reference path: ${ref.fullPath}');
       
       // Delete the file
       await ref.delete();
-      print('Image deleted successfully');
     } catch (e) {
       // Handle any errors, such as if the image doesn't exist
       print('Error deleting image: $e');
@@ -57,11 +53,9 @@ class StorageService {
   // Delete multiple images (comma-separated URLs)
   Future<void> deleteMultipleImages(String? imageUrls) async {
     if (imageUrls == null || imageUrls.isEmpty) {
-      print('No images to delete');
       return;
     }
     
-    print('Deleting multiple images from: $imageUrls');
     List<String> urls = imageUrls.split(',');
     
     // Process each URL individually

@@ -11,9 +11,9 @@ class EventDetailScreen extends StatefulWidget {
   final Event event;
 
   const EventDetailScreen({
-    Key? key,
+    super.key,
     required this.event,
-  }) : super(key: key);
+  });
 
   @override
   _EventDetailScreenState createState() => _EventDetailScreenState();
@@ -91,7 +91,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           leading: Container(
             margin: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.7),
+              color: Colors.grey.withValues(alpha: 0.7),
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -145,7 +145,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             Container(
               margin: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.7),
+                color: Colors.grey.withValues(alpha: 0.7),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -470,7 +470,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         throw Exception('Could not launch $processedUrl');
       }
     } catch (e) {
-      print('Error launching URL: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not open $url. Invalid URL format or app not found.')),
       );

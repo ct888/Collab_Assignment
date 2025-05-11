@@ -3,17 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-//import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/favorite_event_screen.dart';
 import '../ViewModel/event_recommender_viewmodel.dart';
-import '../Viewmodel/progress_meter_viewmodel.dart';
 import 'event_list_screen.dart';
 import '../Model/location.dart';
 
 class EventRecommenderScreen extends StatefulWidget {
 
-  const EventRecommenderScreen({Key? key})
-    : super(key: key);
+  const EventRecommenderScreen({super.key});
 
   @override
   _EventRecommenderScreenState createState() => _EventRecommenderScreenState();

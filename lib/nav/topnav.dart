@@ -6,12 +6,12 @@ import '../viewmodel/diaryBrowse_viewmodel.dart';
 import '../view/diary_home.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
-import '../view/diary_draft.dart'; // 保留这个，不要重复 import
+import '../view/diary_draft.dart';
 
 class TopNavWrapper extends StatefulWidget {
   final String currentUserId;
 
-  const TopNavWrapper({Key? key, required this.currentUserId}) : super(key: key);
+  const TopNavWrapper({super.key, required this.currentUserId});
 
   @override
   _TopNavWrapperState createState() => _TopNavWrapperState();
@@ -41,7 +41,7 @@ class _TopNavWrapperState extends State<TopNavWrapper> {
 
     Color iconColor = isSelected ? Colors.white : Colors.black87;
     Color bgColor = isSelected
-        ? const Color.fromARGB(255, 72, 87, 247).withOpacity(0.7)
+        ? const Color.fromARGB(255, 72, 87, 247).withValues(alpha: 0.7)
         : Colors.grey.shade200;
 
     return GestureDetector(

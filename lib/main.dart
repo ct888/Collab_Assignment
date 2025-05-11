@@ -8,18 +8,25 @@ import 'package:seek_here/ViewModel/moodViewModel.dart';
 import 'package:seek_here/ViewModel/musicViewModel.dart';
 import 'package:seek_here/ViewModel/videoViewModel.dart';
 import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // <--- Ensure Flutter binding is initialized
+   // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
 
   // Lock Screen orientation
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  await Firebase.initializeApp( // <--- Initialize Firebase
+  // Initialize Firebase
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Dotenv
+  await dotenv.load(fileName: ".env");
+
   runApp(
+
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => MoodViewModel()),

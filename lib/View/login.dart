@@ -47,19 +47,22 @@ class _LogInState extends State<LogIn> {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login successful!', style: GoogleFonts.aDLaMDisplay()),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Login successful!',
+              style: GoogleFonts.aDLaMDisplay(),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
 
       await Future.delayed(const Duration(milliseconds: 800));
 
-      final userId = FirebaseAuth.instance.currentUser!.uid;
-
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
+      if (user != null && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => MainScreen(userId: user.uid)),
@@ -76,21 +79,24 @@ class _LogInState extends State<LogIn> {
       } else {
         message = 'Login Failed: ${e.message}';
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message, style: GoogleFonts.aDLaMDisplay()),
-          backgroundColor: Colors.red,
-          duration: Duration(milliseconds: 1500),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message, style: GoogleFonts.aDLaMDisplay()),
+            backgroundColor: Colors.red,
+            duration: Duration(milliseconds: 1500),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An error occurred.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
     }

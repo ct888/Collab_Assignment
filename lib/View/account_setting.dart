@@ -22,17 +22,16 @@ class _AccountSetting extends State<AccountSetting> {
 
   @override
   Widget build(BuildContext context) {
-
-    final double h, w;
-    (h, w) = WHGetter.getHeightAndWidth(context);
-    String _email = _user?.email ?? 'User';
+    final double h;
+    h = WHGetter.getHeight(context);
+    String email = _user?.email ?? 'User';
 
     return SafeArea(
       child: Stack(
         children: [
           // Vector Bg
           Positioned(
-            bottom: -(h*0.6),
+            bottom: -(h * 0.6),
             left: -2,
             child: SvgPicture.asset(AppImages.bgCloud),
           ),
@@ -75,7 +74,7 @@ class _AccountSetting extends State<AccountSetting> {
                       Padding(
                         padding: EdgeInsets.only(top: 5),
                         child: Text(
-                          _email,
+                          email,
                           style: GoogleFonts.aDLaMDisplay(fontSize: 24),
                         ),
                       ),
@@ -119,20 +118,23 @@ class _AccountSetting extends State<AccountSetting> {
 
                         onTap: () async {
                           await _auth.signOut();
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Logout Successful',
-                                style: GoogleFonts.aDLaMDisplay(),
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Logout Successful',
+                                  style: GoogleFonts.aDLaMDisplay(),
+                                ),
+                                backgroundColor: Colors.green,
                               ),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LogIn()),
-                          );
+                            );
+                          }
+                          if (context.mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LogIn()),
+                            );
+                          }
                         },
                       ),
                       Divider(thickness: 1.5, color: CustomColors.grayDark),

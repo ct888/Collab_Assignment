@@ -12,7 +12,7 @@ import '../ViewModel/progress_meter_viewmodel.dart';
 import '../utils/logger.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
-  const VideoPlayerScreen({Key? key}) : super(key: key);
+  const VideoPlayerScreen({super.key});
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -49,7 +49,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   Future<void> _loadData({bool refresh = true}) async {
     final videoViewModel = Provider.of<VideoViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
-    final AppLogger _logger = AppLogger();
+    final AppLogger logger = AppLogger();
 
     try {
       // First, fetch the mood from Firebase
@@ -71,7 +71,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       }
     } catch (e) {
       debugPrint('Error loading data: $e');
-      _logger.info('Failed to load recommendations');
+      logger.info('Failed to load recommendations');
       rethrow;
     } finally {
       if (mounted) {
@@ -253,8 +253,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           });
 
           // Add the requested code for progress tracking
-          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
-          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
+          progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
           RecordEntry.insertTimestampToCollection("recommender");
         }
       });

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/diary_entry.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../service/storage_service.dart';
 
 class DatabaseService {
@@ -9,7 +8,6 @@ class DatabaseService {
 
   // Upload diary entry (either draft or published)
   Future<void> uploadDiary(DiaryEntry entry) async {
-    print('Uploading entry: ID=${entry.id}, isDraft=${entry.isDraft}');
     await _firestore.collection(collectionName).doc(entry.id).set(entry.toMap());
   }
 
@@ -25,8 +23,6 @@ class DatabaseService {
 
     final snapshot = await query.get();
 
-    print('Found ${snapshot.docs.length} entries for user $userId (isDraft=$isDraft)');
-
     return snapshot.docs
         .map((doc) => DiaryEntry.fromMap(doc.data() as Map<String, dynamic>))
         .toList();
@@ -40,20 +36,16 @@ class DatabaseService {
         .where('isDraft', isEqualTo: true)
         .get();
 
-    print('Current draft count for user $userId: ${snapshot.docs.length}');
-
     return snapshot.docs.length;
   }
   
   Future<void> deleteDraft(String entryId) async {
-    print('Deleting draft: $entryId');
     await _firestore.collection(collectionName).doc(entryId).delete();
   }
 
   // Delete a draft entry
   // Delete entry and associated images
   Future<void> deleteEntry(String entryId) async {
-    print('Deleting entry: $entryId');
 
     try {
       final entryDoc = await _firestore.collection(collectionName).doc(entryId).get();
@@ -69,7 +61,6 @@ class DatabaseService {
         }
 
         await _firestore.collection(collectionName).doc(entryId).delete();
-        print('Entry deleted successfully');
       } else {
         print('Entry not found');
       }
@@ -116,7 +107,6 @@ class DatabaseService {
         });
       });
 
-      print('Like toggled successfully');
     } catch (e) {
       print("Error liking entry: $e");
     }

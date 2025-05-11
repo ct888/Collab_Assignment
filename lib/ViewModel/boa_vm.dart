@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'package:seek_here/Model/openai_service.dart';
+import 'package:seek_here/Model/ai_service.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
-class BOAAnswer extends StatefulWidget {
+class BoaVM extends StatefulWidget {
   final String preference;
 
-  const BOAAnswer({super.key, required this.preference});
+  const BoaVM({super.key, required this.preference});
 
   @override
-  State<BOAAnswer> createState() => _BOAAnswerState();
+  State<BoaVM> createState() => _BoaVMState();
 }
 
-class _BOAAnswerState extends State<BOAAnswer> {
+class _BoaVMState extends State<BoaVM> {
   String? _response;
   bool _isLoading = true;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
@@ -61,7 +61,9 @@ class _BOAAnswerState extends State<BOAAnswer> {
 
     if (!usedToday) {
       await RecordEntry.insertTimestampToCollection("quote");
-      ProgressMeterViewModel().showProgressUpdateToast(context, "quote");
+      if (mounted) {
+        ProgressMeterViewModel().showProgressUpdateToast(context, "quote");
+      }
     }
   }
 
@@ -101,8 +103,8 @@ class _BOAAnswerState extends State<BOAAnswer> {
 
   @override
   Widget build(BuildContext context) {
-    final double h, w;
-    (h, w) = WHGetter.getHeightAndWidth(context);
+    final double h;
+    h = WHGetter.getHeight(context);
 
     return SafeArea(
       child: Scaffold(

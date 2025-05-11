@@ -6,7 +6,7 @@ import '../model/diary_entry.dart';
 class DiaryDetailPage extends StatelessWidget {
   final DiaryEntry entry;
 
-  const DiaryDetailPage({Key? key, required this.entry}) : super(key: key);
+  const DiaryDetailPage({super.key, required this.entry});
 
   @override
   Widget build(BuildContext context) {

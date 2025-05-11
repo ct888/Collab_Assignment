@@ -73,7 +73,6 @@ Future<Location> getLocationFromAddress(String address) async {
       }
       return null;
     } catch (e) {
-      print('Error getting address: $e');
       return null;
     }
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:seek_here/Model/appimages.dart';
@@ -87,7 +86,6 @@ class _MoodSelectionPageState extends State<MoodSelectionPage> {
         _setDefaultMoods();
       }
     } catch (e) {
-      print('Error fetching moods: $e');
       // Use default moods in case of error
       _setDefaultMoods();
     }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/View/music_home_page.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/video_home_page.dart';
 import 'event_recommender_screen.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
@@ -10,7 +9,7 @@ import 'package:seek_here/View/utils/logo_widget.dart';
 class RecommenderScreen extends StatelessWidget {
   final String userId;
 
-  const RecommenderScreen({Key? key, required this.userId}) : super(key: key);
+  const RecommenderScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +24,7 @@ class RecommenderScreen extends StatelessWidget {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: const Color(0xFF8E97FD).withOpacity(0.7),
+                color: const Color(0xFF8E97FD).withValues(alpha: 0.7),
                 shape: BoxShape.circle,
               ),
             ),
@@ -39,7 +38,7 @@ class RecommenderScreen extends StatelessWidget {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: const Color(0xFF8E97FD).withOpacity(0.7),
+                color: const Color(0xFF8E97FD).withValues(alpha: 0.7),
                 shape: BoxShape.circle,
               ),
             ),

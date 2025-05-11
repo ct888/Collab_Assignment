@@ -13,11 +13,11 @@ class VideoPlayerWidget extends StatefulWidget {
   final VoidCallback? onVideoEnded;
 
   const VideoPlayerWidget({
-    Key? key,
+    super.key,
     required this.videoId,
     required this.onClose,
     this.onVideoEnded,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
@@ -292,7 +292,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       }
 
       final currentIndex = currentList.indexWhere(
-            (video) => video.videoId == widget.videoId,
+        (video) => video.videoId == widget.videoId,
       );
 
       _logger.info('Current video index: $currentIndex');
@@ -677,8 +677,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                               // The listener handles _isPlayerReady state, but good for logging
                               if (mounted && !_disposed) {
                                 // Ensure player is ready state is accurate if listener missed it
-                                if (!_isPlayerReady)
+                                if (!_isPlayerReady) {
                                   setState(() => _isPlayerReady = true);
+                                }
                                 // Show controls when ready if autoplaying
                                 if (_isPlaying) _showControlsTemporarily();
                               }
@@ -935,7 +936,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       right: 0,
       child: IgnorePointer(
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 20), // Additional bottom padding
+          padding: const EdgeInsets.only(
+            bottom: 20,
+          ), // Additional bottom padding
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -943,9 +946,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               children: [
                 // Left side - Swipe down indicator
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Slightly increased vertical padding
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ), // Slightly increased vertical padding
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -963,9 +969,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
                 // Right side - Swipe up indicator
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Slightly increased vertical padding
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ), // Slightly increased vertical padding
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1084,7 +1093,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                   decoration: BoxDecoration(
                     color: _getEmotionColor(
                       videoItem.emotionCategory,
-                    ).withOpacity(0.8),
+                    ).withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
@@ -1128,7 +1137,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
     return Container(
       // Background scrim, less opaque than details overlay
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black.withValues(alpha: 0.3),
       child: Stack(
         // Use Stack for positioning elements
         children: [
@@ -1314,12 +1323,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
                                 : Icons.fullscreen,
                             color: Colors.white,
                           ),
-                          onPressed:
-                          _toggleFullScreen, // Always calls toggle
+                          onPressed: _toggleFullScreen, // Always calls toggle
                           tooltip:
-                          _isFullScreen
-                              ? 'Exit Fullscreen'
-                              : 'Enter Fullscreen', ),
+                              _isFullScreen
+                                  ? 'Exit Fullscreen'
+                                  : 'Enter Fullscreen',
+                        ),
 
                         // Right side: Fullscreen Toggle & Next Button
                         Row(
@@ -1349,7 +1358,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       builder: (context, videoViewModel, child) {
         final currentList = videoViewModel.videos;
         final currentIndex = currentList.indexWhere(
-              (video) => video.videoId == widget.videoId,
+          (video) => video.videoId == widget.videoId,
         );
         // Determine if there is a previous video
         final bool hasPreviousVideo = currentIndex > 0;
@@ -1358,18 +1367,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
           style: TextButton.styleFrom(
             foregroundColor: hasPreviousVideo ? Colors.white : Colors.grey[600],
           ),
-          icon: Icon(
-            Icons.skip_previous,
-            size: 24,
-          ),
+          icon: Icon(Icons.skip_previous, size: 24),
           label: const Text("Previous", style: TextStyle(fontSize: 14)),
           onPressed:
-          (_isPlayerReady && hasPreviousVideo)
-              ? () {
-            _playPreviousVideo();
-            _showControlsTemporarily();
-          }
-              : null,
+              (_isPlayerReady && hasPreviousVideo)
+                  ? () {
+                    _playPreviousVideo();
+                    _showControlsTemporarily();
+                  }
+                  : null,
         );
       },
     );
@@ -1434,8 +1440,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
     // Helper to format duration strings
     String formatDuration(Duration duration) {
-      if (duration == Duration.zero)
+      if (duration == Duration.zero) {
         return '0:00'; // Handle zero duration display
+      }
       String twoDigits(int n) => n.toString().padLeft(2, '0');
       final hours = duration.inHours;
       final minutes = duration.inMinutes.remainder(60);
@@ -1471,16 +1478,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
               ), // Larger overlay for easier grab
               activeTrackColor:
                   emotionColor, // Use emotion color for played part
-              inactiveTrackColor: Colors.grey.withOpacity(
-                0.4,
+              inactiveTrackColor: Colors.grey.withValues(
+                alpha: 0.4,
               ), // Color for the unloaded part
               thumbColor: emotionColor, // Thumb matches active color
               overlayColor: emotionColor.withAlpha(
                 80,
               ), // Overlay matches active color
               // Define a secondary active track color for buffering
-              secondaryActiveTrackColor: Colors.white.withOpacity(
-                0.6,
+              secondaryActiveTrackColor: Colors.white.withValues(
+                alpha: 0.6,
               ), // Color for buffered part
             ),
             child: Slider(

@@ -9,8 +9,8 @@ import 'event_detail_screen.dart';
 class FavoriteEventsScreen extends StatelessWidget {
 
   const FavoriteEventsScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +393,7 @@ class WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Top-left wave
     Paint topWavePaint = Paint()
-      ..color = Color(0xFF8E97FD).withOpacity(0.4) // Matching color from event list screen
+      ..color = Color(0xFF8E97FD).withValues(alpha: 0.4) // Matching color from event list screen
       ..style = PaintingStyle.fill;
 
     Path topWavePath = Path();
@@ -418,7 +418,7 @@ class WavePainter extends CustomPainter {
 
     // Bottom-right wave
     Paint bottomWavePaint = Paint()
-      ..color = Color(0xFF8E97FD).withOpacity(0.4) 
+      ..color = Color(0xFF8E97FD).withValues(alpha: 0.4) 
       ..style = PaintingStyle.fill;
 
     Path bottomWavePath = Path();

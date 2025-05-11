@@ -6,13 +6,12 @@ import 'package:provider/provider.dart';
 import '../widgets/confirmation_dialog.dart';
 import '../view/utils/wave_painter.dart';
 import '../model/diary_entry.dart';
-import '../service/database_service.dart';
 import '../ViewModel/diaryDraftEdit_viewmodel.dart';
 
 class DiaryDraftEditScreen extends StatelessWidget {
   final DiaryEntry draft;
 
-  const DiaryDraftEditScreen({Key? key, required this.draft}) : super(key: key);
+  const DiaryDraftEditScreen({super.key, required this.draft});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class DiaryDraftEditScreen extends StatelessWidget {
 class DiaryDraftEditView extends StatefulWidget {
   final DiaryEntry draft;
 
-  const DiaryDraftEditView({Key? key, required this.draft}) : super(key: key);
+  const DiaryDraftEditView({super.key, required this.draft});
 
   @override
   State<DiaryDraftEditView> createState() => _DiaryDraftEditViewState();
@@ -155,7 +154,7 @@ class _DiaryDraftEditViewState extends State<DiaryDraftEditView> {
                       width: 360,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
