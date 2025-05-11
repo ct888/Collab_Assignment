@@ -6,9 +6,9 @@ class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   
   const CustomBottomNavBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

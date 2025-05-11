@@ -12,7 +12,7 @@ import '../ViewModel/progress_meter_viewmodel.dart';
 import '../utils/logger.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  const MusicPlayerScreen({Key? key}) : super(key: key);
+  const MusicPlayerScreen({super.key});
 
   @override
   State<MusicPlayerScreen> createState() => _MusicPlayerScreenState();
@@ -39,7 +39,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Future<void> _loadData() async {
     final musicViewModel = Provider.of<MusicViewModel>(context, listen: false);
     final moodViewModel = Provider.of<MoodViewModel>(context, listen: false);
-    final AppLogger _logger = AppLogger();
+    final AppLogger logger = AppLogger();
 
     try {
       // First, fetch the mood from Firebase
@@ -60,7 +60,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       }
     } catch (e) {
       debugPrint('Error loading music data: $e');
-      _logger.info('Failed to load music recommendations');
+      logger.info('Failed to load music recommendations');
       rethrow;
     } finally {
       if (mounted) {
@@ -224,8 +224,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           });
 
           // Add the requested code for progress tracking
-          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
-          _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+          final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
+          progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
           RecordEntry.insertTimestampToCollection("recommender");
         }
       });

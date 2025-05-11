@@ -24,13 +24,9 @@ class DiaryDetailViewModel with ChangeNotifier {
         throw ArgumentError('Invalid document ID: Entry ID cannot be null or empty');
       }
       
-      print('Starting deletion process for entry with ID: ${entry.id}');
-      
       // Delete all images if imageUrl field contains multiple comma-separated URLs
       if (entry.imageUrl != null && entry.imageUrl!.isNotEmpty) {
         List<String> imageUrls = entry.imageUrl!.split(',');
-        
-        print('Found ${imageUrls.length} images to delete');
         
         for (String url in imageUrls) {
           final trimmedUrl = url.trim();

@@ -10,12 +10,12 @@ class MusicPlayerWidget extends StatefulWidget {
   final VoidCallback onClose;
 
   const MusicPlayerWidget({
-    Key? key,
+    super.key,
     required this.track,
     required this.isPlaying,
     required this.onTogglePlayback,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<MusicPlayerWidget> createState() => _MusicPlayerWidgetState();

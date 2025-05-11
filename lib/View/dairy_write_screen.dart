@@ -21,7 +21,7 @@ class DiaryWriteScreen extends StatelessWidget {
 }
 
 class DiaryWriteView extends StatelessWidget {
-  const DiaryWriteView({Key? key}) : super(key: key);
+  const DiaryWriteView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +49,13 @@ class DiaryWriteView extends StatelessWidget {
           message: viewModel.successMessage!,
           onConfirm: () {
             viewModel.clearMessages();
-              if (!viewModel.isDraft){
-                progressMeterViewModel.showProgressUpdateToast(context, 'diary');
-              }
+            if (!viewModel.isDraft) {
+              progressMeterViewModel.showProgressUpdateToast(context, 'diary');
+            }
           },
         );
-
       }
-   /*   if (viewModel.successMessage1 != null) {
+      /*   if (viewModel.successMessage1 != null) {
         showConfirmationDialog(
           context: context,
           title: "Success",
@@ -118,7 +117,7 @@ class DiaryWriteView extends StatelessWidget {
                       width: 360,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85), // 半透明玻璃感
+                        color: Colors.white.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
@@ -246,9 +245,12 @@ class DiaryWriteView extends StatelessWidget {
                                                                       ImageSource
                                                                           .camera,
                                                                 );
-                                                            Navigator.of(
-                                                              context,
-                                                            ).pop();
+                                                            if (context
+                                                                .mounted) {
+                                                              Navigator.of(
+                                                                context,
+                                                              ).pop();
+                                                            }
                                                           },
                                                           child: const Text(
                                                             'Take Photo',
@@ -262,9 +264,12 @@ class DiaryWriteView extends StatelessWidget {
                                                                       ImageSource
                                                                           .gallery,
                                                                 );
-                                                            Navigator.of(
-                                                              context,
-                                                            ).pop();
+                                                            if (context
+                                                                .mounted) {
+                                                              Navigator.of(
+                                                                context,
+                                                              ).pop();
+                                                            }
                                                           },
                                                           child: const Text(
                                                             'From Gallery',
@@ -323,7 +328,7 @@ class DiaryWriteView extends StatelessWidget {
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: Colors.black
-                                                      .withOpacity(0.5),
+                                                      .withValues(alpha: 0.5),
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: const Icon(

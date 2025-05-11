@@ -8,7 +8,7 @@ import 'package:seek_here/Model/appimages.dart';
 class DiaryDetailScreen extends StatelessWidget {
   final DiaryEntry entry;
 
-  const DiaryDetailScreen({Key? key, required this.entry}) : super(key: key);
+  const DiaryDetailScreen({super.key, required this.entry});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class DiaryDetailScreen extends StatelessWidget {
 class _DiaryDetailContent extends StatelessWidget {
   final DiaryEntry entry;
 
-  const _DiaryDetailContent({Key? key, required this.entry}) : super(key: key);
+  const _DiaryDetailContent({required this.entry});
 
   @override
   Widget build(BuildContext context) {
@@ -267,21 +267,6 @@ class _DiaryDetailContent extends StatelessWidget {
                                           TextButton(
                                             onPressed: () async {
                                               try {
-                                                // // Check if entry.id is null or empty
-                                                // if (entry.id.isEmpty) {
-                                                //   Navigator.pop(context); // Close dialog
-                                                //   ScaffoldMessenger.of(context).showSnackBar(
-                                                //     SnackBar(
-                                                //       content: Text('Cannot delete entry: Invalid entry ID'),
-                                                //       backgroundColor: Colors.red,
-                                                //     ),
-                                                //   );
-                                                //   return;
-                                                // }
-
-                                                print(
-                                                  "Attempting to delete diary entry with ID: ${entry.id}",
-                                                );
 
                                                 // Show loading indicator
                                                 showDialog(
@@ -324,9 +309,6 @@ class _DiaryDetailContent extends StatelessWidget {
                                                   ),
                                                 );
                                               } catch (e) {
-                                                print(
-                                                  "Error deleting entry: ${e.toString()}",
-                                                );
 
                                                 // Close loading indicator if it's showing
                                                 Navigator.pop(context);
@@ -347,10 +329,10 @@ class _DiaryDetailContent extends StatelessWidget {
                                                 );
                                               }
                                             },
-                                            child: Text("Delete"),
                                             style: TextButton.styleFrom(
                                               foregroundColor: Colors.red,
                                             ),
+                                            child: Text("Delete"),
                                           ),
                                         ],
                                       ),

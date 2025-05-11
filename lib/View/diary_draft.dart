@@ -3,7 +3,6 @@ import '../model/diary_entry.dart';
 import '../viewmodel/diaryDraft.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../view/diary_draft.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:seek_here/Model/appimages.dart';
 import '/widgets/confirmation_dialog.dart';
@@ -12,8 +11,7 @@ import '../viewmodel/progress_meter_viewmodel.dart';
 class DiaryDraftScreen extends StatelessWidget {
   final String currentUserId;
 
-  const DiaryDraftScreen({Key? key, required this.currentUserId})
-    : super(key: key);
+  const DiaryDraftScreen({super.key, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +163,7 @@ class _DiaryDraftContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: Offset(0, 2),
             ),
@@ -234,17 +232,17 @@ class _DiaryDraftContent extends StatelessWidget {
       builder: (context, viewModel, child) {
         bool hasSelection = viewModel.selectedDrafts.isNotEmpty;
         bool singleSelection = viewModel.selectedDrafts.length == 1;
-        final ProgressMeterViewModel _progressMeterViewModel =
+        final ProgressMeterViewModel progressMeterViewModel =
             ProgressMeterViewModel();
 
         Color editColor =
             singleSelection
                 ? const Color(0xFFB2A4FF)
-                : Colors.grey.withOpacity(0.3);
+                : Colors.grey.withValues(alpha: 0.3);
         Color deleteColor =
             hasSelection
                 ? const Color(0xFFF87171)
-                : Colors.grey.withOpacity(0.3);
+                : Colors.grey.withValues(alpha: 0.3);
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -299,6 +297,7 @@ class _DiaryDraftContent extends StatelessWidget {
                                       );
 
                                       await viewModel.deleteSelectedDrafts();
+                                      
                                       Navigator.pop(context);
                                       ScaffoldMessenger.of(
                                         context,
@@ -354,7 +353,7 @@ class _DiaryDraftContent extends StatelessWidget {
                                   onConfirm: () async {
                                     try {
                                       await viewModel.uploadSelectedDrafts();
-                                      _progressMeterViewModel
+                                      progressMeterViewModel
                                           .showProgressUpdateToast(
                                             context,
                                             'diary',

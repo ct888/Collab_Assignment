@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'package:seek_here/Model/openai_service.dart';
+import 'package:seek_here/Model/ai_service.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';

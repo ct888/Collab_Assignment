@@ -3,13 +3,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'package:seek_here/Model/mood.dart'; // Import UserMood model
+import 'package:seek_here/Model/mood.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
-import '../utils/bottom_navigation_bar.dart';
 
 class MoodDashboardPage extends StatefulWidget {
   const MoodDashboardPage({super.key});
@@ -66,7 +65,6 @@ class _MoodDashboardPageState extends State<MoodDashboardPage> {
       // Process moods for the current week
       _processWeeklyMoods();
     } catch (e) {
-      print('Error fetching moods: $e');
       setState(() {
         _isLoading = false;
       });
@@ -294,7 +292,7 @@ Future<bool> _hasReachedDailyLimit() async {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 5,
                     spreadRadius: 1,
                   ),
@@ -440,7 +438,7 @@ Future<bool> _hasReachedDailyLimit() async {
                         color:
                             _selectedDay == day
                                 ? Colors.black87
-                                : Colors.grey.withOpacity(0.2),
+                                : Colors.grey.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -593,7 +591,7 @@ Center(
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 5,
                   spreadRadius: 1,
                 ),

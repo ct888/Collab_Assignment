@@ -11,9 +11,9 @@ class EventListScreen extends StatelessWidget {
   final Location location;
 
   const EventListScreen({
-    Key? key,
+    super.key,
     required this.location,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class EventListScreen extends StatelessWidget {
       create: (_) => EventListViewModel(),
       child: Consumer<EventListViewModel>(
         builder: (context, viewModel, child) {
-          final ProgressMeterViewModel _progressMeterViewModel = ProgressMeterViewModel();
+          final ProgressMeterViewModel progressMeterViewModel = ProgressMeterViewModel();
           // Check if we need to navigate back due to error
           if (viewModel.shouldNavigateBack) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -64,7 +64,7 @@ class EventListScreen extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               // Set flag before showing toast to prevent multiple executions
               viewModel.markRecommenderToastAsShown();
-                    _progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
+                    progressMeterViewModel.showProgressUpdateToast(context, 'recommender');
                     RecordEntry.insertTimestampToCollection("recommender");
             });
           }
@@ -154,7 +154,7 @@ class EventListScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, 2),
                               ),
@@ -416,7 +416,7 @@ class WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Top-left wave
     Paint topWavePaint = Paint()
-      ..color = Color(0xFF8E97FD).withOpacity(0.4)
+      ..color = Color(0xFF8E97FD).withValues(alpha: 0.4)
       ..style = PaintingStyle.fill;
 
     Path topWavePath = Path();
@@ -441,7 +441,7 @@ class WavePainter extends CustomPainter {
 
     // Bottom-right wave
     Paint bottomWavePaint = Paint()
-      ..color = Color(0xFF8E97FD).withOpacity(0.4) 
+      ..color = Color(0xFF8E97FD).withValues(alpha: 0.4) 
       ..style = PaintingStyle.fill;
 
     Path bottomWavePath = Path();

@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:seek_here/Model/progress_meter_model.dart';
-import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 import '../model/diary_entry.dart';
 import '../service/database_service.dart';
 import '../service/storage_service.dart';

@@ -209,6 +209,7 @@ Future<String> getUserID() async {
       _logger.error('Error fetching today\'s latest mood: $e');
       //throw Exception('Failed to fetch today\'s latest mood: $e');
     }
+    return null;
   }
 
   Future<DiaryEntry?> fetchLatestDiary() async {

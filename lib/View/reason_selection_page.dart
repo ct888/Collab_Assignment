@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'package:seek_here/View/mainscreen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
-import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/ViewModel/progress_meter_viewmodel.dart';
 
 class ReasonSelectionPage extends StatefulWidget {
@@ -78,7 +73,6 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
         _setDefaultReasons();
       }
     } catch (e) {
-      print('Error fetching reasons: $e');
       // Use default reasons in case of error
       _setDefaultReasons();
     }
@@ -235,7 +229,6 @@ class _ReasonSelectionPageState extends State<ReasonSelectionPage> {
       // Navigate back to dashboard
       Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
-      print('Error saving mood: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save your mood: $e'),
