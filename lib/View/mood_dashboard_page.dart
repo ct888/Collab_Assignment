@@ -7,7 +7,7 @@ import 'package:seek_here/Model/mood.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
-import 'package:seek_here/View/utils/logo_widget.dart';
+import 'package:seek_here/View/widget/logo_widget.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
 
 class MoodDashboardPage extends StatefulWidget {

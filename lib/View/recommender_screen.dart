@@ -4,7 +4,7 @@ import 'package:seek_here/View/music_home_page.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
 import 'package:seek_here/View/video_home_page.dart';
 import 'event_recommender_screen.dart';
-import 'package:seek_here/View/utils/logo_widget.dart';
+import 'package:seek_here/View/widget/logo_widget.dart';
 
 class RecommenderScreen extends StatelessWidget {
   final String userId;

@@ -6,7 +6,7 @@ import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/View/login.dart';
 import 'package:seek_here/View/progress_meter_view.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/logo_widget.dart';
+import 'package:seek_here/View/widget/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 
 class AccountSetting extends StatefulWidget {

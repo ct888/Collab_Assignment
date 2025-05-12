@@ -3,11 +3,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:seek_here/Model/appimages.dart';
 import 'package:seek_here/ViewModel/boa_vm.dart';
-import 'package:seek_here/View/utils/input_widget.dart';
-import 'package:seek_here/View/utils/logo_widget.dart';
+import 'package:seek_here/View/widget/input_widget.dart';
+import 'package:seek_here/View/widget/logo_widget.dart';
 import 'package:seek_here/View/utils/ui_animation.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/button_widget.dart';
+import 'package:seek_here/View/widget/button_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
 
 class BoaView extends StatefulWidget {

@@ -3,8 +3,8 @@ import 'package:seek_here/View/boa_view.dart';
 import 'package:seek_here/View/mood_dashboard_page.dart';
 import 'package:seek_here/View/recommender_screen.dart';
 import 'package:seek_here/View/utils/customcolors.dart';
-import 'package:seek_here/View/utils/navbar_widget.dart';
-import 'package:seek_here/nav/topnav.dart';
+import 'package:seek_here/View/widget/navbar_widget.dart';
+import 'package:seek_here/View/widget/topnav.dart';
 import 'package:seek_here/View/account_setting.dart';
 
 class MainScreen extends StatefulWidget {
