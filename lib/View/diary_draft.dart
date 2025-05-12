@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:seek_here/Model/appimages.dart';
-import '/widgets/confirmation_dialog.dart';
+import '../View/widget/confirmation_dialog.dart';
 import '../viewmodel/progress_meter_viewmodel.dart';
 
 class DiaryDraftScreen extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'wh_getter.dart';
+import '../utils/wh_getter.dart';
 import 'package:seek_here/Model/appimages.dart';
-import 'customcolors.dart';
+import '../utils/customcolors.dart';
 
 class LogoWidget extends StatelessWidget {
   const LogoWidget({super.key});

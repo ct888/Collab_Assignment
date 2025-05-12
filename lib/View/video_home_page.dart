@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:seek_here/View/mood_selection_page.dart';
 import 'package:seek_here/ViewModel/moodViewModel.dart';
 import 'package:seek_here/ViewModel/videoViewModel.dart';
-import 'package:seek_here/widgets/recommendation_list.dart';
-import 'package:seek_here/widgets/video_player_widget.dart';
+import '../View/widget/recommendation_list.dart';
+import '../View/widget/video_player_widget.dart';
 
 import '../Model/progress_meter_model.dart';
 import '../ViewModel/progress_meter_viewmodel.dart';

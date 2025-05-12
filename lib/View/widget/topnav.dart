@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../view/diary_browse.dart';
+import '../diary_browse.dart';
 import 'package:provider/provider.dart';
-import '../viewmodel/diaryBrowse_viewmodel.dart';
-import '../view/diary_home.dart';
-import 'package:seek_here/View/utils/logo_widget.dart';
+import '../../viewmodel/diaryBrowse_viewmodel.dart';
+import '../diary_home.dart';
+import 'package:seek_here/View/widget/logo_widget.dart';
 import 'package:seek_here/View/utils/wh_getter.dart';
-import '../view/diary_draft.dart';
+import '../diary_draft.dart';
 
 class TopNavWrapper extends StatefulWidget {
   final String currentUserId;

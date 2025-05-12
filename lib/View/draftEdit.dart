@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../widgets/confirmation_dialog.dart';
+import '../View/widget/confirmation_dialog.dart';
 import '../view/utils/wave_painter.dart';
 import '../model/diary_entry.dart';
 import '../ViewModel/diaryDraftEdit_viewmodel.dart';

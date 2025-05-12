@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/diarywrite_view_model.dart';
-import '/widgets/confirmation_dialog.dart';
+import '../View/widget/confirmation_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import '../view/utils/wave_painter.dart';
 import '../ViewModel/progress_meter_viewmodel.dart'; // Added import for ProgressMeterViewModel
