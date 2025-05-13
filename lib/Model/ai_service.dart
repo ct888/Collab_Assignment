@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-class OpenAIService {
+class AIService {
   static const _endpoint =
       "https://models.inference.ai.azure.com/chat/completions";
 

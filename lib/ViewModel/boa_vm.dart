@@ -30,7 +30,7 @@ class _BoaVMState extends State<BoaVM> {
     _getAnswer();
   }
 
-  Future<bool> hasUsedBOAToday() async {
+  Future<bool> _hasUsedBOAToday() async {
     if (_currentUser == null) return false;
 
     final uid = _currentUser.uid;
@@ -57,7 +57,7 @@ class _BoaVMState extends State<BoaVM> {
   }
 
   void _addToProgressMeter() async {
-    final usedToday = await hasUsedBOAToday();
+    final usedToday = await _hasUsedBOAToday();
 
     if (!usedToday) {
       await RecordEntry.insertTimestampToCollection("quote");
@@ -79,7 +79,7 @@ class _BoaVMState extends State<BoaVM> {
   }
 
   Future<void> _getAnswer() async {
-    final response = await OpenAIService.askAI(widget.preference);
+    final response = await AIService.askAI(widget.preference);
 
     final isError =
         response.startsWith("Error occurred:") ||
