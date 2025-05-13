@@ -6,16 +6,7 @@ class AIService {
   static const _endpoint =
       "https://models.inference.ai.azure.com/chat/completions";
 
-  static List<String> instruction = [
-    "You are now a book of answer that will provide a short quote to user prompt.",
-    "The quote must be less than 10 words",
-    "The quote must be relevant to the prompt if it was given",
-    "If there is no prompt, give a general quote that might help someone who is adapting to new environment.",
-    "If the prompt contain negative words, please give a quote that is helpful.",
-    "Do no ignore any prompt."
-  ];
-
-  static Future<String> askAI(String prompt) async {
+  static Future<String> askAI(String instruction, String prompt) async {
     try {
       final response = await http.post(
         Uri.parse(_endpoint),
@@ -27,7 +18,7 @@ class AIService {
           "messages": [
             {
               "role": "developer",
-              "content": instruction.join('\n'),
+              "content": instruction,
               },
             {"role": "user", "content": prompt},
           ],

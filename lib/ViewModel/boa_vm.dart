@@ -24,6 +24,15 @@ class _BoaVMState extends State<BoaVM> {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
+  final List<String> instructionstoAI = [
+    "You are now a book of answer that will provide a short quote to user prompt.",
+    "The quote must be less than 10 words",
+    "The quote must be relevant to the prompt if it was given",
+    "If there is no prompt, give a general quote that might help someone who is adapting to new environment.",
+    "If the prompt contain negative words, please give a quote that is helpful.",
+    "Do no ignore any prompt.",
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -79,7 +88,7 @@ class _BoaVMState extends State<BoaVM> {
   }
 
   Future<void> _getAnswer() async {
-    final response = await AIService.askAI(widget.preference);
+    final response = await AIService.askAI(instructionstoAI.join(), widget.preference);
 
     final isError =
         response.startsWith("Error occurred:") ||
