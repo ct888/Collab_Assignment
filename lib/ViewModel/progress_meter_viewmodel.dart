@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
 import 'package:seek_here/View/recap_report1_view.dart';
-import 'package:seek_here/Service/user_records_service.dart';
 
 class ActivityDisplayData {
   final String activity;
@@ -77,7 +76,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
   BuildContext? context; // Context for showing snackbars
   
   // Reference to the shared service
-  final UserRecordsService _recordsService = UserRecordsService();
+  final UserRecords _records = UserRecords();
   
   // Initialize data
   void initialize(BuildContext context) {
@@ -378,7 +377,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
     userPoints = calculatedPoints;
     
     // Store the data in the shared service for other ViewModels to access
-    _recordsService.setRecordsData(userRecords);
+    _records.setRecordsData(userRecords);
     
     notifyListeners();
   }
@@ -429,7 +428,7 @@ class ProgressMeterViewModel extends ChangeNotifier {
   void navigateToRecap1(BuildContext context) {
     if (hasEnoughPoints()) {
       // Make sure data is stored in the service
-      _recordsService.setRecordsData(userRecords);
+      _records.setRecordsData(userRecords);
       
       // Navigate without passing data
       Navigator.push(

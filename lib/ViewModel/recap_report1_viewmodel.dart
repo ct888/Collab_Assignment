@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:seek_here/Model/progress_meter_model.dart';
-import 'package:seek_here/Service/user_records_service.dart';
 import 'package:seek_here/View/recap_report2_view.dart';
 
 // View-specific data class to avoid direct Model access from View
@@ -20,7 +19,7 @@ class RecapReport1ViewModel extends ChangeNotifier {
   bool isLoading = true;
   List<MoodDisplayData> _moodDisplayData = [];
   int totalDays = 20; // Default value
-  final UserRecordsService _recordsService = UserRecordsService();
+  final UserRecords _records = UserRecords();
   
   // Expose display data for the view
   List<MoodDisplayData> get moodData => _moodDisplayData;
@@ -76,7 +75,7 @@ class RecapReport1ViewModel extends ChangeNotifier {
   
   // Initialize view model
   void initialize() {
-    Map<String, List<dynamic>>? preloadedRecords = _recordsService.getRecordsData();
+    Map<String, List<dynamic>>? preloadedRecords = _records.getRecordsData();
     
     if (preloadedRecords != null && preloadedRecords.containsKey('mood')) {
       processMoodRecords(preloadedRecords['mood']!);

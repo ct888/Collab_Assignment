@@ -264,3 +264,24 @@ class ProgressMeterData {
     'Keep striving for greatness!'
   ];
 }
+
+// Managing shared records data between view models
+class UserRecords {
+  // Singleton implementation
+  static final UserRecords _instance = UserRecords._internal();
+  factory UserRecords() => _instance;
+  UserRecords._internal();
+  
+  // Shared data between view models
+  Map<String, List<dynamic>>? _recordsData;
+  
+  // Setter for records data
+  void setRecordsData(Map<String, List<dynamic>> records) {
+    _recordsData = records;
+  }
+  
+  // Getter for records data
+  Map<String, List<dynamic>>? getRecordsData() {
+    return _recordsData;
+  }
+}
