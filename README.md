@@ -1,15 +1,22 @@
-# seek_here
+# SeekHere
 
-A new Flutter project.
+SeekHere is a Flutter-based mobile application designed to help users track their moods and receive personalized recommendations for music, videos, and events based on their emotional state.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Mood Tracking**: Record and monitor your daily moods with reasons
+- **Music Recommendations**: Get music suggestions tailored to your current mood
+- **Video Recommendations**: Watch videos based on your emotional state
+- **Event Recommendations**: Discover nearby events that match your preferences
+- **Personal Diary**: Keep track of your thoughts and feelings
+- **Progress Meter**: Track your journey with visual progress indicators
 
-A few resources to get you started if this is your first Flutter project:
+## Prerequisites
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter SDK (latest stable version)
+- Dart SDK
+- Android Studio / VS Code
+- An Android or iOS device/emulator
 
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
