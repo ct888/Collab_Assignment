@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class AIService {
   static const _endpoint =
-      "https://models.inference.ai.azure.com/chat/completions";
+      "https://models.github.ai/inference/chat/completions";
 
   static Future<String> askAI(String instruction, String prompt) async {
     try {
@@ -22,7 +22,7 @@ class AIService {
               },
             {"role": "user", "content": prompt},
           ],
-          "model": "gpt-4o-mini",
+          "model": "openai/gpt-4o-mini",
           "temperature": 1,
           "max_tokens": 4096
         }),
